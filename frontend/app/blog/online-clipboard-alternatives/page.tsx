@@ -1,4 +1,5 @@
-import BlogArticle, { blogMetadata, Table } from "@/components/BlogArticle";
+import BlogArticle, { Table } from "@/components/BlogArticle";
+import { blogMetadata } from "@/components/BlogArticleShared";
 
 const meta = {
   slug: "online-clipboard-alternatives",

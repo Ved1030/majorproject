@@ -1,5 +1,6 @@
 import Link from "next/link";
-import BlogArticle, { blogMetadata, Table } from "@/components/BlogArticle";
+import BlogArticle, { Table } from "@/components/BlogArticle";
+import { blogMetadata } from "@/components/BlogArticleShared";
 
 const meta = {
   slug: "share-text-files-between-devices",

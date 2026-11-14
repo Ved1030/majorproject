@@ -1,5 +1,6 @@
 import Link from "next/link";
-import BlogArticle, { blogMetadata } from "@/components/BlogArticle";
+import BlogArticle from "@/components/BlogArticle";
+import { blogMetadata } from "@/components/BlogArticleShared";
 
 const meta = {
   slug: "online-clipboard-without-login",

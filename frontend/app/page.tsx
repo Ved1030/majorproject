@@ -7,6 +7,11 @@ import UploadCard from "../components/UploadCard";
 import ReceiveCard from "../components/ReceiveCard";
 import Navbar from "../components/Navbar";
 import ZipDropLogo from "../components/brand/ZipDropLogo";
+import PopularTools from "../components/PopularTools";
+import WhatCanYouDo from "../components/WhatCanYouDo";
+import SupportedFileFormats from "../components/SupportedFileFormats";
+import HowToGuides from "../components/HowToGuides";
+import FAQ from "../components/FAQ";
 
 /* ─── Background Waves ───────────────────── */
 
@@ -405,6 +410,21 @@ export default function Home() {
 
         {/* ── TOOL CATEGORIES ── */}
         <ToolCategories />
+
+        {/* ── POPULAR TOOLS ── */}
+        <PopularTools />
+
+        {/* ── WHAT YOU CAN DO ── */}
+        <WhatCanYouDo />
+
+        {/* ── SUPPORTED FILE FORMATS ── */}
+        <SupportedFileFormats />
+
+        {/* ── HOW-TO GUIDES ── */}
+        <HowToGuides />
+
+        {/* ── FAQ ── */}
+        <FAQ />
       </main>
     </>
   );

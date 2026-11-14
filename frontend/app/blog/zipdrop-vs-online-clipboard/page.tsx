@@ -1,5 +1,6 @@
 import Link from "next/link";
-import BlogArticle, { blogMetadata, Table, Note } from "@/components/BlogArticle";
+import BlogArticle, { Table, Note } from "@/components/BlogArticle";
+import { blogMetadata } from "@/components/BlogArticleShared";
 
 const meta = {
   slug: "zipdrop-vs-online-clipboard",
