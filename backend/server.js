@@ -586,6 +586,314 @@ app.get("/health/pdf-to-docx", (req, res) => {
 });
 
 /* --------------------------------
+   Background Removal Tooling
+------------------------------- */
+
+const BG_REMOVER_SCRIPT_PATH = path.join(__dirname, "background_remover.py");
+const BG_REMOVER_VENV_PYTHON = path.join(
+  __dirname,
+  ".venv",
+  process.platform === "win32" ? "Scripts" : "bin",
+  process.platform === "win32" ? "python.exe" : "python"
+);
+
+function resolveBgRemoverPython() {
+  if (process.env.BG_REMOVER_PYTHON_BIN) return process.env.BG_REMOVER_PYTHON_BIN;
+  if (fs.existsSync(BG_REMOVER_VENV_PYTHON)) return BG_REMOVER_VENV_PYTHON;
+  return process.platform === "win32" ? "python" : "python3";
+}
+
+const BG_REMOVER_PYTHON_BIN = resolveBgRemoverPython();
+
+if (!process.env.BG_REMOVER_PYTHON_BIN && !fs.existsSync(BG_REMOVER_VENV_PYTHON)) {
+  console.warn(
+    "[Background Remover] backend/.venv is missing; falling back to system Python. Run `npm install` in backend to provision it."
+  );
+}
+
+const bgRemoverTooling = {
+  checked: false,
+  ok: false,
+  pythonVersion: null,
+  rembgVersion: null,
+  pillowVersion: null,
+  supportedModels: [],
+  error: null,
+};
+
+function lastJsonLine(text) {
+  const lines = text.trim().split(/\r?\n/);
+  for (let i = lines.length - 1; i >= 0; i--) {
+    const line = lines[i].trim();
+    if (!line.startsWith("{")) continue;
+    try {
+      return JSON.parse(line);
+    } catch {
+      // keep scanning towards the start of stdout
+    }
+  }
+  return null;
+}
+
+function checkBgRemoverTooling() {
+  return new Promise((resolve) => {
+    let settled = false;
+
+    const finish = (status) => {
+      if (settled) return;
+      settled = true;
+      Object.assign(bgRemoverTooling, status, { checked: true });
+
+      console.log(`[Background Remover] Python interpreter: ${BG_REMOVER_PYTHON_BIN}`);
+      if (bgRemoverTooling.ok) {
+        console.log(
+          `[Background Remover] rembg ${bgRemoverTooling.rembgVersion}, Pillow ${bgRemoverTooling.pillowVersion} import OK (Python ${bgRemoverTooling.pythonVersion})`
+        );
+        console.log(`[Background Remover] Supported models: ${bgRemoverTooling.supportedModels.join(", ")}`);
+      } else {
+        console.error(`[Background Remover] Dependency check failed: ${bgRemoverTooling.error}`);
+      }
+      resolve(bgRemoverTooling);
+    };
+
+    const proc = spawn(BG_REMOVER_PYTHON_BIN, [BG_REMOVER_SCRIPT_PATH, "--check"], {
+      env: { ...process.env, PYTHONUNBUFFERED: "1", PYTHONIOENCODING: "utf-8" },
+    });
+
+    let stdout = "";
+    let stderr = "";
+
+    proc.stdout.on("data", (data) => {
+      stdout += data.toString();
+    });
+
+    proc.stderr.on("data", (data) => {
+      stderr += data.toString();
+    });
+
+    proc.on("error", (err) => {
+      finish({ ok: false, error: `could not start interpreter: ${err.message}` });
+    });
+
+    proc.on("close", (code) => {
+      const result = lastJsonLine(stdout);
+      if (result && result.success) {
+        finish({
+          ok: true,
+          pythonVersion: result.python_version || null,
+          rembgVersion: result.rembg_version || "installed",
+          pillowVersion: result.pillow_version || "installed",
+          supportedModels: result.supported_models || [],
+          error: null,
+        });
+        return;
+      }
+
+      const stderrLine = stderr.trim().split(/\r?\n/).filter(Boolean).pop();
+      finish({
+        ok: false,
+        error: result?.error || stderrLine || `interpreter exited with code ${code}`,
+      });
+    });
+  });
+}
+
+checkBgRemoverTooling().catch(() => {});
+
+function removeBackground(inputPath, outputPath, options = {}) {
+  return new Promise((resolve, reject) => {
+    const mode = options.mode || "ai";
+    const args = [BG_REMOVER_SCRIPT_PATH, inputPath, outputPath, mode];
+    
+    if (mode === "logo") {
+      // Logo mode: submode, tolerance, feather_radius, erode_size, background_color_preset, background_color_custom
+      if (options.submode !== undefined) args.push(options.submode);
+      if (options.tolerance !== undefined) args.push(options.tolerance.toString());
+      if (options.featherRadius !== undefined) args.push(options.featherRadius.toString());
+      if (options.erodeSize !== undefined) args.push(options.erodeSize.toString());
+      if (options.backgroundColorPreset !== undefined) args.push(options.backgroundColorPreset);
+      if (options.backgroundColorCustom !== null && options.backgroundColorCustom !== undefined) {
+        const customStr = JSON.stringify(options.backgroundColorCustom);
+        console.log("[DEBUG] backgroundColorCustom:", customStr);
+        args.push(customStr);
+      }
+    } else {
+      // AI mode: model, alpha_matting, fg_threshold, bg_threshold, erode_size
+      if (options.model) args.push(options.model);
+      if (options.alphaMatting !== undefined) args.push(options.alphaMatting.toString());
+      if (options.alphaMattingForegroundThreshold !== undefined) args.push(options.alphaMattingForegroundThreshold.toString());
+      if (options.alphaMattingBackgroundThreshold !== undefined) args.push(options.alphaMattingBackgroundThreshold.toString());
+      if (options.alphaMattingErodeSize !== undefined) args.push(options.alphaMattingErodeSize.toString());
+    }
+
+    const pythonProcess = spawn(BG_REMOVER_PYTHON_BIN, args, {
+      env: { ...process.env, PYTHONUNBUFFERED: "1", PYTHONIOENCODING: "utf-8" },
+    });
+    
+    let stdout = "";
+    let stderr = "";
+    
+    pythonProcess.stdout.on("data", (data) => {
+      stdout += data.toString();
+    });
+    
+    pythonProcess.stderr.on("data", (data) => {
+      stderr += data.toString();
+    });
+    
+    pythonProcess.on("close", (code) => {
+      if (code !== 0) {
+        console.error("[Background Remover] Python process exited with code:", code);
+        console.error("[Background Remover] stderr:", stderr);
+        reject(new Error(`Background removal failed with code ${code}: ${stderr}`));
+        return;
+      }
+      
+      try {
+        const result = lastJsonLine(stdout);
+        if (!result) {
+          throw new Error("Background remover did not return JSON");
+        }
+
+        if (result.success) {
+          resolve(result.output_path);
+        } else {
+          reject(new Error(result.error || "Unknown background removal error"));
+        }
+      } catch (parseError) {
+        console.error("[Background Remover] Failed to parse result:", stdout);
+        reject(new Error("Background removal failed: invalid response from processor"));
+      }
+    });
+    
+    pythonProcess.on("error", (err) => {
+      console.error("[Background Remover] Failed to spawn Python process:", err);
+      reject(new Error("Background removal service unavailable"));
+    });
+  });
+}
+
+/* --------------------------------
+   Background Removal Health Check
+------------------------------- */
+
+app.get("/health/background-remover", (req, res) => {
+  res.status(bgRemoverTooling.ok ? 200 : 503).json({
+    ok: bgRemoverTooling.ok,
+    checked: bgRemoverTooling.checked,
+    dependency: "rembg",
+    version: bgRemoverTooling.rembgVersion,
+    pillow_version: bgRemoverTooling.pillowVersion,
+    python_version: bgRemoverTooling.pythonVersion,
+    interpreter: path.basename(BG_REMOVER_PYTHON_BIN),
+    supported_models: bgRemoverTooling.supportedModels,
+  });
+});
+
+/* --------------------------------
+   Background Removal Endpoint
+------------------------------- */
+
+app.post("/image-tools/remove-background", upload.single("file"), async (req, res) => {
+  try {
+    if (!req.file) {
+      return res.status(400).json({ error: "No file uploaded" });
+    }
+
+    // Validate image file type
+    const allowedMimeTypes = ["image/jpeg", "image/png", "image/webp"];
+    if (!allowedMimeTypes.includes(req.file.mimetype)) {
+      return res.status(400).json({ error: "Unsupported file type. Supported: JPG, PNG, WEBP" });
+    }
+
+    // Validate file size (20MB max)
+    const MAX_FILE_SIZE = 20 * 1024 * 1024;
+    if (req.file.size > MAX_FILE_SIZE) {
+      return res.status(413).json({ error: "File too large. Maximum size is 20 MB." });
+    }
+
+    // Parse optional parameters
+    const options = {
+      mode: req.body.mode || "ai",
+      model: req.body.model || "isnet-general-use",
+      alphaMatting: req.body.alphaMatting === "true",
+      alphaMattingForegroundThreshold: parseInt(req.body.alphaMattingForegroundThreshold) || 240,
+      alphaMattingBackgroundThreshold: parseInt(req.body.alphaMattingBackgroundThreshold) || 10,
+      alphaMattingErodeSize: parseInt(req.body.alphaMattingErodeSize) || 10,
+      // Logo mode parameters
+      tolerance: parseInt(req.body.tolerance) || 30,
+      featherRadius: parseFloat(req.body.featherRadius) || 1.0,
+      erodeSize: parseInt(req.body.erodeSize) || 0,
+      submode: req.body.submode || "edge",
+      backgroundColorPreset: req.body.backgroundColorPreset || "auto",
+      backgroundColorCustom: (() => {
+        if (!req.body.backgroundColorCustom) return null;
+        try {
+          return typeof req.body.backgroundColorCustom === 'string' 
+            ? JSON.parse(req.body.backgroundColorCustom) 
+            : req.body.backgroundColorCustom;
+        } catch {
+          return null;
+        }
+      })(),
+    };
+
+    const inputPath = path.join(__dirname, "temp", `${Date.now()}-${req.file.originalname}`);
+    const outputPath = path.join(__dirname, "temp", `${Date.now()}-${req.file.originalname.replace(/\.[^.]+$/, "")}_nobg.png`);
+    
+    const tempDir = path.dirname(inputPath);
+    if (!fs.existsSync(tempDir)) {
+      fs.mkdirSync(tempDir, { recursive: true });
+    }
+    
+    fs.writeFileSync(inputPath, req.file.buffer);
+    
+    try {
+      console.log("[Background Remover] Starting background removal for:", req.file.originalname);
+      await removeBackground(inputPath, outputPath, options);
+      console.log("[Background Remover] Background removal completed");
+      
+      const outputBuffer = fs.readFileSync(outputPath);
+      
+      // Clean up temp files
+      fs.unlinkSync(inputPath);
+      fs.unlinkSync(outputPath);
+      
+      // Generate output filename
+      const baseName = req.file.originalname.replace(/\.[^.]+$/, "");
+      const filename = `${baseName}_nobg.png`;
+      
+      res.set({
+        "Content-Type": "image/png",
+        "Content-Disposition": `attachment; filename="${filename}"`,
+        "Content-Length": outputBuffer.length,
+        "X-Original-Width": req.body.originalWidth || "",
+        "X-Original-Height": req.body.originalHeight || "",
+        "X-Model-Used": options.mode === "logo" ? `logo (submode=${options.submode}, tolerance=${options.tolerance})` : options.model,
+        "X-Processing-Mode": options.mode,
+        "X-Logo-Submode": options.submode || "",
+      });
+      
+      res.send(outputBuffer);
+    } catch (convError) {
+      // Clean up temp files on error
+      if (fs.existsSync(inputPath)) fs.unlinkSync(inputPath);
+      if (fs.existsSync(outputPath)) fs.unlinkSync(outputPath);
+      throw convError;
+    }
+  } catch (error) {
+    console.error("[Background Remover] Error:", error.message);
+    const status = error.code === 'INVALID_INPUT' || error.code === 'UNSUPPORTED_FORMAT' ? 400 :
+                   error.code === 'FILE_TOO_LARGE' ? 413 :
+                   error.code === 'MISSING_DEPENDENCY' ? 503 : 500;
+    res.status(status).json({ 
+      error: error.message || "Background removal failed",
+      code: error.code,
+    });
+  }
+});
+
+/* --------------------------------
    Conversion Router & Endpoints
 ------------------------------- */
 

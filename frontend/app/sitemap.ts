@@ -74,6 +74,10 @@ const COMPRESSION_PAGES = [
   "/compression/webp",
 ];
 
+const IMAGE_TOOLS_PAGES = [
+  "/image-tools/background-remover",
+];
+
 const TOOL_CATEGORY_PAGES = [
   "/conversion?category=pdf-tools",
   "/conversion?category=document-tools",
@@ -107,6 +111,12 @@ export default function sitemap(): MetadataRoute.Sitemap {
       priority: 0.7,
     })),
     ...COMPRESSION_PAGES.map((path) => ({
+      url: `${SITE_URL}${path}`,
+      lastModified: now,
+      changeFrequency: "monthly" as const,
+      priority: 0.7,
+    })),
+    ...IMAGE_TOOLS_PAGES.map((path) => ({
       url: `${SITE_URL}${path}`,
       lastModified: now,
       changeFrequency: "monthly" as const,

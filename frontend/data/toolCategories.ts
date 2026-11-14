@@ -231,7 +231,7 @@ export const TOOL_CATEGORIES: ToolCategory[] = [
     icon: Image,
     iconColor: "#9347D5",
     iconBg: "var(--purple-light)",
-    status: "planned",
+    status: "available",
     viewAllHref: "/conversion?category=image-tools",
     groups: [
       {
@@ -254,18 +254,18 @@ export const TOOL_CATEGORIES: ToolCategory[] = [
           { id: "compress-webp", name: "Compress WEBP", description: "Reduce WEBP file size", href: "/compression/webp", available: true, icon: Zap, iconColor: "#9152D4" },
         ],
       },
-      {
-        title: "Image Editing",
-        tools: [
-          { id: "resize-image", name: "Image Resizer", description: "Resize images to custom dimensions", href: "/conversion/image-tools/resize", available: false, comingSoon: true, icon: LayoutGrid, iconColor: "#9152D4" },
-          { id: "crop-image", name: "Image Cropper", description: "Crop images precisely", href: "/conversion/image-tools/crop", available: false, comingSoon: true, icon: Scissors, iconColor: "#9152D4" },
-          { id: "image-editor", name: "Image Editor", description: "Edit images online", href: "/conversion/image-tools/editor", available: false, comingSoon: true, icon: Edit, iconColor: "#9152D4" },
-        ],
-      },
+{
+          title: "Image Editing",
+          tools: [
+            { id: "resize-image", name: "Image Resizer", description: "Resize images to custom dimensions", href: "/image-tools/resize", available: false, comingSoon: true, icon: LayoutGrid, iconColor: "#9152D4" },
+            { id: "crop-image", name: "Image Cropper", description: "Crop images precisely", href: "/image-tools/crop", available: false, comingSoon: true, icon: Scissors, iconColor: "#9152D4" },
+            { id: "image-editor", name: "Image Editor", description: "Edit images online", href: "/image-tools/editor", available: false, comingSoon: true, icon: Edit, iconColor: "#9152D4" },
+          ],
+        },
       {
         title: "Background Tools",
         tools: [
-          { id: "remove-background", name: "Background Remover", description: "Remove image backgrounds automatically", href: "/conversion/image-tools/remove-bg", available: false, comingSoon: true, icon: Eye, iconColor: "#9152D4" },
+          { id: "remove-background", name: "Background Remover", description: "Remove image backgrounds automatically", href: "/image-tools/background-remover", available: true, icon: Eye, iconColor: "#9152D4" },
         ],
       },
     ],
