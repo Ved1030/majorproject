@@ -3,6 +3,9 @@ import type { Metadata } from "next";
 export const metadata: Metadata = {
   title: "AI Background Remover – Remove Image Backgrounds Free Online",
   description: "Remove backgrounds from images automatically with AI. Upload JPG, PNG, or WEBP and download transparent PNG. Two modes: Photo/AI for complex images, Logo/Graphic for clean edges. Free, no account.",
+  alternates: {
+    canonical: "https://zip-drop.vercel.app/image-tools/background-remover",
+  },
   openGraph: {
     title: "AI Background Remover – Remove Image Backgrounds Free Online",
     description: "Remove backgrounds from images automatically with AI. Upload JPG, PNG, or WEBP and download transparent PNG. Free, no account.",
@@ -45,6 +48,15 @@ const structuredData = {
     "Max 20MB file size",
     "JPG, PNG, WEBP input",
   ],
+  breadcrumb: {
+    "@context": "https://schema.org",
+    "@type": "BreadcrumbList",
+    itemListElement: [
+      { "@type": "ListItem", position: 1, name: "Home", item: "https://zip-drop.vercel.app" },
+      { "@type": "ListItem", position: 2, name: "Image Tools", item: "https://zip-drop.vercel.app/conversion?category=image-tools" },
+      { "@type": "ListItem", position: 3, name: "Background Remover", item: "https://zip-drop.vercel.app/image-tools/background-remover" },
+    ],
+  },
 };
 
 export default function BackgroundRemoverLayout({

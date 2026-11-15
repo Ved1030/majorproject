@@ -23,7 +23,7 @@ export default function ZipDropLogo({
 
   return (
     <Image
-      src="/images/zipdrop-logo.png"
+      src="/zipdrop-logo.png"
       alt="ZipDrop"
       width={width}
       height={height}

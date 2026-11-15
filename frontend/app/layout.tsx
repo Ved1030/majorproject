@@ -1,10 +1,11 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import { SpeedInsights } from "@vercel/speed-insights/next";
 import { Analytics } from "@vercel/analytics/next";
 import "./globals.css";
 import Script from "next/script";
 import SiteFooter from "@/components/SiteFooter";
 import { SITE_URL } from "@/lib/site";
+
 export const metadata: Metadata = {
   metadataBase: new URL(SITE_URL),
 
@@ -53,12 +54,6 @@ export const metadata: Metadata = {
     },
   },
 
-  viewport: {
-    width: "device-width",
-    initialScale: 1,
-    maximumScale: 5,
-  },
-
   icons: {
     icon: "/favicon.ico",
     apple: "/apple-touch-icon.png",
@@ -96,15 +91,21 @@ export const metadata: Metadata = {
   },
 };
 
+export const viewport: Viewport = {
+  width: "device-width",
+  initialScale: 1,
+  maximumScale: 5,
+};
+
 export default function RootLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
-
   const organizationData = {
     "@context": "https://schema.org",
     "@type": "Organization",
+    "@id": `${SITE_URL}/#organization`,
     name: "ZipDrop",
     url: SITE_URL,
     logo: `${SITE_URL}/zipdrop-logo.png`,
@@ -143,66 +144,12 @@ export default function RootLayout({
   const webSiteData = {
     "@context": "https://schema.org",
     "@type": "WebSite",
+    "@id": `${SITE_URL}/#website`,
     name: "ZipDrop",
     url: SITE_URL,
     publisher: {
-      "@type": "Organization",
-      name: "ZipDrop",
-      url: SITE_URL,
+      "@id": `${SITE_URL}/#organization`,
     },
-    potentialAction: {
-      "@type": "SearchAction",
-      target: {
-        "@type": "EntryPoint",
-        urlTemplate: `${SITE_URL}/search?q={search_term_string}`,
-      },
-      queryInput: "required name=search_term_string",
-    },
-  };
-
-  const softwareApplicationData = {
-    "@context": "https://schema.org",
-    "@type": "SoftwareApplication",
-    name: "ZipDrop",
-    url: SITE_URL,
-    applicationCategory: "FileSharingApplication",
-    operatingSystem: "Web",
-    description:
-      "ZipDrop is a free file and text sharing site that uses a 4-digit code. Convert files, compress files, remove backgrounds, and edit documents in the browser without signing up.",
-    creator: [
-      {
-        "@type": "Person",
-        name: "Ved Mehta",
-        affiliation: {
-          "@type": "CollegeOrUniversity",
-          name: "DJ Sanghvi College of Engineering",
-        },
-      },
-      {
-        "@type": "Person",
-        name: "Virti Panchamia",
-        affiliation: {
-          "@type": "CollegeOrUniversity",
-          name: "DJ Sanghvi College of Engineering",
-        },
-      },
-    ],
-    offers: {
-      "@type": "Offer",
-      price: "0",
-      priceCurrency: "USD",
-      availability: "https://schema.org/InStock",
-    },
-    featureList: [
-      "File sharing with 4-digit code",
-      "Text sharing",
-      "30+ file format conversions",
-      "PDF compression",
-      "Image compression (JPG, PNG, WEBP)",
-      "AI background removal",
-      "Online document editor",
-      "No account required",
-    ],
   };
 
   return (
@@ -245,14 +192,6 @@ export default function RootLayout({
           type="application/ld+json"
           dangerouslySetInnerHTML={{
             __html: JSON.stringify(webSiteData),
-          }}
-        />
-
-        {/* Structured Data - SoftwareApplication (homepage only via metadata) */}
-        <script
-          type="application/ld+json"
-          dangerouslySetInnerHTML={{
-            __html: JSON.stringify(softwareApplicationData),
           }}
         />
       </head>

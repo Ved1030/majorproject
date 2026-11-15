@@ -78,15 +78,6 @@ const IMAGE_TOOLS_PAGES = [
   "/image-tools/background-remover",
 ];
 
-const TOOL_CATEGORY_PAGES = [
-  "/conversion/pdf-tools",
-  "/conversion/document-tools",
-  "/conversion/image-tools",
-  "/conversion/compression-tools",
-  "/conversion/text-tools",
-  "/conversion/utility-tools",
-];
-
 const TRUST_PAGES = ["/about", "/contact", "/privacy", "/terms"];
 
 export default function sitemap(): MetadataRoute.Sitemap {
@@ -122,12 +113,6 @@ export default function sitemap(): MetadataRoute.Sitemap {
       lastModified: now,
       changeFrequency: "monthly" as const,
       priority: 0.7,
-    })),
-    ...TOOL_CATEGORY_PAGES.map((path) => ({
-      url: `${SITE_URL}${path}`,
-      lastModified: now,
-      changeFrequency: "monthly" as const,
-      priority: 0.6,
     })),
     ...TRUST_PAGES.map((path) => ({
       url: `${SITE_URL}${path}`,

@@ -141,7 +141,7 @@ export const TOOL_CATEGORIES: ToolCategory[] = [
     iconColor: "#2696D6",
     iconBg: "var(--blue-light)",
     status: "next",
-    viewAllHref: "/conversion?category=pdf-tools",
+    viewAllHref: "/conversion",
     groups: [
       {
         title: "Organize PDF",
@@ -188,7 +188,7 @@ export const TOOL_CATEGORIES: ToolCategory[] = [
     iconColor: "#25A85A",
     iconBg: "var(--green-light)",
     status: "planned",
-    viewAllHref: "/conversion?category=document-tools",
+    viewAllHref: "/conversion",
     groups: [
       {
         title: "Word Documents",
@@ -232,7 +232,7 @@ export const TOOL_CATEGORIES: ToolCategory[] = [
     iconColor: "#9347D5",
     iconBg: "var(--purple-light)",
     status: "available",
-    viewAllHref: "/conversion?category=image-tools",
+    viewAllHref: "/conversion",
     groups: [
       {
         title: "Image Conversion",
@@ -310,7 +310,7 @@ export const TOOL_CATEGORIES: ToolCategory[] = [
     iconColor: "#368BD2",
     iconBg: "var(--blue-light)",
     status: "planned",
-    viewAllHref: "/conversion?category=text-tools",
+    viewAllHref: "/conversion",
     groups: [
       {
         title: "Text Analysis",
@@ -352,7 +352,7 @@ export const TOOL_CATEGORIES: ToolCategory[] = [
     iconColor: "#8054C8",
     iconBg: "var(--purple-light)",
     status: "planned",
-    viewAllHref: "/conversion?category=utility-tools",
+    viewAllHref: "/conversion",
     groups: [
       {
         title: "File Utilities",

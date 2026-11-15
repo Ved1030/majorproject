@@ -6,6 +6,9 @@ import { SITE_URL } from "@/lib/site";
 export const metadata: Metadata = {
   title: "ZipDrop Blog – File Sharing Guides, Tool Comparisons & Tips",
   description: "Guides, comparisons, and tips for sharing files, converting documents, compressing images, and managing your files online with ZipDrop.",
+  alternates: {
+    canonical: "https://zip-drop.vercel.app/blog",
+  },
   openGraph: {
     title: "ZipDrop Blog – File Sharing Guides, Tool Comparisons & Tips",
     description: "Guides, comparisons, and tips for sharing files, converting documents, and managing your files online.",
@@ -35,6 +38,14 @@ const structuredData = {
     url: SITE_URL,
   },
   blogPosts: [],
+  breadcrumb: {
+    "@context": "https://schema.org",
+    "@type": "BreadcrumbList",
+    itemListElement: [
+      { "@type": "ListItem", position: 1, name: "Home", item: SITE_URL },
+      { "@type": "ListItem", position: 2, name: "Blog", item: `${SITE_URL}/blog` },
+    ],
+  },
 };
 
 export default function BlogLayout({

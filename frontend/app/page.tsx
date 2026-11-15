@@ -248,7 +248,7 @@ const TOOL_CATEGORIES = [
     desc: "Merge, split, compress, rotate, protect and organize PDFs.",
     icon: FileText,
     color: "#168DBB",
-    href: "/conversion/pdf-tools",
+    href: "/conversion",
   },
   {
     id: "document-tools",
@@ -256,7 +256,7 @@ const TOOL_CATEGORIES = [
     desc: "Create, edit and manage Word, Excel and PowerPoint documents.",
     icon: Type,
     color: "#25A653",
-    href: "/conversion/document-tools",
+    href: "/conversion",
   },
   {
     id: "image-tools",
@@ -264,7 +264,7 @@ const TOOL_CATEGORIES = [
     desc: "Remove backgrounds, resize, crop and optimize images.",
     icon: Image,
     color: "#873BC5",
-    href: "/conversion/image-tools",
+    href: "/image-tools/background-remover",
   },
   {
     id: "compression-tools",
@@ -288,7 +288,7 @@ const TOOL_CATEGORIES = [
     desc: "Count words, compare text, change case and format content.",
     icon: Type,
     color: "#368BD2",
-    href: "/conversion/text-tools",
+    href: "/conversion",
   },
   {
     id: "utility-tools",
@@ -296,7 +296,7 @@ const TOOL_CATEGORIES = [
     desc: "Generate QR codes, calculate file hashes and inspect file details.",
     icon: QrCode,
     color: "#8054C8",
-    href: "/conversion/utility-tools",
+    href: "/conversion",
   },
   {
     id: "online-editor",
@@ -389,12 +389,63 @@ function ToolCategories() {
 /* ─── PAGE ───────────────────────────────── */
 
 export default function Home() {
+  const softwareApplicationData = {
+    "@context": "https://schema.org",
+    "@type": "SoftwareApplication",
+    name: "ZipDrop",
+    url: "https://zip-drop.vercel.app",
+    applicationCategory: "FileSharingApplication",
+    operatingSystem: "Web",
+    description:
+      "ZipDrop is a free file and text sharing site that uses a 4-digit code. Convert files, compress files, remove backgrounds, and edit documents in the browser without signing up.",
+    creator: [
+      {
+        "@type": "Person",
+        name: "Ved Mehta",
+        affiliation: {
+          "@type": "CollegeOrUniversity",
+          name: "DJ Sanghvi College of Engineering",
+        },
+      },
+      {
+        "@type": "Person",
+        name: "Virti Panchamia",
+        affiliation: {
+          "@type": "CollegeOrUniversity",
+          name: "DJ Sanghvi College of Engineering",
+        },
+      },
+    ],
+    offers: {
+      "@type": "Offer",
+      price: "0",
+      priceCurrency: "USD",
+      availability: "https://schema.org/InStock",
+    },
+    featureList: [
+      "File sharing with 4-digit code",
+      "Text sharing",
+      "30+ file format conversions",
+      "PDF compression",
+      "Image compression (JPG, PNG, WEBP)",
+      "AI background removal",
+      "Online document editor",
+      "No account required",
+    ],
+  };
+
   return (
     <>
       {/* Background layers */}
       <ParticleBackground />
 
       <Navbar />
+
+      {/* Structured Data - SoftwareApplication (homepage only) */}
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(softwareApplicationData) }}
+      />
 
       <main
         style={{
