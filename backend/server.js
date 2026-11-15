@@ -108,9 +108,26 @@ const supabase = createClient(
 ------------------------------ */
 
 
+const allowedOrigins = [
+  "https://zip-drop.vercel.app",
+  "http://localhost:3000",
+  "http://localhost:3001",
+];
+
 const corsOptions = {
-  origin: true,
+  origin: function (origin, callback) {
+    // Allow requests with no origin (mobile apps, curl, etc.)
+    if (!origin) return callback(null, true);
+    
+    if (allowedOrigins.includes(origin)) {
+      return callback(null, true);
+    }
+    
+    return callback(new Error("Not allowed by CORS"));
+  },
   credentials: true,
+  methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
+  allowedHeaders: ["Content-Type", "Authorization", "X-Requested-With"],
   exposedHeaders: [
     "X-Original-Size",
     "X-Compressed-Size", 
