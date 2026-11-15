@@ -40,8 +40,8 @@ class PdfToWordConverter extends BaseConverter {
     try {
       fs.writeFileSync(inputPath, inputBuffer);
       
-      // Check if Python environment and pdf2docx are available
-      await this.checkPdfTooling();
+      // Check if Python environment and pdf2docx are available (cached)
+      await this.checkPdfToolingCached();
       
       // Run conversion with mode parameter
       const pythonBin = this.getPythonBin();
@@ -56,31 +56,34 @@ class PdfToWordConverter extends BaseConverter {
     }
   }
 
-  async checkPdfTooling() {
-    const pythonBin = this.getPythonBin();
-    try {
-      const result = await this.runCommand(pythonBin, [PDF_CONVERTER_SCRIPT, '--check'], {
-        timeout: 30000,
-      });
-      
-      const lastLine = result.stdout.trim().split('\n').pop();
-      const parsed = JSON.parse(lastLine);
-      
-      if (!parsed.success) {
+  async checkPdfToolingCached() {
+    return this.checkToolingCached('pdf-to-docx', async () => {
+      const pythonBin = this.getPythonBin();
+      try {
+        const result = await this.runCommand(pythonBin, [PDF_CONVERTER_SCRIPT, '--check'], {
+          timeout: 30000,
+        });
+        
+        const lastLine = result.stdout.trim().split('\n').pop();
+        const parsed = JSON.parse(lastLine);
+        
+        if (!parsed.success) {
+          throw new ConversionError(
+            `PDF conversion dependencies not available: ${parsed.error}`,
+            ERROR_CODES.MISSING_DEPENDENCY,
+            { details: parsed }
+          );
+        }
+        return parsed;
+      } catch (err) {
+        if (err instanceof ConversionError) throw err;
         throw new ConversionError(
-          `PDF conversion dependencies not available: ${parsed.error}`,
+          'PDF conversion service unavailable',
           ERROR_CODES.MISSING_DEPENDENCY,
-          { details: parsed }
+          { originalError: err.message }
         );
       }
-    } catch (err) {
-      if (err instanceof ConversionError) throw err;
-      throw new ConversionError(
-        'PDF conversion service unavailable',
-        ERROR_CODES.MISSING_DEPENDENCY,
-        { originalError: err.message }
-      );
-    }
+    });
   }
 
   getSupportedModes() {

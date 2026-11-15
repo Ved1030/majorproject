@@ -20,32 +20,34 @@ class WEBPCompressor extends BaseCompressor {
     this.maxFileSize = this.getMaxFileSize('image');
   }
 
-  async checkImageCompressorTooling() {
-    const pythonBin = this.getPythonBin();
-    try {
-      const result = await this.runCommand(pythonBin, [IMAGE_COMPRESSOR_SCRIPT, '--check'], {
-        timeout: 30000,
-      });
+  async checkImageCompressorToolingCached() {
+    return this.checkToolingCached('image-compression', async () => {
+      const pythonBin = this.getPythonBin();
+      try {
+        const result = await this.runCommand(pythonBin, [IMAGE_COMPRESSOR_SCRIPT, '--check'], {
+          timeout: 30000,
+        });
 
-      const lastLine = result.stdout.trim().split('\n').pop();
-      const parsed = JSON.parse(lastLine);
+        const lastLine = result.stdout.trim().split('\n').pop();
+        const parsed = JSON.parse(lastLine);
 
-      if (!parsed.success) {
+        if (!parsed.success) {
+          throw new CompressionError(
+            `Image compressor dependencies not available: ${parsed.error}`,
+            COMPRESSION_ERROR_CODES.MISSING_DEPENDENCY,
+            { details: parsed }
+          );
+        }
+        return parsed;
+      } catch (err) {
+        if (err instanceof CompressionError) throw err;
         throw new CompressionError(
-          `Image compressor dependencies not available: ${parsed.error}`,
+          'Image compression service unavailable',
           COMPRESSION_ERROR_CODES.MISSING_DEPENDENCY,
-          { details: parsed }
+          { originalError: err.message }
         );
       }
-      return parsed;
-    } catch (err) {
-      if (err instanceof CompressionError) throw err;
-      throw new CompressionError(
-        'Image compression service unavailable',
-        COMPRESSION_ERROR_CODES.MISSING_DEPENDENCY,
-        { originalError: err.message }
-      );
-    }
+    });
   }
 
   getQualityValue(quality) {
@@ -105,7 +107,7 @@ class WEBPCompressor extends BaseCompressor {
     try {
       fs.writeFileSync(inputPath, inputBuffer);
 
-      await this.checkImageCompressorTooling();
+      await this.checkImageCompressorToolingCached();
 
       const pythonBin = this.getPythonBin();
       const result = await this.runCommand(pythonBin, [

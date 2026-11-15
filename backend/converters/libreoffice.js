@@ -604,12 +604,14 @@ function requireLibreOffice(conversionName) {
 }
 
 async function convertToPdf({ executable, inputPath, outputDir, profileDir, timeoutMs = CONVERSION_TIMEOUT_MS }) {
+  const startTime = process.hrtime.bigint();
   const args = [
     "--headless",
     "--nologo",
     "--nodefault",
     "--norestore",
     "--nolockcheck",
+    "--nofirststartwizard",
     buildProfileArgument(profileDir),
     "--convert-to",
     "pdf",
@@ -636,6 +638,9 @@ async function convertToPdf({ executable, inputPath, outputDir, profileDir, time
     );
   }
 
+  const endTime = process.hrtime.bigint();
+  const durationMs = Number(endTime - startTime) / 1_000_000;
+
   if (result.code !== 0) {
     const missingLibraries = extractMissingLibraries(result.stderr);
     const safeDetail = missingLibraries.length
@@ -643,9 +648,15 @@ async function convertToPdf({ executable, inputPath, outputDir, profileDir, time
       : `LibreOffice exited with code ${result.code}`;
 
     console.error(
-      `[LibreOffice] Conversion failed (code=${result.code} signal=${result.signal}): ${
-        result.stderr || result.stdout
-      }`
+      JSON.stringify({
+        type: "libreoffice_conversion",
+        success: false,
+        durationMs: Math.round(durationMs * 100) / 100,
+        code: result.code,
+        signal: result.signal,
+        missingLibraries,
+        inputFile: path.basename(inputPath),
+      })
     );
     throw new ConversionError(
       missingLibraries.length
@@ -660,6 +671,16 @@ async function convertToPdf({ executable, inputPath, outputDir, profileDir, time
       }
     );
   }
+
+  console.log(
+    JSON.stringify({
+      type: "libreoffice_conversion",
+      success: true,
+      durationMs: Math.round(durationMs * 100) / 100,
+      inputFile: path.basename(inputPath),
+      outputSize: result.stdout.length,
+    })
+  );
 
   return result;
 }

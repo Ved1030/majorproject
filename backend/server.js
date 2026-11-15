@@ -15,11 +15,17 @@ const { createClient } = require("@supabase/supabase-js");
 
 const FileModel = require("./models/FileModel");
 
+// Concurrency limiters for heavy operations
+const {
+  getLimiter,
+  getAllLimiterStatus,
+} = require("./utils/concurrencyLimiter");
+
 const app = express();
 
 /* --------------------------------
    In-memory store fallback
--------------------------------- */
+------------------------------- */
 
 class MemoryStore {
   constructor() { this._data = new Map(); }
@@ -90,7 +96,7 @@ function mongoWrapper(model) {
 
 /* --------------------------------
    Supabase Configuration
--------------------------------- */
+------------------------------- */
 
 const supabase = createClient(
   process.env.SUPABASE_URL,
@@ -134,8 +140,36 @@ app.use(cors(corsOptions));
 app.use(express.json());
 
 /* --------------------------------
+   Request Timing Instrumentation
+------------------------------- */
+
+app.use((req, res, next) => {
+  const start = process.hrtime.bigint();
+  const requestId = Math.random().toString(36).slice(2, 10);
+
+  res.on("finish", () => {
+    const end = process.hrtime.bigint();
+    const durationMs = Number(end - start) / 1_000_000;
+
+    const logData = {
+      requestId,
+      method: req.method,
+      path: req.path,
+      statusCode: res.statusCode,
+      durationMs: Math.round(durationMs * 100) / 100,
+      contentLength: res.get("Content-Length") || req.get("Content-Length"),
+      userAgent: req.get("User-Agent"),
+    };
+
+    console.log(JSON.stringify({ type: "request", ...logData }));
+  });
+
+  next();
+});
+
+/* --------------------------------
    MongoDB Connection (with fallback)
--------------------------------- */
+------------------------------- */
 
 async function initStore() {
   try {
@@ -156,7 +190,7 @@ initStore().then(() => {
 
 /* --------------------------------
    Multer Configuration
--------------------------------- */
+------------------------------- */
 
 const storage = multer.memoryStorage();
 
@@ -167,7 +201,7 @@ const upload = multer({
 
 /* --------------------------------
    Generate Unique 4 Digit Code
--------------------------------- */
+------------------------------- */
 
 async function generateUniqueCode() {
   let code;
@@ -180,8 +214,34 @@ async function generateUniqueCode() {
 }
 
 /* --------------------------------
+   Health Check - Lightweight (no DB/AI calls)
+------------------------------- */
+
+app.get("/health", (req, res) => {
+  res.json({
+    status: "ok",
+    timestamp: new Date().toISOString(),
+    uptime: process.uptime(),
+    memory: process.memoryUsage(),
+    version: process.version,
+    platform: process.platform,
+  });
+});
+
+/* --------------------------------
+   Concurrency Status
+------------------------------- */
+
+app.get("/health/concurrency", (req, res) => {
+  res.json({
+    limiters: getAllLimiterStatus(),
+    timestamp: new Date().toISOString(),
+  });
+});
+
+/* --------------------------------
    Test Route
--------------------------------- */
+------------------------------- */
 
 app.get("/", (req, res) => {
   res.send("File Sharing API Running");
@@ -189,7 +249,7 @@ app.get("/", (req, res) => {
 
 /* --------------------------------
    Public Stats
--------------------------------- */
+------------------------------- */
 
 app.get("/stats", async (req, res) => {
   try {
@@ -204,7 +264,7 @@ app.get("/stats", async (req, res) => {
 
 /* --------------------------------
    Upload Files
--------------------------------- */
+------------------------------- */
 
 app.post("/upload", upload.array("files", 10), async (req, res) => {
   try {
@@ -359,11 +419,11 @@ app.post("/share-text", async (req, res) => {
 
 /* --------------------------------
    Convert PDF to DOCX (High-fidelity)
--------------------------------- */
+------------------------------- */
 
 /* --------------------------------
    Python environment for PDF conversion
--------------------------------- */
+------------------------------- */
 
 const PDF_SCRIPT_PATH = path.join(__dirname, "pdf_converter.py");
 const PDF_VENV_PYTHON = path.join(
@@ -521,53 +581,57 @@ function convertPdfToDocx(inputPath, outputPath) {
 }
 
 app.post("/convert-pdf-to-docx", upload.single("file"), async (req, res) => {
-  try {
-    if (!req.file) {
-      return res.status(400).json({ error: "No file uploaded" });
-    }
-    
-    if (req.file.mimetype !== "application/pdf") {
-      return res.status(400).json({ error: "File must be a PDF" });
-    }
-    
-    const inputPath = path.join(__dirname, "temp", `${Date.now()}-${req.file.originalname}`);
-    const outputPath = path.join(__dirname, "temp", `${Date.now()}-${req.file.originalname.replace(/\.pdf$/i, ".docx")}`);
-    
-    const tempDir = path.dirname(inputPath);
-    if (!fs.existsSync(tempDir)) {
-      fs.mkdirSync(tempDir, { recursive: true });
-    }
-    
-    fs.writeFileSync(inputPath, req.file.buffer);
-    
+  // Apply concurrency limit for PDF to DOCX (memory intensive)
+  const limiter = getLimiter('pdfToDocx');
+  await limiter.run(async () => {
     try {
-      console.log("[PDF-to-DOCX] Starting conversion for:", req.file.originalname);
-      await convertPdfToDocx(inputPath, outputPath);
-      console.log("[PDF-to-DOCX] Conversion completed");
+      if (!req.file) {
+        return res.status(400).json({ error: "No file uploaded" });
+      }
       
-      const docxBuffer = fs.readFileSync(outputPath);
+      if (req.file.mimetype !== "application/pdf") {
+        return res.status(400).json({ error: "File must be a PDF" });
+      }
       
-      fs.unlinkSync(inputPath);
-      fs.unlinkSync(outputPath);
+      const inputPath = path.join(__dirname, "temp", `${Date.now()}-${req.file.originalname}`);
+      const outputPath = path.join(__dirname, "temp", `${Date.now()}-${req.file.originalname.replace(/\.pdf$/i, ".docx")}`);
       
-      const filename = req.file.originalname.replace(/\.pdf$/i, ".docx");
+      const tempDir = path.dirname(inputPath);
+      if (!fs.existsSync(tempDir)) {
+        fs.mkdirSync(tempDir, { recursive: true });
+      }
       
-      res.set({
-        "Content-Type": "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
-        "Content-Disposition": `attachment; filename="${filename}"`,
-        "Content-Length": docxBuffer.length,
-      });
+      fs.writeFileSync(inputPath, req.file.buffer);
       
-      res.send(docxBuffer);
-    } catch (convError) {
-      if (fs.existsSync(inputPath)) fs.unlinkSync(inputPath);
-      if (fs.existsSync(outputPath)) fs.unlinkSync(outputPath);
-      throw convError;
+      try {
+        console.log("[PDF-to-DOCX] Starting conversion for:", req.file.originalname);
+        await convertPdfToDocx(inputPath, outputPath);
+        console.log("[PDF-to-DOCX] Conversion completed");
+        
+        const docxBuffer = fs.readFileSync(outputPath);
+        
+        fs.unlinkSync(inputPath);
+        fs.unlinkSync(outputPath);
+        
+        const filename = req.file.originalname.replace(/\.pdf$/i, ".docx");
+        
+        res.set({
+          "Content-Type": "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+          "Content-Disposition": `attachment; filename="${filename}"`,
+          "Content-Length": docxBuffer.length,
+        });
+        
+        res.send(docxBuffer);
+      } catch (convError) {
+        if (fs.existsSync(inputPath)) fs.unlinkSync(inputPath);
+        if (fs.existsSync(outputPath)) fs.unlinkSync(outputPath);
+        throw convError;
+      }
+    } catch (error) {
+      console.error("[PDF-to-DOCX] Error:", error.message);
+      res.status(500).json({ error: error.message || "PDF conversion failed" });
     }
-  } catch (error) {
-    console.error("[PDF-to-DOCX] Error:", error.message);
-    res.status(500).json({ error: error.message || "PDF conversion failed" });
-  }
+  });
 });
 
 /* --------------------------------
@@ -586,10 +650,10 @@ app.get("/health/pdf-to-docx", (req, res) => {
 });
 
 /* --------------------------------
-   Background Removal Tooling
+   Background Removal Worker (Persistent)
 ------------------------------- */
 
-const BG_REMOVER_SCRIPT_PATH = path.join(__dirname, "background_remover.py");
+const BG_REMOVER_WORKER_SCRIPT = path.join(__dirname, "background_remover_worker.py");
 const BG_REMOVER_VENV_PYTHON = path.join(
   __dirname,
   ".venv",
@@ -611,6 +675,13 @@ if (!process.env.BG_REMOVER_PYTHON_BIN && !fs.existsSync(BG_REMOVER_VENV_PYTHON)
   );
 }
 
+// Persistent worker process
+let bgRemoverWorker = null;
+let workerReady = false;
+let workerStarting = false;
+let workerRequestId = 0;
+const workerPendingRequests = new Map();
+
 const bgRemoverTooling = {
   checked: false,
   ok: false,
@@ -621,18 +692,147 @@ const bgRemoverTooling = {
   error: null,
 };
 
-function lastJsonLine(text) {
-  const lines = text.trim().split(/\r?\n/);
-  for (let i = lines.length - 1; i >= 0; i--) {
-    const line = lines[i].trim();
-    if (!line.startsWith("{")) continue;
-    try {
-      return JSON.parse(line);
-    } catch {
-      // keep scanning towards the start of stdout
+function startBgRemoverWorker() {
+  if (bgRemoverWorker || workerStarting) return;
+  
+  workerStarting = true;
+  console.log("[Background Remover] Starting persistent worker...");
+  
+  const proc = spawn(BG_REMOVER_PYTHON_BIN, [BG_REMOVER_WORKER_SCRIPT], {
+    env: { ...process.env, PYTHONUNBUFFERED: "1", PYTHONIOENCODING: "utf-8" },
+  });
+  
+  bgRemoverWorker = proc;
+  let stdout = "";
+  let stderr = "";
+  let workerReadyResolve = null;
+  let workerReadyReject = null;
+  const workerReadyPromise = new Promise((resolve, reject) => {
+    workerReadyResolve = resolve;
+    workerReadyReject = reject;
+  });
+  
+  proc.stdout.on("data", (data) => {
+    stdout += data.toString();
+    const lines = stdout.split("\n");
+    stdout = lines.pop() || "";
+    
+    for (const line of lines) {
+      const trimmed = line.trim();
+      if (!trimmed) continue;
+      try {
+        const msg = JSON.parse(trimmed);
+        handleWorkerMessage(msg);
+      } catch (e) {
+        // Ignore non-JSON output
+      }
+    }
+  });
+  
+  proc.stderr.on("data", (data) => {
+    stderr += data.toString();
+    console.error("[Background Remover Worker stderr]:", data.toString());
+  });
+  
+  proc.on("error", (err) => {
+    console.error("[Background Remover] Worker failed to start:", err.message);
+    workerStarting = false;
+    bgRemoverWorker = null;
+    workerReady = false;
+    if (workerReadyReject) workerReadyReject(err);
+    // Reject all pending requests
+    for (const [, { reject }] of workerPendingRequests) {
+      reject(new Error("Background removal worker failed to start"));
+    }
+    workerPendingRequests.clear();
+  });
+  
+  proc.on("close", (code, signal) => {
+    console.log(`[Background Remover] Worker exited with code ${code}, signal ${signal}`);
+    if (stderr) console.error("[Background Remover] Worker stderr:", stderr);
+    bgRemoverWorker = null;
+    workerReady = false;
+    workerStarting = false;
+    if (workerReadyReject) workerReadyReject(new Error(`Worker exited with code ${code}`));
+    // Reject all pending requests
+    for (const [, { reject }] of workerPendingRequests) {
+      reject(new Error("Background removal worker crashed"));
+    }
+    workerPendingRequests.clear();
+    // Auto-restart after a delay
+    setTimeout(() => {
+      console.log("[Background Remover] Attempting to restart worker...");
+      startBgRemoverWorker();
+    }, 5000);
+  });
+  
+  // Pre-warm the model after worker signals ready
+  workerReadyPromise.then(() => {
+    console.log("[Background Remover] Pre-warming model...");
+    const warmupRequestId = ++workerRequestId;
+    const warmupRequest = {
+      requestId: warmupRequestId,
+      input_path: path.join(__dirname, "test_image.jpg"),
+      output_path: path.join(__dirname, "temp", `warmup_${Date.now()}.png`),
+      mode: "ai",
+      model: "isnet-general-use",
+    };
+    
+    // Create temp directory if needed
+    const tempDir = path.dirname(warmupRequest.output_path);
+    if (!fs.existsSync(tempDir)) {
+      fs.mkdirSync(tempDir, { recursive: true });
+    }
+    
+    // Copy test image if needed
+    if (!fs.existsSync(warmupRequest.input_path)) {
+      console.warn("[Background Remover] Test image not found for warmup, skipping");
+      return;
+    }
+    
+    return new Promise((resolve, reject) => {
+      workerPendingRequests.set(warmupRequestId, { resolve, reject });
+      bgRemoverWorker.stdin.write(JSON.stringify(warmupRequest) + "\n");
+      
+      // Longer timeout for warmup (model loading)
+      setTimeout(() => {
+        if (workerPendingRequests.has(warmupRequestId)) {
+          workerPendingRequests.delete(warmupRequestId);
+          console.log("[Background Remover] Model warmup completed (or timed out)");
+          resolve(); // Don't reject, just continue
+        }
+      }, 120000); // 2 minutes for warmup
+    });
+  }).catch(() => {
+    // Ignore warmup errors
+  });
+}
+
+function handleWorkerMessage(msg) {
+  if (msg.status === "ready") {
+    workerReady = true;
+    workerStarting = false;
+    console.log(`[Background Remover] Worker ready (PID: ${msg.pid})`);
+    return;
+  }
+  
+  if (msg.status === "shutdown") {
+    workerReady = false;
+    return;
+  }
+  
+  // Response to a request
+  if (msg.requestId !== undefined) {
+    const pending = workerPendingRequests.get(msg.requestId);
+    if (pending) {
+      workerPendingRequests.delete(msg.requestId);
+      if (msg.success) {
+        pending.resolve(msg.output_path);
+      } else {
+        pending.reject(new Error(msg.error || "Unknown worker error"));
+      }
     }
   }
-  return null;
 }
 
 function checkBgRemoverTooling() {
@@ -656,7 +856,7 @@ function checkBgRemoverTooling() {
       resolve(bgRemoverTooling);
     };
 
-    const proc = spawn(BG_REMOVER_PYTHON_BIN, [BG_REMOVER_SCRIPT_PATH, "--check"], {
+    const proc = spawn(BG_REMOVER_PYTHON_BIN, [BG_REMOVER_WORKER_SCRIPT, "--check"], {
       env: { ...process.env, PYTHONUNBUFFERED: "1", PYTHONIOENCODING: "utf-8" },
     });
 
@@ -700,13 +900,60 @@ function checkBgRemoverTooling() {
 
 checkBgRemoverTooling().catch(() => {});
 
+// Start worker on server startup
+startBgRemoverWorker();
+
 function removeBackground(inputPath, outputPath, options = {}) {
+  return new Promise((resolve, reject) => {
+    if (!workerReady || !bgRemoverWorker) {
+      // Fallback to spawning a new process if worker not ready
+      console.warn("[Background Remover] Worker not ready, falling back to spawn");
+      return removeBackgroundFallback(inputPath, outputPath, options).then(resolve).catch(reject);
+    }
+    
+    const requestId = ++workerRequestId;
+    const request = {
+      requestId,
+      input_path: inputPath,
+      output_path: outputPath,
+      mode: options.mode || "ai",
+    };
+    
+    if (options.mode === "logo") {
+      request.tolerance = options.tolerance;
+      request.feather_radius = options.featherRadius;
+      request.erode_size = options.erodeSize;
+      request.submode = options.submode;
+      request.background_color = options.backgroundColorCustom;
+    } else {
+      request.model = options.model;
+      request.alpha_matting = options.alphaMatting;
+      request.alpha_matting_foreground_threshold = options.alphaMattingForegroundThreshold;
+      request.alpha_matting_background_threshold = options.alphaMattingBackgroundThreshold;
+      request.alpha_matting_erode_size = options.alphaMattingErodeSize;
+    }
+    
+    workerPendingRequests.set(requestId, { resolve, reject });
+    
+    // Send request to worker
+    bgRemoverWorker.stdin.write(JSON.stringify(request) + "\n");
+    
+    // Timeout fallback
+    setTimeout(() => {
+      if (workerPendingRequests.has(requestId)) {
+        workerPendingRequests.delete(requestId);
+        reject(new Error("Background removal request timed out"));
+      }
+    }, 300000); // 5 minutes
+  });
+}
+
+function removeBackgroundFallback(inputPath, outputPath, options = {}) {
   return new Promise((resolve, reject) => {
     const mode = options.mode || "ai";
     const args = [BG_REMOVER_SCRIPT_PATH, inputPath, outputPath, mode];
     
     if (mode === "logo") {
-      // Logo mode: submode, tolerance, feather_radius, erode_size, background_color_preset, background_color_custom
       if (options.submode !== undefined) args.push(options.submode);
       if (options.tolerance !== undefined) args.push(options.tolerance.toString());
       if (options.featherRadius !== undefined) args.push(options.featherRadius.toString());
@@ -718,14 +965,13 @@ function removeBackground(inputPath, outputPath, options = {}) {
         args.push(customStr);
       }
     } else {
-      // AI mode: model, alpha_matting, fg_threshold, bg_threshold, erode_size
       if (options.model) args.push(options.model);
       if (options.alphaMatting !== undefined) args.push(options.alphaMatting.toString());
       if (options.alphaMattingForegroundThreshold !== undefined) args.push(options.alphaMattingForegroundThreshold.toString());
       if (options.alphaMattingBackgroundThreshold !== undefined) args.push(options.alphaMattingBackgroundThreshold.toString());
       if (options.alphaMattingErodeSize !== undefined) args.push(options.alphaMattingErodeSize.toString());
     }
-
+    
     const pythonProcess = spawn(BG_REMOVER_PYTHON_BIN, args, {
       env: { ...process.env, PYTHONUNBUFFERED: "1", PYTHONIOENCODING: "utf-8" },
     });
@@ -787,6 +1033,11 @@ app.get("/health/background-remover", (req, res) => {
     python_version: bgRemoverTooling.pythonVersion,
     interpreter: path.basename(BG_REMOVER_PYTHON_BIN),
     supported_models: bgRemoverTooling.supportedModels,
+    worker: {
+      ready: workerReady,
+      starting: workerStarting,
+      pid: bgRemoverWorker?.pid || null,
+    },
   });
 });
 
@@ -795,102 +1046,106 @@ app.get("/health/background-remover", (req, res) => {
 ------------------------------- */
 
 app.post("/image-tools/remove-background", upload.single("file"), async (req, res) => {
-  try {
-    if (!req.file) {
-      return res.status(400).json({ error: "No file uploaded" });
-    }
-
-    // Validate image file type
-    const allowedMimeTypes = ["image/jpeg", "image/png", "image/webp"];
-    if (!allowedMimeTypes.includes(req.file.mimetype)) {
-      return res.status(400).json({ error: "Unsupported file type. Supported: JPG, PNG, WEBP" });
-    }
-
-    // Validate file size (20MB max)
-    const MAX_FILE_SIZE = 20 * 1024 * 1024;
-    if (req.file.size > MAX_FILE_SIZE) {
-      return res.status(413).json({ error: "File too large. Maximum size is 20 MB." });
-    }
-
-    // Parse optional parameters
-    const options = {
-      mode: req.body.mode || "ai",
-      model: req.body.model || "isnet-general-use",
-      alphaMatting: req.body.alphaMatting === "true",
-      alphaMattingForegroundThreshold: parseInt(req.body.alphaMattingForegroundThreshold) || 240,
-      alphaMattingBackgroundThreshold: parseInt(req.body.alphaMattingBackgroundThreshold) || 10,
-      alphaMattingErodeSize: parseInt(req.body.alphaMattingErodeSize) || 10,
-      // Logo mode parameters
-      tolerance: parseInt(req.body.tolerance) || 30,
-      featherRadius: parseFloat(req.body.featherRadius) || 1.0,
-      erodeSize: parseInt(req.body.erodeSize) || 0,
-      submode: req.body.submode || "edge",
-      backgroundColorPreset: req.body.backgroundColorPreset || "auto",
-      backgroundColorCustom: (() => {
-        if (!req.body.backgroundColorCustom) return null;
-        try {
-          return typeof req.body.backgroundColorCustom === 'string' 
-            ? JSON.parse(req.body.backgroundColorCustom) 
-            : req.body.backgroundColorCustom;
-        } catch {
-          return null;
-        }
-      })(),
-    };
-
-    const inputPath = path.join(__dirname, "temp", `${Date.now()}-${req.file.originalname}`);
-    const outputPath = path.join(__dirname, "temp", `${Date.now()}-${req.file.originalname.replace(/\.[^.]+$/, "")}_nobg.png`);
-    
-    const tempDir = path.dirname(inputPath);
-    if (!fs.existsSync(tempDir)) {
-      fs.mkdirSync(tempDir, { recursive: true });
-    }
-    
-    fs.writeFileSync(inputPath, req.file.buffer);
-    
+  // Apply concurrency limit for background removal (memory intensive)
+  const limiter = getLimiter('backgroundRemoval');
+  await limiter.run(async () => {
     try {
-      console.log("[Background Remover] Starting background removal for:", req.file.originalname);
-      await removeBackground(inputPath, outputPath, options);
-      console.log("[Background Remover] Background removal completed");
+      if (!req.file) {
+        return res.status(400).json({ error: "No file uploaded" });
+      }
+
+      // Validate image file type
+      const allowedMimeTypes = ["image/jpeg", "image/png", "image/webp"];
+      if (!allowedMimeTypes.includes(req.file.mimetype)) {
+        return res.status(400).json({ error: "Unsupported file type. Supported: JPG, PNG, WEBP" });
+      }
+
+      // Validate file size (20MB max)
+      const MAX_FILE_SIZE = 20 * 1024 * 1024;
+      if (req.file.size > MAX_FILE_SIZE) {
+        return res.status(413).json({ error: "File too large. Maximum size is 20 MB." });
+      }
+
+      // Parse optional parameters
+      const options = {
+        mode: req.body.mode || "ai",
+        model: req.body.model || "isnet-general-use",
+        alphaMatting: req.body.alphaMatting === "true",
+        alphaMattingForegroundThreshold: parseInt(req.body.alphaMattingForegroundThreshold) || 240,
+        alphaMattingBackgroundThreshold: parseInt(req.body.alphaMattingBackgroundThreshold) || 10,
+        alphaMattingErodeSize: parseInt(req.body.alphaMattingErodeSize) || 10,
+        // Logo mode parameters
+        tolerance: parseInt(req.body.tolerance) || 30,
+        featherRadius: parseFloat(req.body.featherRadius) || 1.0,
+        erodeSize: parseInt(req.body.erodeSize) || 0,
+        submode: req.body.submode || "edge",
+        backgroundColorPreset: req.body.backgroundColorPreset || "auto",
+        backgroundColorCustom: (() => {
+          if (!req.body.backgroundColorCustom) return null;
+          try {
+            return typeof req.body.backgroundColorCustom === 'string' 
+              ? JSON.parse(req.body.backgroundColorCustom) 
+              : req.body.backgroundColorCustom;
+          } catch {
+            return null;
+          }
+        })(),
+      };
+
+      const inputPath = path.join(__dirname, "temp", `${Date.now()}-${req.file.originalname}`);
+      const outputPath = path.join(__dirname, "temp", `${Date.now()}-${req.file.originalname.replace(/\.[^.]+$/, "")}_nobg.png`);
       
-      const outputBuffer = fs.readFileSync(outputPath);
+      const tempDir = path.dirname(inputPath);
+      if (!fs.existsSync(tempDir)) {
+        fs.mkdirSync(tempDir, { recursive: true });
+      }
       
-      // Clean up temp files
-      fs.unlinkSync(inputPath);
-      fs.unlinkSync(outputPath);
+      fs.writeFileSync(inputPath, req.file.buffer);
       
-      // Generate output filename
-      const baseName = req.file.originalname.replace(/\.[^.]+$/, "");
-      const filename = `${baseName}_nobg.png`;
-      
-      res.set({
-        "Content-Type": "image/png",
-        "Content-Disposition": `attachment; filename="${filename}"`,
-        "Content-Length": outputBuffer.length,
-        "X-Original-Width": req.body.originalWidth || "",
-        "X-Original-Height": req.body.originalHeight || "",
-        "X-Model-Used": options.mode === "logo" ? `logo (submode=${options.submode}, tolerance=${options.tolerance})` : options.model,
-        "X-Processing-Mode": options.mode,
-        "X-Logo-Submode": options.submode || "",
+      try {
+        console.log("[Background Remover] Starting background removal for:", req.file.originalname);
+        await removeBackground(inputPath, outputPath, options);
+        console.log("[Background Remover] Background removal completed");
+        
+        const outputBuffer = fs.readFileSync(outputPath);
+        
+        // Clean up temp files
+        fs.unlinkSync(inputPath);
+        fs.unlinkSync(outputPath);
+        
+        // Generate output filename
+        const baseName = req.file.originalname.replace(/\.[^.]+$/, "");
+        const filename = `${baseName}_nobg.png`;
+        
+        res.set({
+          "Content-Type": "image/png",
+          "Content-Disposition": `attachment; filename="${filename}"`,
+          "Content-Length": outputBuffer.length,
+          "X-Original-Width": req.body.originalWidth || "",
+          "X-Original-Height": req.body.originalHeight || "",
+          "X-Model-Used": options.mode === "logo" ? `logo (submode=${options.submode}, tolerance=${options.tolerance})` : options.model,
+          "X-Processing-Mode": options.mode,
+          "X-Logo-Submode": options.submode || "",
+        });
+        
+        res.send(outputBuffer);
+      } catch (convError) {
+        // Clean up temp files on error
+        if (fs.existsSync(inputPath)) fs.unlinkSync(inputPath);
+        if (fs.existsSync(outputPath)) fs.unlinkSync(outputPath);
+        throw convError;
+      }
+    } catch (error) {
+      console.error("[Background Remover] Error:", error.message);
+      const status = error.code === 'INVALID_INPUT' || error.code === 'UNSUPPORTED_FORMAT' ? 400 :
+                     error.code === 'FILE_TOO_LARGE' ? 413 :
+                     error.code === 'MISSING_DEPENDENCY' ? 503 : 500;
+      res.status(status).json({ 
+        error: error.message || "Background removal failed",
+        code: error.code,
       });
-      
-      res.send(outputBuffer);
-    } catch (convError) {
-      // Clean up temp files on error
-      if (fs.existsSync(inputPath)) fs.unlinkSync(inputPath);
-      if (fs.existsSync(outputPath)) fs.unlinkSync(outputPath);
-      throw convError;
     }
-  } catch (error) {
-    console.error("[Background Remover] Error:", error.message);
-    const status = error.code === 'INVALID_INPUT' || error.code === 'UNSUPPORTED_FORMAT' ? 400 :
-                   error.code === 'FILE_TOO_LARGE' ? 413 :
-                   error.code === 'MISSING_DEPENDENCY' ? 503 : 500;
-    res.status(status).json({ 
-      error: error.message || "Background removal failed",
-      code: error.code,
-    });
-  }
+  });
 });
 
 /* --------------------------------
@@ -1430,4 +1685,3 @@ app.get("/receive/:code", async (req, res) => {
     res.status(500).send("Error retrieving data");
   }
 });
-

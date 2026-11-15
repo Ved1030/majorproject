@@ -49,7 +49,7 @@ class PdfToImageConverter extends BaseConverter {
         fs.mkdirSync(outputDir, { recursive: true });
       }
 
-      await this.checkPdfImageTooling();
+      await this.checkPdfImageToolingCached();
 
       const pythonBin = this.getPythonBin();
       const result = await this.runCommand(pythonBin, [
@@ -154,31 +154,34 @@ class PdfToImageConverter extends BaseConverter {
     }
   }
 
-  async checkPdfImageTooling() {
-    const pythonBin = this.getPythonBin();
-    try {
-      const result = await this.runCommand(pythonBin, [PDF_TO_IMAGE_SCRIPT, '--check'], {
-        timeout: 30000,
-      });
-      
-      const lastLine = result.stdout.trim().split('\n').pop();
-      const parsed = JSON.parse(lastLine);
-      
-      if (!parsed.success) {
+  async checkPdfImageToolingCached() {
+    return this.checkToolingCached('pdf-to-image', async () => {
+      const pythonBin = this.getPythonBin();
+      try {
+        const result = await this.runCommand(pythonBin, [PDF_TO_IMAGE_SCRIPT, '--check'], {
+          timeout: 30000,
+        });
+        
+        const lastLine = result.stdout.trim().split('\n').pop();
+        const parsed = JSON.parse(lastLine);
+        
+        if (!parsed.success) {
+          throw new ConversionError(
+            `PDF to Image dependencies not available: ${parsed.error}`,
+            ERROR_CODES.MISSING_DEPENDENCY,
+            { details: parsed }
+          );
+        }
+        return parsed;
+      } catch (err) {
+        if (err instanceof ConversionError) throw err;
         throw new ConversionError(
-          `PDF to Image dependencies not available: ${parsed.error}`,
+          'PDF to Image conversion service unavailable',
           ERROR_CODES.MISSING_DEPENDENCY,
-          { details: parsed }
+          { originalError: err.message }
         );
       }
-    } catch (err) {
-      if (err instanceof ConversionError) throw err;
-      throw new ConversionError(
-        'PDF to Image conversion service unavailable',
-        ERROR_CODES.MISSING_DEPENDENCY,
-        { originalError: err.message }
-      );
-    }
+    });
   }
 }
 

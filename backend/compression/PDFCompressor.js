@@ -20,32 +20,34 @@ class PDFCompressor extends BaseCompressor {
     this.maxFileSize = this.getMaxFileSize('pdf');
   }
 
-  async checkPDFCompressorTooling() {
-    const pythonBin = this.getPythonBin();
-    try {
-      const result = await this.runCommand(pythonBin, [PDF_COMPRESSOR_SCRIPT, '--check'], {
-        timeout: 30000,
-      });
+  async checkPDFCompressorToolingCached() {
+    return this.checkToolingCached('pdf-compression', async () => {
+      const pythonBin = this.getPythonBin();
+      try {
+        const result = await this.runCommand(pythonBin, [PDF_COMPRESSOR_SCRIPT, '--check'], {
+          timeout: 30000,
+        });
 
-      const lastLine = result.stdout.trim().split('\n').pop();
-      const parsed = JSON.parse(lastLine);
+        const lastLine = result.stdout.trim().split('\n').pop();
+        const parsed = JSON.parse(lastLine);
 
-      if (!parsed.success) {
+        if (!parsed.success) {
+          throw new CompressionError(
+            `PDF compressor dependencies not available: ${parsed.error}`,
+            COMPRESSION_ERROR_CODES.MISSING_DEPENDENCY,
+            { details: parsed }
+          );
+        }
+        return parsed;
+      } catch (err) {
+        if (err instanceof CompressionError) throw err;
         throw new CompressionError(
-          `PDF compressor dependencies not available: ${parsed.error}`,
+          'PDF compression service unavailable',
           COMPRESSION_ERROR_CODES.MISSING_DEPENDENCY,
-          { details: parsed }
+          { originalError: err.message }
         );
       }
-      return parsed;
-    } catch (err) {
-      if (err instanceof CompressionError) throw err;
-      throw new CompressionError(
-        'PDF compression service unavailable',
-        COMPRESSION_ERROR_CODES.MISSING_DEPENDENCY,
-        { originalError: err.message }
-      );
-    }
+    });
   }
 
   async compress({ inputBuffer, inputFormat, options = {} }) {
@@ -83,7 +85,7 @@ class PDFCompressor extends BaseCompressor {
     try {
       fs.writeFileSync(inputPath, inputBuffer);
 
-      await this.checkPDFCompressorTooling();
+      await this.checkPDFCompressorToolingCached();
 
       const pythonBin = this.getPythonBin();
       const result = await this.runCommand(pythonBin, [

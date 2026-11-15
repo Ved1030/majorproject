@@ -9,6 +9,10 @@ const { spawn } = require('child_process');
 const { v4: uuidv4 } = require('uuid');
 const { ConversionError, ERROR_CODES, FILE_SIZE_LIMITS, MIME_TYPES, SUPPORTED_FORMATS } = require('./types');
 
+// Tooling check cache - shared across all converter instances
+const toolingCache = new Map();
+const TOOLING_CACHE_TTL = 5 * 60 * 1000; // 5 minutes
+
 class BaseConverter {
   constructor() {
     this.tempDir = path.join(__dirname, '..', 'temp');
@@ -70,15 +74,13 @@ class BaseConverter {
       const CREATE_NO_WINDOW = 0x08000000;
       spawnOptions.windowsVerbatimArguments = false;
       spawnOptions.windowsHide = true;
-      // Use spawnSync-compatible creationflags via child_process.spawn options
-      // Note: Node.js doesn't expose creationflags directly in spawn options,
-      // but windowsHide: true achieves the same effect in modern Node.js
     }
 
     return spawnOptions;
   }
 
   async runCommand(command, args, options = {}) {
+    const startTime = process.hrtime.bigint();
     return new Promise((resolve, reject) => {
       const spawnOptions = this.getSpawnOptions(options);
       const proc = spawn(command, args, spawnOptions);
@@ -95,18 +97,48 @@ class BaseConverter {
       });
 
       proc.on('close', (code) => {
+        const endTime = process.hrtime.bigint();
+        const durationMs = Number(endTime - startTime) / 1_000_000;
+        
         if (code !== 0) {
+          console.error(JSON.stringify({
+            type: "subprocess",
+            command,
+            args: args.slice(0, 3), // Log first 3 args to avoid PII
+            code,
+            durationMs: Math.round(durationMs * 100) / 100,
+            success: false,
+            stderr: stderr.substring(0, 500), // Limit stderr length
+          }));
           reject(new ConversionError(
             `Command failed with code ${code}: ${stderr}`,
             ERROR_CODES.CONVERSION_FAILED,
             { command, args, code, stderr }
           ));
         } else {
+          console.log(JSON.stringify({
+            type: "subprocess",
+            command,
+            args: args.slice(0, 3),
+            code,
+            durationMs: Math.round(durationMs * 100) / 100,
+            success: true,
+          }));
           resolve({ stdout, stderr, code });
         }
       });
 
       proc.on('error', (err) => {
+        const endTime = process.hrtime.bigint();
+        const durationMs = Number(endTime - startTime) / 1_000_000;
+        console.error(JSON.stringify({
+          type: "subprocess",
+          command,
+          args: args.slice(0, 3),
+          durationMs: Math.round(durationMs * 100) / 100,
+          success: false,
+          error: err.message,
+        }));
         reject(new ConversionError(
           `Failed to spawn process: ${err.message}`,
           ERROR_CODES.CONVERSION_FAILED,
@@ -129,6 +161,33 @@ class BaseConverter {
     if (fs.existsSync(venvPythonWin)) return venvPythonWin;
     
     return process.platform === 'win32' ? 'python' : 'python3';
+  }
+
+  /**
+   * Cached tooling check - avoids repeated subprocess calls
+   * @param {string} cacheKey - Unique key for this tooling check
+   * @param {Function} checkFn - Async function that performs the actual check
+   * @returns {Promise<Object>} Check result
+   */
+  async checkToolingCached(cacheKey, checkFn) {
+    const cached = toolingCache.get(cacheKey);
+    const now = Date.now();
+    
+    if (cached && (now - cached.timestamp < TOOLING_CACHE_TTL)) {
+      return cached.result;
+    }
+    
+    const result = await checkFn();
+    toolingCache.set(cacheKey, { result, timestamp: now });
+    return result;
+  }
+
+  /**
+   * Invalidate tooling cache for a specific key
+   * @param {string} cacheKey 
+   */
+  invalidateToolingCache(cacheKey) {
+    toolingCache.delete(cacheKey);
   }
 
   validateFileSize(buffer, maxSize) {

@@ -62,7 +62,7 @@ class ImageToPdfConverter extends BaseConverter {
 
       const outputPath = this.generateTempPath('pdf');
 
-      await this.checkImagePdfTooling();
+      await this.checkImagePdfToolingCached();
 
       const pythonBin = this.getPythonBin();
       await this.runCommand(pythonBin, [
@@ -83,31 +83,34 @@ class ImageToPdfConverter extends BaseConverter {
     }
   }
 
-  async checkImagePdfTooling() {
-    const pythonBin = this.getPythonBin();
-    try {
-      const result = await this.runCommand(pythonBin, [IMAGE_TO_PDF_SCRIPT, '--check'], {
-        timeout: 30000,
-      });
-      
-      const lastLine = result.stdout.trim().split('\n').pop();
-      const parsed = JSON.parse(lastLine);
-      
-      if (!parsed.success) {
+  async checkImagePdfToolingCached() {
+    return this.checkToolingCached('image-to-pdf', async () => {
+      const pythonBin = this.getPythonBin();
+      try {
+        const result = await this.runCommand(pythonBin, [IMAGE_TO_PDF_SCRIPT, '--check'], {
+          timeout: 30000,
+        });
+        
+        const lastLine = result.stdout.trim().split('\n').pop();
+        const parsed = JSON.parse(lastLine);
+        
+        if (!parsed.success) {
+          throw new ConversionError(
+            `Image to PDF dependencies not available: ${parsed.error}`,
+            ERROR_CODES.MISSING_DEPENDENCY,
+            { details: parsed }
+          );
+        }
+        return parsed;
+      } catch (err) {
+        if (err instanceof ConversionError) throw err;
         throw new ConversionError(
-          `Image to PDF dependencies not available: ${parsed.error}`,
+          'Image to PDF conversion service unavailable',
           ERROR_CODES.MISSING_DEPENDENCY,
-          { details: parsed }
+          { originalError: err.message }
         );
       }
-    } catch (err) {
-      if (err instanceof ConversionError) throw err;
-      throw new ConversionError(
-        'Image to PDF conversion service unavailable',
-        ERROR_CODES.MISSING_DEPENDENCY,
-        { originalError: err.message }
-      );
-    }
+    });
   }
 }
 

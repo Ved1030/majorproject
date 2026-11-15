@@ -14,6 +14,10 @@ const {
   COMPRESSION_MIME_TYPES,
 } = require('./types');
 
+// Tooling check cache - shared across all compressor instances
+const toolingCache = new Map();
+const TOOLING_CACHE_TTL = 5 * 60 * 1000; // 5 minutes
+
 class BaseCompressor {
   constructor() {
     this.tempDir = path.join(__dirname, '..', 'temp');
@@ -74,6 +78,7 @@ class BaseCompressor {
   }
 
   async runCommand(command, args, options = {}) {
+    const startTime = process.hrtime.bigint();
     return new Promise((resolve, reject) => {
       const spawnOptions = this.getSpawnOptions(options);
       const proc = spawn(command, args, spawnOptions);
@@ -90,18 +95,48 @@ class BaseCompressor {
       });
 
       proc.on('close', (code) => {
+        const endTime = process.hrtime.bigint();
+        const durationMs = Number(endTime - startTime) / 1_000_000;
+
         if (code !== 0) {
+          console.error(JSON.stringify({
+            type: "subprocess",
+            command,
+            args: args.slice(0, 3),
+            code,
+            durationMs: Math.round(durationMs * 100) / 100,
+            success: false,
+            stderr: stderr.substring(0, 500),
+          }));
           reject(new CompressionError(
             `Command failed with code ${code}: ${stderr}`,
             COMPRESSION_ERROR_CODES.COMPRESSION_FAILED,
             { command, args, code, stderr }
           ));
         } else {
+          console.log(JSON.stringify({
+            type: "subprocess",
+            command,
+            args: args.slice(0, 3),
+            code,
+            durationMs: Math.round(durationMs * 100) / 100,
+            success: true,
+          }));
           resolve({ stdout, stderr, code });
         }
       });
 
       proc.on('error', (err) => {
+        const endTime = process.hrtime.bigint();
+        const durationMs = Number(endTime - startTime) / 1_000_000;
+        console.error(JSON.stringify({
+          type: "subprocess",
+          command,
+          args: args.slice(0, 3),
+          durationMs: Math.round(durationMs * 100) / 100,
+          success: false,
+          error: err.message,
+        }));
         reject(new CompressionError(
           `Failed to spawn process: ${err.message}`,
           COMPRESSION_ERROR_CODES.COMPRESSION_FAILED,
@@ -119,6 +154,25 @@ class BaseCompressor {
     if (fs.existsSync(venvPythonWin)) return venvPythonWin;
     
     return process.platform === 'win32' ? 'python' : 'python3';
+  }
+
+  /**
+   * Cached tooling check - avoids repeated subprocess calls
+   * @param {string} cacheKey - Unique key for this tooling check
+   * @param {Function} checkFn - Async function that performs the actual check
+   * @returns {Promise<Object>} Check result
+   */
+  async checkToolingCached(cacheKey, checkFn) {
+    const cached = toolingCache.get(cacheKey);
+    const now = Date.now();
+    
+    if (cached && (now - cached.timestamp < TOOLING_CACHE_TTL)) {
+      return cached.result;
+    }
+    
+    const result = await checkFn();
+    toolingCache.set(cacheKey, { result, timestamp: now });
+    return result;
   }
 
   validateFileSize(buffer, maxSize) {
