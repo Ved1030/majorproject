@@ -53,6 +53,21 @@ function Hero() {
       {/* Main brand logo */}
       <ZipDropLogo size="large" />
 
+      {/* H1 - Main headline for SEO */}
+      <h1
+        style={{
+          fontSize: "clamp(32px, 4vw, 44px)",
+          fontWeight: 700,
+          lineHeight: 1.1,
+          letterSpacing: "-0.02em",
+          color: "var(--text-primary)",
+          marginBottom: "16px",
+          maxWidth: "640px",
+        }}
+      >
+        Share, Convert, Compress & Edit Files Online Free
+      </h1>
+
       {/* Description */}
       <p
         style={{
@@ -64,7 +79,7 @@ function Hero() {
           fontWeight: 400,
         }}
       >
-        Share, convert, edit and manage your files — all in one place.
+        Share files, images, videos and text between devices with a 4-digit code. Convert 30+ formats, compress PDFs and images, remove backgrounds, and edit documents — no account needed.
       </p>
 
       {/* Supporting text */}
@@ -233,7 +248,7 @@ const TOOL_CATEGORIES = [
     desc: "Merge, split, compress, rotate, protect and organize PDFs.",
     icon: FileText,
     color: "#168DBB",
-    href: "/conversion?category=pdf-tools",
+    href: "/conversion/pdf-tools",
   },
   {
     id: "document-tools",
@@ -241,7 +256,7 @@ const TOOL_CATEGORIES = [
     desc: "Create, edit and manage Word, Excel and PowerPoint documents.",
     icon: Type,
     color: "#25A653",
-    href: "/conversion?category=document-tools",
+    href: "/conversion/document-tools",
   },
   {
     id: "image-tools",
@@ -249,7 +264,7 @@ const TOOL_CATEGORIES = [
     desc: "Remove backgrounds, resize, crop and optimize images.",
     icon: Image,
     color: "#873BC5",
-    href: "/conversion?category=image-tools",
+    href: "/conversion/image-tools",
   },
   {
     id: "compression-tools",
@@ -273,7 +288,7 @@ const TOOL_CATEGORIES = [
     desc: "Count words, compare text, change case and format content.",
     icon: Type,
     color: "#368BD2",
-    href: "/conversion?category=text-tools",
+    href: "/conversion/text-tools",
   },
   {
     id: "utility-tools",
@@ -281,7 +296,7 @@ const TOOL_CATEGORIES = [
     desc: "Generate QR codes, calculate file hashes and inspect file details.",
     icon: QrCode,
     color: "#8054C8",
-    href: "/conversion?category=utility-tools",
+    href: "/conversion/utility-tools",
   },
   {
     id: "online-editor",

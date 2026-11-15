@@ -4,6 +4,7 @@ import { useState, useCallback } from "react";
 import Link from "next/link";
 import { ArrowLeft, FileText, Download, Check, Loader2, AlertCircle, Info } from "lucide-react";
 import Navbar from "../../../components/Navbar";
+import Breadcrumbs from "../../../components/Breadcrumbs";
 import {
   useCompressionUpload,
   FilePreview,
@@ -27,6 +28,11 @@ const TOOL_DESCRIPTION = "Reduce PDF file size while preserving text, images, an
 const CATEGORY = "COMPRESSION TOOLS";
 const ACCEPT = ".pdf";
 const FILE_TYPE_LABEL = "PDF document";
+
+const breadcrumbItems = [
+  { name: "Compression Tools", href: "/compression" },
+  { name: "Compress PDF", href: "/compression/pdf" },
+];
 
 export default function CompressPdfPage() {
   const [level, setLevel] = useState<"low" | "recommended" | "high">("recommended");
@@ -128,6 +134,9 @@ export default function CompressPdfPage() {
       <Navbar />
       <div style={{ minHeight: "100vh", background: "var(--bg-main)", padding: "clamp(24px, 4vh, 48px) 24px" }}>
         <div style={{ maxWidth: "720px", margin: "0 auto", display: "flex", flexDirection: "column", gap: "24px" }}>
+          {/* Breadcrumbs */}
+          <Breadcrumbs items={breadcrumbItems} />
+
           <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
             <Link href="/compression" style={{ textDecoration: "none", color: "var(--text-secondary)", padding: "8px" }}>
               <ArrowLeft size={20} />

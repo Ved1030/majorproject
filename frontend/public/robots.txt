@@ -7,10 +7,15 @@ Sitemap: https://zip-drop.vercel.app/sitemap.xml
 
 # Disallow admin/api paths
 Disallow: /api/
-Disallow: /editor/
 Disallow: /_next/
-Disallow: /*.json$
-Disallow: /*.xml$
+Disallow: /_vercel/
 
-# Crawl-delay for polite crawling
-Crawl-delay: 10
+# Allow all public tools and content
+# /editor/ - public document editor
+# /conversion/ - file conversion tools
+# /compression/ - file compression tools
+# /image-tools/ - image tools
+# /blog/ - blog articles
+# /share, /receive - file sharing
+
+# Crawl-delay for polite crawling (removed - let search engines decide)

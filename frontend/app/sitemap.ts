@@ -79,12 +79,12 @@ const IMAGE_TOOLS_PAGES = [
 ];
 
 const TOOL_CATEGORY_PAGES = [
-  "/conversion?category=pdf-tools",
-  "/conversion?category=document-tools",
-  "/conversion?category=image-tools",
-  "/conversion?category=compression-tools",
-  "/conversion?category=text-tools",
-  "/conversion?category=utility-tools",
+  "/conversion/pdf-tools",
+  "/conversion/document-tools",
+  "/conversion/image-tools",
+  "/conversion/compression-tools",
+  "/conversion/text-tools",
+  "/conversion/utility-tools",
 ];
 
 const TRUST_PAGES = ["/about", "/contact", "/privacy", "/terms"];
@@ -98,6 +98,7 @@ export default function sitemap(): MetadataRoute.Sitemap {
     { url: `${SITE_URL}/editor`, lastModified: now, priority: 0.8 },
     { url: `${SITE_URL}/conversion`, lastModified: now, priority: 0.8 },
     { url: `${SITE_URL}/compression`, lastModified: now, priority: 0.8 },
+    { url: `${SITE_URL}/image-tools/background-remover`, lastModified: now, priority: 0.7 },
     ...BLOG_SLUGS.map((slug) => ({
       url: `${SITE_URL}/blog/${slug}`,
       lastModified: now,

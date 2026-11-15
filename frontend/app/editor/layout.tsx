@@ -1,18 +1,18 @@
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {
-  title: "Free Online Document Editor – Edit Word, PDF, Text Files",
-  description: "Edit DOCX, PDF, TXT, and Markdown documents online for free with ZipDrop. No account required. Open shared documents, edit them, and share edited copies with a new code.",
+  title: "Online Document Editor – Edit Word, PDF & Text Files Free",
+  description: "Edit DOCX, PDF, TXT, Markdown and HTML documents in your browser with ZipDrop's free online editor. Full formatting, images, tables, and collaboration. No account required.",
   openGraph: {
-    title: "Free Online Document Editor – Edit Word, PDF, Text Files",
-    description: "Edit DOCX, PDF, TXT, and Markdown documents online for free with ZipDrop. No account required. Share edited copies with a 4-digit code.",
+    title: "Online Document Editor – Edit Word, PDF & Text Files Free",
+    description: "Edit DOCX, PDF, TXT, Markdown and HTML documents in your browser with ZipDrop's free online editor. No account required.",
     type: "website",
     images: ["/og-image.png"],
   },
   twitter: {
     card: "summary_large_image",
-    title: "Free Online Document Editor – Edit Word, PDF, Text Files",
-    description: "Edit DOCX, PDF, TXT, and Markdown documents online for free. No account required.",
+    title: "Online Document Editor – Edit Word, PDF & Text Files Free",
+    description: "Edit DOCX, PDF, TXT, Markdown and HTML documents in your browser. No account required.",
     images: ["/og-image.png"],
   },
 };
@@ -22,9 +22,9 @@ const structuredData = {
   "@type": "SoftwareApplication",
   name: "ZipDrop Online Editor",
   url: "https://zip-drop.vercel.app/editor",
-  applicationCategory: "Editor",
+  applicationCategory: "DocumentEditor",
   operatingSystem: "Web",
-  description: "Free online document editor for DOCX, PDF, TXT, and Markdown files. No account required. Edit documents and share edited copies with a 4-digit code.",
+  description: "Free online document editor for Word (DOCX), PDF, TXT, Markdown, and HTML files. Edit with full formatting, images, tables, and share edited copies. No account required.",
   offers: {
     "@type": "Offer",
     price: "0",
@@ -36,6 +36,16 @@ const structuredData = {
     name: "ZipDrop",
     url: "https://zip-drop.vercel.app",
   },
+  featureList: [
+    "Edit DOCX documents",
+    "Convert and edit PDF",
+    "Plain text editing",
+    "Markdown support",
+    "HTML editing",
+    "Tables and images",
+    "Track changes",
+    "Export to DOCX/PDF",
+  ],
 };
 
 export default function EditorLayout({

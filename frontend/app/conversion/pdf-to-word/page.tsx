@@ -4,9 +4,15 @@ import { useState, useCallback, useRef } from "react";
 import Link from "next/link";
 import { ArrowLeft, FileText, Download, Check, X, Loader2, AlertCircle, Info, HelpCircle } from "lucide-react";
 import Navbar from "../../../components/Navbar";
+import Breadcrumbs from "../../../components/Breadcrumbs";
 
 const API = process.env.NEXT_PUBLIC_API_URL || "https://zipdrop.onrender.com";
 const MAX_FILE_SIZE = 50 * 1024 * 1024; // 50MB
+
+const breadcrumbItems = [
+  { name: "Conversion Tools", href: "/conversion" },
+  { name: "PDF to Word", href: "/conversion/pdf-to-word" },
+];
 
 type ConversionMode = "editable" | "visual-fidelity";
 
@@ -164,6 +170,9 @@ export default function PdfToWordPage() {
       />
       <div style={{ minHeight: "100vh", background: "var(--bg-main)", padding: "clamp(24px, 4vh, 48px) 24px" }}>
         <div style={{ maxWidth: "720px", margin: "0 auto", display: "flex", flexDirection: "column", gap: "24px" }}>
+          {/* Breadcrumbs */}
+          <Breadcrumbs items={breadcrumbItems} />
+
           {/* Header */}
           <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
             <Link href="/conversion" style={{ textDecoration: "none", color: "var(--text-secondary)", padding: "8px" }}>

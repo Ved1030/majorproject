@@ -3,6 +3,7 @@
 import { useState, useEffect, useCallback, Suspense } from "react";
 import { useSearchParams } from "next/navigation";
 import dynamic from "next/dynamic";
+import Breadcrumbs from "@/components/Breadcrumbs";
 
 const EditorShell = dynamic(
   () => import("@/components/editor/EditorShell"),
@@ -18,6 +19,10 @@ const EditorShell = dynamic(
     ),
   }
 );
+
+const breadcrumbItems = [
+  { name: "Online Editor", href: "/editor" },
+];
 
 function getExtension(filename: string): string {
   return filename.split(".").pop()?.toLowerCase() || "";
@@ -203,6 +208,13 @@ function EditorPageInner() {
 
   if (error) {
     return (
+    <div style={{ 
+      minHeight: "100vh", 
+      background: "var(--editor-workspace)",
+      display: "flex",
+      flexDirection: "column",
+    }}>
+      <Breadcrumbs items={breadcrumbItems} />
       <div style={{ display: "flex", alignItems: "center", justifyContent: "center", height: "100vh", background: "var(--editor-workspace)", flexDirection: "column", gap: 16 }}>
         <div style={{ width: 56, height: 56, borderRadius: 12, background: "var(--danger-light)", border: "1px solid rgba(214,69,69,0.20)", display: "flex", alignItems: "center", justifyContent: "center" }}>
           <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="var(--danger)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -215,37 +227,54 @@ function EditorPageInner() {
         <p style={{ color: "var(--text-secondary)", fontSize: 13, maxWidth: 400, textAlign: "center" }}>{error}</p>
         <a href="/" style={{ color: "#078C91", fontSize: 13, marginTop: 8 }}>Go to ZipDrop</a>
       </div>
-    );
+    </div>
+  );
   }
 
   if (loading) {
     return (
-      <div style={{ display: "flex", alignItems: "center", justifyContent: "center", height: "100vh", background: "var(--editor-workspace)" }}>
-        <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 20 }}>
-          <div style={{ width: 40, height: 40, border: "2px solid var(--teal-light)", borderTop: "2px solid #078C91", borderRadius: "50%", animation: "spin 1s linear infinite" }} />
-          <p style={{ fontSize: 13, color: "var(--text-secondary)" }}>{loadingLabel}</p>
+      <div style={{ 
+        minHeight: "100vh", 
+        background: "var(--editor-workspace)",
+        display: "flex",
+        flexDirection: "column",
+      }}>
+        <Breadcrumbs items={breadcrumbItems} />
+        <div style={{ display: "flex", alignItems: "center", justifyContent: "center", height: "100vh", background: "var(--editor-workspace)" }}>
+          <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 20 }}>
+            <div style={{ width: 40, height: 40, border: "2px solid var(--teal-light)", borderTop: "2px solid #078C91", borderRadius: "50%", animation: "spin 1s linear infinite" }} />
+            <p style={{ fontSize: 13, color: "var(--text-secondary)" }}>{loadingLabel}</p>
+          </div>
         </div>
       </div>
     );
   }
 
   return (
-    <EditorShell
-      fileName={fileName}
-      fileType={fileType}
-      fileSize={fileSize}
-      initialContent={content}
-      docxBuffer={docxBuffer}
-      loadKey={loadKey}
-      hasFileUrl={hasFileUrl}
-      recipientCode={recipientCode}
-      originalFileUrl={fileUrl}
-      onBack={() => (window.history.length > 1 ? window.history.back() : (window.location.href = "/"))}
-      onFileSelect={(file) => {
-        const url = URL.createObjectURL(file);
-        processFile(url, file.name);
-      }}
-    />
+    <div style={{ 
+      minHeight: "100vh", 
+      background: "var(--editor-workspace)",
+      display: "flex",
+      flexDirection: "column",
+    }}>
+      <Breadcrumbs items={breadcrumbItems} />
+      <EditorShell
+        fileName={fileName}
+        fileType={fileType}
+        fileSize={fileSize}
+        initialContent={content}
+        docxBuffer={docxBuffer}
+        loadKey={loadKey}
+        hasFileUrl={hasFileUrl}
+        recipientCode={recipientCode}
+        originalFileUrl={fileUrl}
+        onBack={() => (window.history.length > 1 ? window.history.back() : (window.location.href = "/"))}
+        onFileSelect={(file) => {
+          const url = URL.createObjectURL(file);
+          processFile(url, file.name);
+        }}
+      />
+    </div>
   );
 }
 

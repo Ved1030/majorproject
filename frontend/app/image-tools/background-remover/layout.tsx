@@ -1,0 +1,64 @@
+import type { Metadata } from "next";
+
+export const metadata: Metadata = {
+  title: "AI Background Remover – Remove Image Backgrounds Free Online",
+  description: "Remove backgrounds from images automatically with AI. Upload JPG, PNG, or WEBP and download transparent PNG. Two modes: Photo/AI for complex images, Logo/Graphic for clean edges. Free, no account.",
+  openGraph: {
+    title: "AI Background Remover – Remove Image Backgrounds Free Online",
+    description: "Remove backgrounds from images automatically with AI. Upload JPG, PNG, or WEBP and download transparent PNG. Free, no account.",
+    type: "website",
+    images: ["/og-image.png"],
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "AI Background Remover – Remove Image Backgrounds Free Online",
+    description: "Remove backgrounds from images automatically with AI. Free, no account.",
+    images: ["/og-image.png"],
+  },
+};
+
+const structuredData = {
+  "@context": "https://schema.org",
+  "@type": "SoftwareApplication",
+  name: "AI Background Remover",
+  url: "https://zip-drop.vercel.app/image-tools/background-remover",
+  applicationCategory: "ImageEditor",
+  operatingSystem: "Web",
+  description: "Free online AI background remover. Remove backgrounds from JPG, PNG, WEBP images automatically. Two modes: Photo/AI for photographs, Logo/Graphic for graphics. Download transparent PNG. No account required.",
+  offers: {
+    "@type": "Offer",
+    price: "0",
+    priceCurrency: "USD",
+    availability: "https://schema.org/InStock",
+  },
+  creator: {
+    "@type": "Organization",
+    name: "ZipDrop",
+    url: "https://zip-drop.vercel.app",
+  },
+  featureList: [
+    "AI-powered background removal",
+    "Photo mode for complex images",
+    "Logo mode for graphics",
+    "Transparent PNG output",
+    "Preserves original dimensions",
+    "Max 20MB file size",
+    "JPG, PNG, WEBP input",
+  ],
+};
+
+export default function BackgroundRemoverLayout({
+  children,
+}: {
+  children: React.ReactNode;
+}) {
+  return (
+    <>
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(structuredData) }}
+      />
+      {children}
+    </>
+  );
+}

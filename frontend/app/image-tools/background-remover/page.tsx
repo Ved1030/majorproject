@@ -4,6 +4,7 @@ import { useState, useCallback, useRef, useEffect } from "react";
 import Link from "next/link";
 import { ArrowLeft, Image, Download, Loader2, AlertCircle, Check, X, Eye, Maximize2, Minimize2, RotateCcw } from "lucide-react";
 import Navbar from "@/components/Navbar";
+import Breadcrumbs from "@/components/Breadcrumbs";
 import { removeBackground, checkBackgroundRemoverHealth, BackgroundRemovalResult } from "@/utils/api";
 
 const MAX_FILE_SIZE = 20 * 1024 * 1024; // 20MB
@@ -13,6 +14,11 @@ const ACCEPT_EXT = ".jpg,.jpeg,.png,.webp";
 const TOOL_NAME = "AI Background Remover";
 const TOOL_DESCRIPTION = "Remove image backgrounds automatically and download clean transparent PNG images.";
 const CATEGORY = "IMAGE TOOLS";
+
+const breadcrumbItems = [
+  { name: "Image Tools", href: "/conversion?category=image-tools" },
+  { name: "Background Remover", href: "/image-tools/background-remover" },
+];
 
 const BACKGROUND_OPTIONS = [
   { id: "transparent", name: "Transparent", color: "transparent", pattern: true },
@@ -236,6 +242,9 @@ export default function BackgroundRemoverPage() {
         <Navbar />
         <div style={{ minHeight: "100vh", background: "var(--bg-main)", padding: "clamp(24px, 4vh, 48px) 24px" }}>
           <div style={{ maxWidth: "720px", margin: "0 auto", display: "flex", flexDirection: "column", gap: "24px" }}>
+            {/* Breadcrumbs */}
+            <Breadcrumbs items={breadcrumbItems} />
+
             <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
               <Link href="/conversion?category=image-tools" style={{ textDecoration: "none", color: "var(--text-secondary)", padding: "8px" }}>
                 <ArrowLeft size={20} />
@@ -404,6 +413,9 @@ export default function BackgroundRemoverPage() {
       <Navbar />
       <div style={{ minHeight: "100vh", background: "var(--bg-main)", padding: "clamp(24px, 4vh, 48px) 24px" }}>
         <div style={{ maxWidth: "960px", margin: "0 auto", display: "flex", flexDirection: "column", gap: "24px" }}>
+          {/* Breadcrumbs */}
+          <Breadcrumbs items={breadcrumbItems} />
+
           <div style={{ display: "flex", alignItems: "center", gap: "12px", flexWrap: "wrap" }}>
             <Link href="/conversion?category=image-tools" style={{ textDecoration: "none", color: "var(--text-secondary)", padding: "8px" }}>
               <ArrowLeft size={20} />
