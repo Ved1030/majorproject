@@ -1208,6 +1208,36 @@ app.get("/health/word-to-pdf", (req, res) => {
   });
 });
 
+/* LibreOffice diagnostic - runs smoke conversion on demand */
+app.get("/health/word-to-pdf-diagnostic", async (req, res) => {
+  const startTime = process.hrtime.bigint();
+  try {
+    const result = await libreoffice.verifyConversion();
+    const durationMs = Number(process.hrtime.bigint() - startTime) / 1_000_000;
+    
+    const status = libreoffice.getStatus();
+    res.json({
+      ok: result.ok,
+      dependency: "libreoffice",
+      version: status.version,
+      version_ok: status.versionOk,
+      conversion_ok: result.ok,
+      conversion_error: result.error,
+      detected_via: status.source,
+      portable: status.portable,
+      diagnostic_duration_ms: Math.round(durationMs * 100) / 100,
+    });
+  } catch (error) {
+    const durationMs = Number(process.hrtime.bigint() - startTime) / 1_000_000;
+    res.status(500).json({
+      ok: false,
+      dependency: "libreoffice",
+      error: error.message,
+      diagnostic_duration_ms: Math.round(durationMs * 100) / 100,
+    });
+  }
+});
+
 /* Generic conversion endpoint */
 async function handleConversion(req, res, conversionKey) {
   try {

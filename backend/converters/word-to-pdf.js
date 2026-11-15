@@ -26,6 +26,9 @@ class WordToPdfConverter extends BaseConverter {
   }
 
   async convert({ inputBuffer, inputFormat, outputFormat, options = {} }) {
+    const totalStart = process.hrtime.bigint();
+    const timings = {};
+
     this.validateFileSize(inputBuffer, this.maxFileSize);
 
     const detectedFormat = this.validateFileSignature(inputBuffer, WORD_SIGNATURES);
@@ -43,21 +46,53 @@ class WordToPdfConverter extends BaseConverter {
     const profileDir = path.join(workDir, 'profile');
 
     try {
+      // 1. Write input file
+      const writeStart = process.hrtime.bigint();
       fs.writeFileSync(inputPath, inputBuffer);
+      timings.writeInputMs = Number(process.hrtime.bigint() - writeStart) / 1_000_000;
 
+      // 2. Require LibreOffice executable
+      const requireStart = process.hrtime.bigint();
       const executable = requireLibreOffice('Word to PDF');
+      timings.requireLibreOfficeMs = Number(process.hrtime.bigint() - requireStart) / 1_000_000;
+
+      // 3. Convert to PDF (includes LibreOffice startup + conversion)
+      const convertStart = process.hrtime.bigint();
       await convertToPdf({
         executable,
         inputPath,
         outputDir: workDir,
         profileDir,
       });
+      timings.libreofficeConversionMs = Number(process.hrtime.bigint() - convertStart) / 1_000_000;
 
+      // 4. Read output PDF
+      const readStart = process.hrtime.bigint();
       const outputBuffer = await this.readOutputBuffer(outputPath);
+      timings.readOutputMs = Number(process.hrtime.bigint() - readStart) / 1_000_000;
+
+      // 5. Validate PDF
+      const validateStart = process.hrtime.bigint();
       validatePdfBuffer(outputBuffer);
+      timings.validatePdfMs = Number(process.hrtime.bigint() - validateStart) / 1_000_000;
+
+      timings.totalMs = Number(process.hrtime.bigint() - totalStart) / 1_000_000;
+
+      console.log(
+        JSON.stringify({
+          type: "word_to_pdf_conversion",
+          success: true,
+          timings: Object.fromEntries(Object.entries(timings).map(([k, v]) => [k, Math.round(v * 100) / 100])),
+          inputFileSize: inputBuffer.length,
+          outputFileSize: outputBuffer.length,
+        })
+      );
+
       return outputBuffer;
     } finally {
+      const cleanupStart = process.hrtime.bigint();
       this.cleanupTempFiles(workDir);
+      timings.cleanupMs = Number(process.hrtime.bigint() - cleanupStart) / 1_000_000;
     }
   }
 }

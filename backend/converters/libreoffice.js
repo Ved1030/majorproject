@@ -548,21 +548,13 @@ async function logDiagnostics(logger = console) {
     logger.warn(
       `[LibreOffice] Version check failed (${version.error}${
         firstErrorLine ? `: ${firstErrorLine}` : ""
-      }); attempting a smoke conversion anyway.`
+      })`
     );
   }
 
-  const conversion = await verifyConversion();
-  diagnostics.conversionOk = conversion.ok;
-  diagnostics.conversionError = conversion.error;
-
-  if (conversion.ok) {
-    logger.log("[LibreOffice] Conversion smoke test: ok");
-  } else if (conversion.ok === false) {
-    logger.warn(`[LibreOffice] Conversion smoke test failed: ${conversion.error}`);
-  } else {
-    logger.log("[LibreOffice] Conversion smoke test skipped (fixture unavailable)");
-  }
+  // NOTE: Smoke conversion test is now run manually via /health/word-to-pdf-diagnostic
+  // to avoid 60+ second startup delays on Render free tier.
+  diagnostics.conversionOk = "skipped_on_startup";
 
   cached.diagnostics = diagnostics;
   return { ok: true, version: version.version };
@@ -604,7 +596,18 @@ function requireLibreOffice(conversionName) {
 }
 
 async function convertToPdf({ executable, inputPath, outputDir, profileDir, timeoutMs = CONVERSION_TIMEOUT_MS }) {
-  const startTime = process.hrtime.bigint();
+  const timings = {};
+  const totalStartTime = process.hrtime.bigint();
+  
+  // 1. Profile directory creation
+  const profileCreateStart = process.hrtime.bigint();
+  try {
+    fs.mkdirSync(profileDir, { recursive: true });
+  } catch (e) {
+    // Ignore - will fail later if needed
+  }
+  timings.profileCreateMs = Number(process.hrtime.bigint() - profileCreateStart) / 1_000_000;
+
   const args = [
     "--headless",
     "--nologo",
@@ -620,6 +623,8 @@ async function convertToPdf({ executable, inputPath, outputDir, profileDir, time
     inputPath,
   ];
 
+  // 2. LibreOffice process startup + conversion
+  const conversionStartTime = process.hrtime.bigint();
   let result;
   try {
     result = await runProcess(executable, args, { timeoutMs, profileDir });
@@ -637,9 +642,21 @@ async function convertToPdf({ executable, inputPath, outputDir, profileDir, time
       { error: error.message, safeDetail: "LibreOffice could not be started" }
     );
   }
+  timings.conversionMs = Number(process.hrtime.bigint() - conversionStartTime) / 1_000_000;
 
-  const endTime = process.hrtime.bigint();
-  const durationMs = Number(endTime - startTime) / 1_000_000;
+  // 3. Output PDF validation
+  const validationStart = process.hrtime.bigint();
+  const outputPath = path.join(outputDir, path.basename(inputPath).replace(/\.[^.]+$/, '.pdf'));
+  try {
+    validatePdfBuffer(fs.readFileSync(outputPath));
+  } catch (e) {
+    // Re-throw with timing context
+    throw e;
+  }
+  timings.validationMs = Number(process.hrtime.bigint() - validationStart) / 1_000_000;
+
+  const totalEndTime = process.hrtime.bigint();
+  timings.totalMs = Number(totalEndTime - totalStartTime) / 1_000_000;
 
   if (result.code !== 0) {
     const missingLibraries = extractMissingLibraries(result.stderr);
@@ -651,7 +668,7 @@ async function convertToPdf({ executable, inputPath, outputDir, profileDir, time
       JSON.stringify({
         type: "libreoffice_conversion",
         success: false,
-        durationMs: Math.round(durationMs * 100) / 100,
+        timings: Object.fromEntries(Object.entries(timings).map(([k, v]) => [k, Math.round(v * 100) / 100])),
         code: result.code,
         signal: result.signal,
         missingLibraries,
@@ -676,7 +693,7 @@ async function convertToPdf({ executable, inputPath, outputDir, profileDir, time
     JSON.stringify({
       type: "libreoffice_conversion",
       success: true,
-      durationMs: Math.round(durationMs * 100) / 100,
+      timings: Object.fromEntries(Object.entries(timings).map(([k, v]) => [k, Math.round(v * 100) / 100])),
       inputFile: path.basename(inputPath),
       outputSize: result.stdout.length,
     })
