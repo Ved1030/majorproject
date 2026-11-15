@@ -58,6 +58,7 @@ class WordToPdfConverter extends BaseConverter {
 
       // 3. Convert to PDF (includes LibreOffice startup + conversion)
       const convertStart = process.hrtime.bigint();
+      console.error(`[DEBUG word-to-pdf] Calling convertToPdf with executable: ${executable}, inputPath: ${inputPath}`);
       await convertToPdf({
         executable,
         inputPath,

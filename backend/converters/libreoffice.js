@@ -362,6 +362,17 @@ function runProcess(command, args, { timeoutMs, profileDir } = {}) {
   return new Promise((resolve, reject) => {
     let proc;
     const env = buildProcessEnv(command, profileDir);
+    
+    // Subprocess timing
+    const subprocessTimings = {
+      spawnInitiated: process.hrtime.bigint(),
+      spawnEventReceived: null,
+      firstStdoutData: null,
+      firstStderrData: null,
+      exitEventReceived: null,
+      totalDurationMs: null,
+    };
+
     try {
       proc = spawn(command, args, {
         env,
@@ -373,6 +384,8 @@ function runProcess(command, args, { timeoutMs, profileDir } = {}) {
       reject(error);
       return;
     }
+
+    subprocessTimings.spawnEventReceived = process.hrtime.bigint();
 
     let stdout = "";
     let stderr = "";
@@ -394,9 +407,15 @@ function runProcess(command, args, { timeoutMs, profileDir } = {}) {
     }, timeoutMs);
 
     proc.stdout.on("data", (data) => {
+      if (subprocessTimings.firstStdoutData === null) {
+        subprocessTimings.firstStdoutData = process.hrtime.bigint();
+      }
       stdout += data.toString();
     });
     proc.stderr.on("data", (data) => {
+      if (subprocessTimings.firstStderrData === null) {
+        subprocessTimings.firstStderrData = process.hrtime.bigint();
+      }
       stderr += data.toString();
     });
 
@@ -405,7 +424,15 @@ function runProcess(command, args, { timeoutMs, profileDir } = {}) {
     });
 
     proc.on("close", (code, signal) => {
-      settle(resolve, { code, signal, stdout, stderr });
+      subprocessTimings.exitEventReceived = process.hrtime.bigint();
+      subprocessTimings.totalDurationMs = Number(subprocessTimings.exitEventReceived - subprocessTimings.spawnInitiated) / 1_000_000;
+      settle(resolve, { 
+        code, 
+        signal, 
+        stdout, 
+        stderr,
+        subprocessTimings,
+      });
     });
   });
 }
@@ -504,6 +531,109 @@ async function verifyConversion() {
   }
 }
 
+async function investigateFonts(executable, logger) {
+  const fontInfo = {
+    fontconfigAvailable: false,
+    fontconfigVersion: null,
+    fontDirs: [],
+    fontCacheDir: null,
+    fontCacheWritable: false,
+    fcListOutput: null,
+    fcListError: null,
+    fcCacheOutput: null,
+    fcCacheError: null,
+    systemFonts: [],
+  };
+
+  // Check fontconfig
+  try {
+    const fcVersion = await runProcess("fc-cache", ["--version"], { timeoutMs: 5000 });
+    fontInfo.fontconfigAvailable = fcVersion.code === 0;
+    fontInfo.fontconfigVersion = fcVersion.stdout.trim() || fcVersion.stderr.trim();
+    logger.log(`[LibreOffice] Fontconfig available: ${fontInfo.fontconfigAvailable}, version: ${fontInfo.fontconfigVersion}`);
+  } catch (e) {
+    logger.warn(`[LibreOffice] Fontconfig check failed: ${e.message}`);
+  }
+
+  // Check font directories
+  const commonFontDirs = [
+    "/usr/share/fonts",
+    "/usr/local/share/fonts",
+    "/usr/share/fonts/truetype",
+    "/usr/share/fonts/opentype",
+    "/usr/share/fonts/type1",
+    path.join(os.homedir(), ".fonts"),
+    path.join(os.homedir(), ".local", "share", "fonts"),
+  ];
+  
+  for (const dir of commonFontDirs) {
+    if (fs.existsSync(dir)) {
+      fontInfo.fontDirs.push(dir);
+      try {
+        const files = fs.readdirSync(dir);
+        logger.log(`[LibreOffice] Font dir: ${dir} (${files.length} entries)`);
+      } catch (e) {
+        logger.warn(`[LibreOffice] Cannot read font dir ${dir}: ${e.message}`);
+      }
+    }
+  }
+
+  // Check font cache
+  const cacheDirs = [
+    path.join(os.homedir(), ".cache", "fontconfig"),
+    "/var/cache/fontconfig",
+    path.join(os.tmpdir(), "fontconfig"),
+  ];
+  
+  for (const dir of cacheDirs) {
+    if (fs.existsSync(dir)) {
+      fontInfo.fontCacheDir = dir;
+      try {
+        fs.accessSync(dir, fs.constants.W_OK);
+        fontInfo.fontCacheWritable = true;
+        logger.log(`[LibreOffice] Font cache dir: ${dir} (writable: true)`);
+      } catch (e) {
+        logger.log(`[LibreOffice] Font cache dir: ${dir} (writable: false)`);
+      }
+      break;
+    }
+  }
+
+  // Run fc-list to see available fonts
+  try {
+    const fcList = await runProcess("fc-list", [":family"], { timeoutMs: 10000 });
+    if (fcList.code === 0) {
+      fontInfo.fcListOutput = fcList.stdout.trim();
+      const families = new Set();
+      for (const line of fcList.stdout.split("\n")) {
+        const family = line.split(":")[0]?.trim();
+        if (family) families.add(family);
+      }
+      fontInfo.systemFonts = Array.from(families).sort();
+      logger.log(`[LibreOffice] Available font families: ${fontInfo.systemFonts.length}`);
+    } else {
+      fontInfo.fcListError = fcList.stderr.trim();
+      logger.warn(`[LibreOffice] fc-list failed: ${fontInfo.fcListError}`);
+    }
+  } catch (e) {
+    fontInfo.fcListError = e.message;
+    logger.warn(`[LibreOffice] fc-list error: ${e.message}`);
+  }
+
+  // Run fc-cache to check cache status
+  try {
+    const fcCache = await runProcess("fc-cache", ["-v"], { timeoutMs: 15000 });
+    fontInfo.fcCacheOutput = fcCache.stdout.trim();
+    fontInfo.fcCacheError = fcCache.stderr.trim();
+    logger.log(`[LibreOffice] fc-cache completed (code: ${fcCache.code})`);
+  } catch (e) {
+    fontInfo.fcCacheError = e.message;
+    logger.warn(`[LibreOffice] fc-cache error: ${e.message}`);
+  }
+
+  return fontInfo;
+}
+
 async function logDiagnostics(logger = console) {
   const detection = detectLibreOffice();
   const diagnostics = {
@@ -513,6 +643,7 @@ async function logDiagnostics(logger = console) {
     conversionError: null,
     portable: isPortableExecutable(detection.executable),
     depsDir: getPortableDepsDir(detection.executable),
+    fontInfo: null,
   };
 
   logger.log(`[LibreOffice] OS: ${process.platform} ${process.arch}`);
@@ -536,6 +667,9 @@ async function logDiagnostics(logger = console) {
       `[LibreOffice] Portable runtime; bundled libraries: ${diagnostics.depsDir || "none"}`
     );
   }
+
+  // Font investigation
+  diagnostics.fontInfo = await investigateFonts(detection.executable, logger);
 
   const version = await queryVersion(detection.executable);
   diagnostics.version = version.version;
@@ -596,6 +730,9 @@ function requireLibreOffice(conversionName) {
 }
 
 async function convertToPdf({ executable, inputPath, outputDir, profileDir, timeoutMs = CONVERSION_TIMEOUT_MS }) {
+  console.error(`[DEBUG] convertToPdf called with inputPath: ${inputPath}`);
+  process.stderr.write(`[DEBUG] convertToPdf called with inputPath: ${inputPath}\n`);
+  fs.writeFileSync('D:\\Projects\\ZipDrop\\backend\\debug_convertToPdf_called.txt', 'convertToPdf called at ' + new Date().toISOString());
   const timings = {};
   const totalStartTime = process.hrtime.bigint();
   
@@ -644,6 +781,22 @@ async function convertToPdf({ executable, inputPath, outputDir, profileDir, time
   }
   timings.conversionMs = Number(process.hrtime.bigint() - conversionStartTime) / 1_000_000;
 
+  // Extract subprocess timing details
+  const subprocessTimings = result.subprocessTimings || {};
+  if (subprocessTimings.spawnInitiated && subprocessTimings.spawnEventReceived) {
+    timings.spawnInitToEventMs = Number(subprocessTimings.spawnEventReceived - subprocessTimings.spawnInitiated) / 1_000_000;
+  }
+  if (subprocessTimings.spawnEventReceived && subprocessTimings.firstStdoutData) {
+    timings.firstStdoutMs = Number(subprocessTimings.firstStdoutData - subprocessTimings.spawnEventReceived) / 1_000_000;
+  }
+  if (subprocessTimings.spawnEventReceived && subprocessTimings.firstStderrData) {
+    timings.firstStderrMs = Number(subprocessTimings.firstStderrData - subprocessTimings.spawnEventReceived) / 1_000_000;
+  }
+  if (subprocessTimings.spawnEventReceived && subprocessTimings.exitEventReceived) {
+    timings.processRuntimeMs = Number(subprocessTimings.exitEventReceived - subprocessTimings.spawnEventReceived) / 1_000_000;
+  }
+  timings.subprocessTotalMs = subprocessTimings.totalDurationMs || null;
+
   // 3. Output PDF validation
   const validationStart = process.hrtime.bigint();
   const outputPath = path.join(outputDir, path.basename(inputPath).replace(/\.[^.]+$/, '.pdf'));
@@ -657,6 +810,14 @@ async function convertToPdf({ executable, inputPath, outputDir, profileDir, time
 
   const totalEndTime = process.hrtime.bigint();
   timings.totalMs = Number(totalEndTime - totalStartTime) / 1_000_000;
+
+  // Get actual output PDF file size
+  let actualOutputSize = 0;
+  try {
+    actualOutputSize = fs.statSync(outputPath).size;
+  } catch (e) {
+    // Ignore
+  }
 
   if (result.code !== 0) {
     const missingLibraries = extractMissingLibraries(result.stderr);
@@ -675,6 +836,8 @@ async function convertToPdf({ executable, inputPath, outputDir, profileDir, time
         inputFile: path.basename(inputPath),
       })
     );
+    // Force flush
+    process.stderr.write('\n');
     throw new ConversionError(
       missingLibraries.length
         ? "Document conversion is temporarily unavailable"
@@ -695,9 +858,13 @@ async function convertToPdf({ executable, inputPath, outputDir, profileDir, time
       success: true,
       timings: Object.fromEntries(Object.entries(timings).map(([k, v]) => [k, Math.round(v * 100) / 100])),
       inputFile: path.basename(inputPath),
-      outputSize: result.stdout.length,
+      outputSize: actualOutputSize,
+      stdoutLength: result.stdout.length,
+      stderrLength: result.stderr.length,
     })
   );
+  // Force flush to ensure logs appear in real-time
+  process.stdout.write('\n');
 
   return result;
 }

@@ -1,0 +1,17 @@
+[dotenv@17.3.1] injecting env (5) from .env -- tip: ⚙️  load multiple .env files with { path: ['.env.local', '.env'] }
+[Background Remover] Starting persistent worker...
+[LibreOffice] OS: win32 x64
+[LibreOffice] Temp directory: C:\Users\VEDMEH~1\AppData\Local\Temp
+[LibreOffice] Executable: C:\Program Files\LibreOffice\program\soffice.exe (found via common path)
+[LibreOffice] Fontconfig available: true, version: 
+[PDF-to-DOCX] Python interpreter: D:\Projects\ZipDrop\backend\.venv\Scripts\python.exe
+[PDF-to-DOCX] pdf2docx 0.5.13 import OK (Python 3.13.5)
+[LibreOffice] Available font families: 1
+[LibreOffice] fc-cache completed (code: 0)
+[LibreOffice] Version: 26.8.3.1
+[Background Remover] Worker ready (PID: 50252)
+[Background Remover] Python interpreter: D:\Projects\ZipDrop\backend\.venv\Scripts\python.exe
+[Background Remover] rembg 2.0.87, Pillow 13.0.0 import OK (Python 3.13.5)
+[Background Remover] Supported models: birefnet-general, birefnet-general-lite, birefnet-general-fp16, birefnet-portrait, birefnet-dis, birefnet-hrsod, birefnet-cod, birefnet-massive, isnet-anime, dis_custom, isnet-general-use, sam, silueta, u2net_cloth_seg, u2net_custom, u2net_human_seg, u2net, u2netp, bria-rmbg, ben_custom, withoutbg, atlascloud
+MongoDB unavailable — using in-memory store
+Server running on port 5000
