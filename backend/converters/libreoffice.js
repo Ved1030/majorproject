@@ -400,7 +400,8 @@ function runProcess(command, args, { timeoutMs, profileDir } = {}) {
 
     const timer = setTimeout(() => {
       killProcessTree(proc.pid);
-      const error = new Error(`LibreOffice timed out after ${Math.round(timeoutMs / 1000)}s`);
+      const cmdName = path.basename(command);
+      const error = new Error(`${cmdName} timed out after ${Math.round(timeoutMs / 1000)}s`);
       error.timedOut = true;
       error.stderr = stderr;
       settle(reject, error);
@@ -435,6 +436,62 @@ function runProcess(command, args, { timeoutMs, profileDir } = {}) {
       });
     });
   });
+}
+
+/**
+ * Generic command runner for non-LibreOffice commands (fc-list, fc-cache, etc.)
+ * Returns structured result with timing and logs execution details.
+ */
+async function runCommand(commandName, commandArgs, options = {}) {
+  const { timeoutMs = 15000, logger = console } = options;
+  const startTime = process.hrtime.bigint();
+  
+  try {
+    const result = await runProcess(commandName, commandArgs, { timeoutMs });
+    const durationMs = Number(process.hrtime.bigint() - startTime) / 1_000_000;
+    
+    // Convert BigInt values in subprocessTimings to numbers for JSON serialization
+    const sanitizeTimings = (timings) => {
+      const out = {};
+      for (const [k, v] of Object.entries(timings)) {
+        if (v === null || v === undefined) {
+          out[k] = null;
+        } else if (typeof v === 'bigint') {
+          out[k] = Math.round(Number(v) / 1_000_000 * 100) / 100; // Convert to ms
+        } else if (typeof v === 'number') {
+          out[k] = Math.round(v * 100) / 100;
+        } else {
+          out[k] = v;
+        }
+      }
+      return out;
+    };
+    
+    logger.log(JSON.stringify({
+      type: "fontconfig_command",
+      command: commandName,
+      args: commandArgs,
+      exitCode: result.code,
+      signal: result.signal,
+      durationMs: Math.round(durationMs * 100) / 100,
+      subprocessTimings: result.subprocessTimings ? sanitizeTimings(result.subprocessTimings) : null,
+      stdoutLength: result.stdout.length,
+      stderrLength: result.stderr.length,
+    }));
+    
+    return result;
+  } catch (error) {
+    const durationMs = Number(process.hrtime.bigint() - startTime) / 1_000_000;
+    logger.warn(JSON.stringify({
+      type: "fontconfig_command",
+      command: commandName,
+      args: commandArgs,
+      error: error.message,
+      timedOut: error.timedOut === true,
+      durationMs: Math.round(durationMs * 100) / 100,
+    }));
+    throw error;
+  }
 }
 
 function killProcessTree(pid) {
@@ -547,7 +604,7 @@ async function investigateFonts(executable, logger) {
 
   // Check fontconfig
   try {
-    const fcVersion = await runProcess("fc-cache", ["--version"], { timeoutMs: 5000 });
+    const fcVersion = await runCommand("fc-cache", ["--version"], { timeoutMs: 5000, logger });
     fontInfo.fontconfigAvailable = fcVersion.code === 0;
     fontInfo.fontconfigVersion = fcVersion.stdout.trim() || fcVersion.stderr.trim();
     logger.log(`[LibreOffice] Fontconfig available: ${fontInfo.fontconfigAvailable}, version: ${fontInfo.fontconfigVersion}`);
@@ -601,7 +658,7 @@ async function investigateFonts(executable, logger) {
 
   // Run fc-list to see available fonts
   try {
-    const fcList = await runProcess("fc-list", [":family"], { timeoutMs: 10000 });
+    const fcList = await runCommand("fc-list", [":family"], { timeoutMs: 10000, logger });
     if (fcList.code === 0) {
       fontInfo.fcListOutput = fcList.stdout.trim();
       const families = new Set();
@@ -622,7 +679,7 @@ async function investigateFonts(executable, logger) {
 
   // Run fc-cache to check cache status
   try {
-    const fcCache = await runProcess("fc-cache", ["-v"], { timeoutMs: 15000 });
+    const fcCache = await runCommand("fc-cache", ["-v"], { timeoutMs: 15000, logger });
     fontInfo.fcCacheOutput = fcCache.stdout.trim();
     fontInfo.fcCacheError = fcCache.stderr.trim();
     logger.log(`[LibreOffice] fc-cache completed (code: ${fcCache.code})`);
@@ -668,8 +725,9 @@ async function logDiagnostics(logger = console) {
     );
   }
 
-  // Font investigation
-  diagnostics.fontInfo = await investigateFonts(detection.executable, logger);
+  // NOTE: Font investigation skipped during normal startup to avoid fc-list timeout.
+  // Run manually via /health/word-to-pdf-font-diagnostic
+  diagnostics.fontInfo = { skipped_on_startup: true };
 
   const version = await queryVersion(detection.executable);
   diagnostics.version = version.version;
@@ -892,4 +950,5 @@ module.exports = {
   validatePdfBuffer,
   buildProfileArgument,
   CONVERSION_TIMEOUT_MS,
+  investigateFonts,
 };
