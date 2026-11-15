@@ -58,14 +58,31 @@ class WordToPdfConverter extends BaseConverter {
 
       // 3. Convert to PDF (includes LibreOffice startup + conversion)
       const convertStart = process.hrtime.bigint();
-      console.error(`[DEBUG word-to-pdf] Calling convertToPdf with executable: ${executable}, inputPath: ${inputPath}`);
-      await convertToPdf({
+      const conversion = await convertToPdf({
         executable,
         inputPath,
         outputDir: workDir,
         profileDir,
       });
       timings.libreofficeConversionMs = Number(process.hrtime.bigint() - convertStart) / 1_000_000;
+
+      const loTimings = conversion.timings || {};
+      for (const key of [
+        "queueWaitMs",
+        "spawnCallMs",
+        "spawnInitToEventMs",
+        "firstStdoutMs",
+        "firstStderrMs",
+        "processRuntimeMs",
+        "exitToCloseMs",
+        "subprocessTotalMs",
+        "outputFileFirstSeenMs",
+        "outputFileStableMs",
+        "profileEntryCount",
+        "fontCacheEntryCount",
+      ]) {
+        if (loTimings[key] !== undefined) timings[key] = loTimings[key];
+      }
 
       // 4. Read output PDF
       const readStart = process.hrtime.bigint();
@@ -84,12 +101,51 @@ class WordToPdfConverter extends BaseConverter {
           type: "word_to_pdf_conversion",
           success: true,
           timings: Object.fromEntries(Object.entries(timings).map(([k, v]) => [k, Math.round(v * 100) / 100])),
+          resources: conversion.resources || null,
           inputFileSize: inputBuffer.length,
           outputFileSize: outputBuffer.length,
         })
       );
 
       return outputBuffer;
+    } catch (error) {
+      const loTimings = error.timings || {};
+      const failureTimings = { ...timings };
+      for (const key of [
+        "queueWaitMs",
+        "spawnCallMs",
+        "spawnInitToEventMs",
+        "firstStdoutMs",
+        "firstStderrMs",
+        "processRuntimeMs",
+        "exitToCloseMs",
+        "subprocessTotalMs",
+        "outputFileFirstSeenMs",
+        "outputFileStableMs",
+        "profileEntryCount",
+        "fontCacheEntryCount",
+      ]) {
+        if (loTimings[key] !== undefined) failureTimings[key] = loTimings[key];
+      }
+
+      console.error(
+        JSON.stringify({
+          type: "word_to_pdf_conversion",
+          success: false,
+          timedOut: error.timedOut === true,
+          timings: Object.fromEntries(
+            Object.entries(failureTimings).map(([k, v]) => [
+              k,
+              typeof v === "number" ? Math.round(v * 100) / 100 : v,
+            ])
+          ),
+          resources: error.resources || null,
+          inputFileSize: inputBuffer.length,
+          error: error.message,
+        })
+      );
+
+      throw error;
     } finally {
       const cleanupStart = process.hrtime.bigint();
       this.cleanupTempFiles(workDir);
