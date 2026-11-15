@@ -96,7 +96,7 @@ const limiters = {
 
   // LibreOffice conversions - CPU intensive, spawns processes
   libreoffice: new ConcurrencyLimiter({
-    maxConcurrent: 2,
+    maxConcurrent: 1,
     timeout: 300000,
     name: 'libreoffice',
   }),
