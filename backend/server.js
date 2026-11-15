@@ -111,23 +111,25 @@ const supabase = createClient(
 const allowedOrigins = [
   "https://zip-drop.vercel.app",
   "http://localhost:3000",
-  "http://localhost:3001",
 ];
+const allowedOriginSet = new Set(allowedOrigins);
 
+// Single global CORS policy for every current and future route.
 const corsOptions = {
   origin: function (origin, callback) {
-    // Allow requests with no origin (mobile apps, curl, etc.)
+    // Allow non-browser clients (curl, mobile apps, server-to-server) with no Origin.
     if (!origin) return callback(null, true);
-    
-    if (allowedOrigins.includes(origin)) {
-      return callback(null, origin); // Must return the origin when credentials: true
-    }
-    
-    return callback(new Error("Not allowed by CORS"));
+
+    // Reflect the exact origin because credentials: true forbids "*".
+    if (allowedOriginSet.has(origin)) return callback(null, origin);
+
+    // Falsy origin skips CORS headers without throwing; the browser blocks the response.
+    return callback(null, false);
   },
   credentials: true,
-  methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
+  methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS", "HEAD"],
   allowedHeaders: ["Content-Type", "Authorization", "X-Requested-With"],
+  maxAge: 86400,
   exposedHeaders: [
     "X-Original-Size",
     "X-Compressed-Size", 
@@ -152,6 +154,8 @@ const corsOptions = {
   ]
 };
 
+// Must remain the first middleware: it answers OPTIONS preflights globally and
+// sets headers on every response (including later error responses).
 app.use(cors(corsOptions));
 
 app.use(express.json());
@@ -242,6 +246,7 @@ app.get("/health", (req, res) => {
     memory: process.memoryUsage(),
     version: process.version,
     platform: process.platform,
+    commit: process.env.RENDER_GIT_COMMIT || null,
   });
 });
 
