@@ -112,7 +112,14 @@ const allowedOrigins = [
   "https://zip-drop.vercel.app",
   "http://localhost:3000",
 ];
-const allowedOriginSet = new Set(allowedOrigins);
+
+// Normalize origin for robust matching: lowercase, strip trailing slash
+function normalizeOrigin(origin) {
+  if (!origin) return origin;
+  return origin.toLowerCase().replace(/\/$/, "");
+}
+
+const allowedOriginSet = new Set(allowedOrigins.map(normalizeOrigin));
 
 // Single global CORS policy for every current and future route.
 const corsOptions = {
@@ -120,9 +127,15 @@ const corsOptions = {
     // Allow non-browser clients (curl, mobile apps, server-to-server) with no Origin.
     if (!origin) return callback(null, true);
 
-    // Reflect the exact origin because credentials: true forbids "*".
-    if (allowedOriginSet.has(origin)) return callback(null, origin);
+    const normalized = normalizeOrigin(origin);
 
+    // Reflect the exact origin because credentials: true forbids "*".
+    if (allowedOriginSet.has(normalized)) {
+      console.log(`[CORS] Allowed origin: ${origin}`);
+      return callback(null, origin);
+    }
+
+    console.warn(`[CORS] Rejected origin: ${origin}`);
     // Falsy origin skips CORS headers without throwing; the browser blocks the response.
     return callback(null, false);
   },
@@ -151,12 +164,23 @@ const corsOptions = {
     "X-Total-Bytes-Saved",
     "X-Total-Reduction-Percent",
     "Content-Disposition"
-  ]
+  ],
+  optionsSuccessStatus: 204,
 };
 
 // Must remain the first middleware: it answers OPTIONS preflights globally and
 // sets headers on every response (including later error responses).
 app.use(cors(corsOptions));
+
+// Explicit OPTIONS handler as safety net for any route not handled by cors middleware.
+// This ensures preflight requests always receive CORS headers for allowed origins.
+// Express 5 compatible: use a middleware that handles OPTIONS for all paths.
+app.use((req, res, next) => {
+  if (req.method === "OPTIONS") {
+    return cors(corsOptions)(req, res, next);
+  }
+  next();
+});
 
 app.use(express.json());
 
@@ -1766,4 +1790,46 @@ app.get("/receive/:code", async (req, res) => {
     console.error(error);
     res.status(500).send("Error retrieving data");
   }
+});
+
+/* --------------------------------
+   Global Error Handler
+   Ensures CORS headers are present on all error responses for allowed origins.
+   Must be registered after all routes.
+------------------------------- */
+app.use((err, req, res, next) => {
+  console.error("[Global Error Handler]", err);
+
+  // Ensure CORS headers are set for allowed origins even on errors
+  const origin = req.headers.origin;
+  if (origin) {
+    const normalized = normalizeOrigin(origin);
+    if (allowedOriginSet.has(normalized)) {
+      res.setHeader("Access-Control-Allow-Origin", origin);
+      res.setHeader("Access-Control-Allow-Credentials", "true");
+      res.setHeader("Access-Control-Expose-Headers", corsOptions.exposedHeaders.join(", "));
+    }
+  }
+
+  const status = err.status || err.statusCode || 500;
+  const message = err.message || "Internal Server Error";
+  res.status(status).json({ error: message, code: err.code });
+});
+
+/* --------------------------------
+   404 Handler
+   Ensures CORS headers on not-found responses.
+------------------------------- */
+app.use((req, res) => {
+  const origin = req.headers.origin;
+  if (origin) {
+    const normalized = normalizeOrigin(origin);
+    if (allowedOriginSet.has(normalized)) {
+      res.setHeader("Access-Control-Allow-Origin", origin);
+      res.setHeader("Access-Control-Allow-Credentials", "true");
+      res.setHeader("Access-Control-Expose-Headers", corsOptions.exposedHeaders.join(", "));
+    }
+  }
+
+  res.status(404).json({ error: "Not found", code: "NOT_FOUND" });
 });
