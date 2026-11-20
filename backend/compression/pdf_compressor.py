@@ -206,7 +206,7 @@ def compress_with_pikepdf(input_path, output_path, level):
                      compress_streams=True,
                      linearize=True,
                      recompress_flate=True,
-                     decode_streams=True)
+                     stream_decode_level=pikepdf.StreamDecodeLevel.all)
         else:
             pdf.save(output_path,
                      object_stream_mode=pikepdf.ObjectStreamMode.generate,
@@ -266,24 +266,6 @@ def compress_with_qpdf(input_path, output_path, level):
         return {"success": False, "error": str(e), "traceback": traceback.format_exc()}
 
 
-def get_dpi_for_level(level):
-    """Get target DPI for compression level."""
-    return {
-        'low': 150,
-        'recommended': 150,
-        'high': 96,
-    }.get(level, 150)
-
-
-def get_jpeg_quality_for_level(level):
-    """Get JPEG quality for compression level."""
-    return {
-        'low': 85,
-        'recommended': 75,
-        'high': 60,
-    }.get(level, 75)
-
-
 def compress_pdf(input_path, output_path, level="recommended"):
     """
     Main compression function with multiple strategies and fallback.
@@ -293,6 +275,7 @@ def compress_pdf(input_path, output_path, level="recommended"):
     3. pikepdf (fallback)
     
     Returns the best result (smallest output that's actually smaller than input).
+    If no method reduces size, returns the original file.
     """
     valid_levels = ['low', 'recommended', 'high']
     if level not in valid_levels:
@@ -301,6 +284,7 @@ def compress_pdf(input_path, output_path, level="recommended"):
     original_size = os.path.getsize(input_path)
     best_result = None
     best_size = original_size
+    last_error = None
 
     # Strategy 1: Ghostscript (best for image-heavy PDFs)
     if GHOSTSCRIPT_AVAILABLE and level in ['recommended', 'high']:
@@ -322,7 +306,12 @@ def compress_pdf(input_path, output_path, level="recommended"):
                 else:
                     if os.path.exists(tmp_path):
                         os.unlink(tmp_path)
-        except Exception:
+            else:
+                last_error = result
+                if os.path.exists(tmp_path):
+                    os.unlink(tmp_path)
+        except Exception as e:
+            last_error = {"success": False, "error": str(e), "traceback": traceback.format_exc()}
             if os.path.exists(tmp_path):
                 os.unlink(tmp_path)
 
@@ -348,30 +337,64 @@ def compress_pdf(input_path, output_path, level="recommended"):
                 else:
                     if os.path.exists(tmp_path):
                         os.unlink(tmp_path)
-        except Exception:
+            else:
+                last_error = result
+                if os.path.exists(tmp_path):
+                    os.unlink(tmp_path)
+        except Exception as e:
+            last_error = {"success": False, "error": str(e), "traceback": traceback.format_exc()}
             if os.path.exists(tmp_path):
                 os.unlink(tmp_path)
 
     # Strategy 3: pikepdf (fallback)
     if best_result is None:
+        with tempfile.NamedTemporaryFile(suffix='.pdf', delete=False) as tmp:
+            tmp_path = tmp.name
         try:
-            result = compress_with_pikepdf(input_path, output_path, level)
+            result = compress_with_pikepdf(input_path, tmp_path, level)
             if result.get('success'):
-                compressed_size = os.path.getsize(output_path)
-                result['original_size'] = original_size
-                result['compressed_size'] = compressed_size
-                result['bytes_saved'] = original_size - compressed_size
-                result['reduction_percent'] = round((original_size - compressed_size) / original_size * 100, 2)
-                result['smaller'] = compressed_size < original_size
-                if not result['smaller']:
-                    result['warning'] = "PDF was already optimized or compression did not reduce size"
-                best_result = result
-                best_size = compressed_size
-        except Exception:
-            pass
+                compressed_size = os.path.getsize(tmp_path)
+                if compressed_size < original_size:
+                    result['original_size'] = original_size
+                    result['compressed_size'] = compressed_size
+                    result['bytes_saved'] = original_size - compressed_size
+                    result['reduction_percent'] = round((original_size - compressed_size) / original_size * 100, 2)
+                    result['smaller'] = True
+                    best_result = result
+                    best_size = compressed_size
+                    shutil.move(tmp_path, output_path)
+                else:
+                    if os.path.exists(tmp_path):
+                        os.unlink(tmp_path)
+            else:
+                # For password-protected or corrupted files, return the specific error
+                # instead of falling back to returning the original
+                if result.get('code') in ('PASSWORD_PROTECTED', 'CORRUPTED_FILE'):
+                    return result
+                last_error = result
+                if os.path.exists(tmp_path):
+                    os.unlink(tmp_path)
+        except Exception as e:
+            last_error = {"success": False, "error": str(e), "traceback": traceback.format_exc()}
+            if os.path.exists(tmp_path):
+                os.unlink(tmp_path)
 
+    # If no method produced a smaller file, return the original
     if best_result is None:
-        return {"success": False, "error": "All compression methods failed"}
+        # Copy original to output path
+        shutil.copy2(input_path, output_path)
+        return {
+            "success": True,
+            "output_path": output_path,
+            "method": "none",
+            "level": level,
+            "original_size": original_size,
+            "compressed_size": original_size,
+            "bytes_saved": 0,
+            "reduction_percent": 0.0,
+            "smaller": False,
+            "warning": "No further compression possible"
+        }
 
     return best_result
 
