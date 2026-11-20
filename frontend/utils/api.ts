@@ -273,23 +273,6 @@ export const checkPdfCompressionHealth = async () => {
 
 /* Background Removal */
 
-export type ProcessingMode = "ai" | "logo";
-export type LogoSubmode = "edge" | "enclosed";
-export type BackgroundColorPreset = "auto" | "white" | "black" | "custom";
-
-export interface BackgroundRemovalOptions {
-  mode?: ProcessingMode;
-  model?: string;
-  alphaMatting?: boolean;
-  // Logo mode options
-  submode?: LogoSubmode;
-  tolerance?: number;
-  featherRadius?: number;
-  erodeSize?: number;
-  backgroundColorPreset?: BackgroundColorPreset;
-  backgroundColorCustom?: { r: number; g: number; b: number };
-}
-
 export interface BackgroundRemovalResult {
   blob: Blob;
   filename: string;
@@ -297,36 +280,19 @@ export interface BackgroundRemovalResult {
     originalWidth: number | undefined;
     originalHeight: number | undefined;
     modelUsed: string;
-    processingMode: ProcessingMode;
-    logoSubmode: LogoSubmode;
+    processingMode: string;
   };
 }
 
 export const removeBackground = async (
   file: File,
-  options: BackgroundRemovalOptions = {}
+  options: Record<string, string> = {}
 ): Promise<BackgroundRemovalResult> => {
   const formData = new FormData();
   formData.append("file", file);
   
-  const mode = options.mode || "ai";
-  formData.append("mode", mode);
-  
-  if (mode === "ai") {
-    if (options.model) formData.append("model", options.model);
-    if (options.alphaMatting !== undefined) formData.append("alphaMatting", options.alphaMatting.toString());
-  } else {
-    if (options.submode) formData.append("submode", options.submode);
-    if (options.tolerance !== undefined) formData.append("tolerance", options.tolerance.toString());
-    if (options.featherRadius !== undefined) formData.append("featherRadius", options.featherRadius.toString());
-    if (options.erodeSize !== undefined) formData.append("erodeSize", options.erodeSize.toString());
-    if (options.backgroundColorPreset && options.backgroundColorPreset !== "auto") {
-      formData.append("backgroundColorPreset", options.backgroundColorPreset);
-      if (options.backgroundColorPreset === "custom" && options.backgroundColorCustom) {
-        formData.append("backgroundColorCustom", JSON.stringify(options.backgroundColorCustom));
-      }
-    }
-  }
+  // Default to auto mode, but allow override for testing
+  formData.append("mode", options.mode || "auto");
 
   const res = await fetch(`${API}/image-tools/remove-background`, {
     method: "POST",
@@ -344,9 +310,8 @@ export const removeBackground = async (
   const stats = {
     originalWidth: parseInt(res.headers.get("X-Original-Width") || "0") || undefined,
     originalHeight: parseInt(res.headers.get("X-Original-Height") || "0") || undefined,
-    modelUsed: res.headers.get("X-Model-Used") || "isnet-general-use",
-    processingMode: (res.headers.get("X-Processing-Mode") as ProcessingMode) || "ai",
-    logoSubmode: (res.headers.get("X-Logo-Submode") as LogoSubmode) || "edge",
+    modelUsed: res.headers.get("X-Model-Used") || "auto",
+    processingMode: res.headers.get("X-Processing-Mode") || "auto",
   };
 
   // Get filename from Content-Disposition or generate

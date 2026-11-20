@@ -700,6 +700,7 @@ app.get("/health/pdf-to-docx", (req, res) => {
 ------------------------------- */
 
 const BG_REMOVER_WORKER_SCRIPT = path.join(__dirname, "background_remover_worker.py");
+const BG_REMOVER_FALLBACK_SCRIPT = path.join(__dirname, "background_remover.py");
 const BG_REMOVER_VENV_PYTHON = path.join(
   __dirname,
   ".venv",
@@ -855,6 +856,16 @@ function startBgRemoverWorker() {
 }
 
 function handleWorkerMessage(msg) {
+  // Handle timing messages from worker
+  if (msg.type === "timing") {
+    const stage = msg.stage;
+    const details = msg.details || {};
+    const requestId = msg.request_id;
+    const logPrefix = requestId ? `[BG-${requestId}]` : "[BG]";
+    console.log(`${logPrefix} ${stage}`, details);
+    return;
+  }
+
   if (msg.status === "ready") {
     workerReady = true;
     workerStarting = false;
@@ -951,43 +962,62 @@ startBgRemoverWorker();
 
 function removeBackground(inputPath, outputPath, options = {}) {
   return new Promise((resolve, reject) => {
+    const totalStart = Date.now();
+    const requestId = ++workerRequestId;
+    const logPrefix = `[BG-${requestId}]`;
+    
+    console.log(`${logPrefix} Request received`, { inputPath, outputPath, mode: options.mode || "auto" });
+    
     if (!workerReady || !bgRemoverWorker) {
       // Fallback to spawning a new process if worker not ready
-      console.warn("[Background Remover] Worker not ready, falling back to spawn");
-      return removeBackgroundFallback(inputPath, outputPath, options).then(resolve).catch(reject);
+      console.warn(`${logPrefix} Worker not ready, falling back to spawn`);
+      const fallbackStart = Date.now();
+      return removeBackgroundFallback(inputPath, outputPath, options)
+        .then((result) => {
+          console.log(`${logPrefix} Fallback completed`, { durationMs: Date.now() - fallbackStart });
+          resolve(result);
+        })
+        .catch((err) => {
+          console.error(`${logPrefix} Fallback failed`, { durationMs: Date.now() - fallbackStart, error: err.message });
+          reject(err);
+        });
     }
     
-    const requestId = ++workerRequestId;
     const request = {
       requestId,
       input_path: inputPath,
       output_path: outputPath,
-      mode: options.mode || "ai",
+      mode: options.mode || "auto",
     };
     
+    // For "auto" mode, no additional parameters needed - worker handles everything
     if (options.mode === "logo") {
       request.tolerance = options.tolerance;
       request.feather_radius = options.featherRadius;
       request.erode_size = options.erodeSize;
       request.submode = options.submode;
       request.background_color = options.backgroundColorCustom;
-    } else {
+    } else if (options.mode === "ai") {
       request.model = options.model;
       request.alpha_matting = options.alphaMatting;
       request.alpha_matting_foreground_threshold = options.alphaMattingForegroundThreshold;
       request.alpha_matting_background_threshold = options.alphaMattingBackgroundThreshold;
       request.alpha_matting_erode_size = options.alphaMattingErodeSize;
     }
+    // For "auto" mode, no extra params needed
     
     workerPendingRequests.set(requestId, { resolve, reject });
     
+    const sendStart = Date.now();
     // Send request to worker
     bgRemoverWorker.stdin.write(JSON.stringify(request) + "\n");
+    console.log(`${logPrefix} Request sent to worker`, { sendDurationMs: Date.now() - sendStart });
     
     // Timeout fallback
     setTimeout(() => {
       if (workerPendingRequests.has(requestId)) {
         workerPendingRequests.delete(requestId);
+        console.error(`${logPrefix} Request timed out after 300000ms`);
         reject(new Error("Background removal request timed out"));
       }
     }, 300000); // 5 minutes
@@ -996,8 +1026,12 @@ function removeBackground(inputPath, outputPath, options = {}) {
 
 function removeBackgroundFallback(inputPath, outputPath, options = {}) {
   return new Promise((resolve, reject) => {
-    const mode = options.mode || "ai";
-    const args = [BG_REMOVER_SCRIPT_PATH, inputPath, outputPath, mode];
+    const fallbackStart = Date.now();
+    const requestId = `fb-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
+    const logPrefix = `[${requestId}]`;
+    
+    const mode = options.mode || "auto";
+    const args = [BG_REMOVER_FALLBACK_SCRIPT, inputPath, outputPath, mode];
     
     if (mode === "logo") {
       if (options.submode !== undefined) args.push(options.submode);
@@ -1010,17 +1044,22 @@ function removeBackgroundFallback(inputPath, outputPath, options = {}) {
         console.log("[DEBUG] backgroundColorCustom:", customStr);
         args.push(customStr);
       }
-    } else {
+    } else if (mode === "ai") {
       if (options.model) args.push(options.model);
       if (options.alphaMatting !== undefined) args.push(options.alphaMatting.toString());
       if (options.alphaMattingForegroundThreshold !== undefined) args.push(options.alphaMattingForegroundThreshold.toString());
       if (options.alphaMattingBackgroundThreshold !== undefined) args.push(options.alphaMattingBackgroundThreshold.toString());
       if (options.alphaMattingErodeSize !== undefined) args.push(options.alphaMattingErodeSize.toString());
     }
+    // For "auto" mode, no extra args needed
     
+    console.log(`${logPrefix} Fallback: Spawning Python process`, { mode, args: args.slice(0, 5) });
+    
+    const spawnStart = Date.now();
     const pythonProcess = spawn(BG_REMOVER_PYTHON_BIN, args, {
       env: { ...process.env, PYTHONUNBUFFERED: "1", PYTHONIOENCODING: "utf-8" },
     });
+    console.log(`${logPrefix} Fallback: Process spawned`, { spawnDurationMs: Date.now() - spawnStart, pid: pythonProcess.pid });
     
     let stdout = "";
     let stderr = "";
@@ -1034,9 +1073,10 @@ function removeBackgroundFallback(inputPath, outputPath, options = {}) {
     });
     
     pythonProcess.on("close", (code) => {
+      const totalDuration = Date.now() - fallbackStart;
       if (code !== 0) {
-        console.error("[Background Remover] Python process exited with code:", code);
-        console.error("[Background Remover] stderr:", stderr);
+        console.error(`${logPrefix} Fallback: Python process exited with code`, { code, totalDurationMs: totalDuration });
+        console.error(`${logPrefix} Fallback: stderr:`, stderr);
         reject(new Error(`Background removal failed with code ${code}: ${stderr}`));
         return;
       }
@@ -1048,18 +1088,20 @@ function removeBackgroundFallback(inputPath, outputPath, options = {}) {
         }
 
         if (result.success) {
+          console.log(`${logPrefix} Fallback: Completed successfully`, { totalDurationMs: totalDuration });
           resolve(result.output_path);
         } else {
+          console.error(`${logPrefix} Fallback: Failed`, { error: result.error, totalDurationMs: totalDuration });
           reject(new Error(result.error || "Unknown background removal error"));
         }
       } catch (parseError) {
-        console.error("[Background Remover] Failed to parse result:", stdout);
+        console.error(`${logPrefix} Fallback: Failed to parse result`, { stdout: stdout.slice(-500), totalDurationMs: totalDuration });
         reject(new Error("Background removal failed: invalid response from processor"));
       }
     });
     
     pythonProcess.on("error", (err) => {
-      console.error("[Background Remover] Failed to spawn Python process:", err);
+      console.error(`${logPrefix} Fallback: Failed to spawn Python process`, { error: err.message });
       reject(new Error("Background removal service unavailable"));
     });
   });
@@ -1094,7 +1136,12 @@ app.get("/health/background-remover", (req, res) => {
 app.post("/image-tools/remove-background", upload.single("file"), async (req, res) => {
   // Apply concurrency limit for background removal (memory intensive)
   const limiter = getLimiter('backgroundRemoval');
+  const endpointStart = Date.now();
+  const requestId = `req-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
+  const logPrefix = `[${requestId}]`;
+  
   await limiter.run(async () => {
+    const limiterStart = Date.now();
     try {
       if (!req.file) {
         return res.status(400).json({ error: "No file uploaded" });
@@ -1112,30 +1159,9 @@ app.post("/image-tools/remove-background", upload.single("file"), async (req, re
         return res.status(413).json({ error: "File too large. Maximum size is 20 MB." });
       }
 
-      // Parse optional parameters
+      // Parse optional parameters (mode defaults to "auto" for automatic detection)
       const options = {
-        mode: req.body.mode || "ai",
-        model: req.body.model || "isnet-general-use",
-        alphaMatting: req.body.alphaMatting === "true",
-        alphaMattingForegroundThreshold: parseInt(req.body.alphaMattingForegroundThreshold) || 240,
-        alphaMattingBackgroundThreshold: parseInt(req.body.alphaMattingBackgroundThreshold) || 10,
-        alphaMattingErodeSize: parseInt(req.body.alphaMattingErodeSize) || 10,
-        // Logo mode parameters
-        tolerance: parseInt(req.body.tolerance) || 30,
-        featherRadius: parseFloat(req.body.featherRadius) || 1.0,
-        erodeSize: parseInt(req.body.erodeSize) || 0,
-        submode: req.body.submode || "edge",
-        backgroundColorPreset: req.body.backgroundColorPreset || "auto",
-        backgroundColorCustom: (() => {
-          if (!req.body.backgroundColorCustom) return null;
-          try {
-            return typeof req.body.backgroundColorCustom === 'string' 
-              ? JSON.parse(req.body.backgroundColorCustom) 
-              : req.body.backgroundColorCustom;
-          } catch {
-            return null;
-          }
-        })(),
+        mode: req.body.mode || "auto",
       };
 
       const inputPath = path.join(__dirname, "temp", `${Date.now()}-${req.file.originalname}`);
@@ -1146,14 +1172,23 @@ app.post("/image-tools/remove-background", upload.single("file"), async (req, re
         fs.mkdirSync(tempDir, { recursive: true });
       }
       
+      const writeStart = Date.now();
       fs.writeFileSync(inputPath, req.file.buffer);
+      console.log(`${logPrefix} Image written to temp`, { fileSize: req.file.size, writeDurationMs: Date.now() - writeStart });
       
       try {
-        console.log("[Background Remover] Starting background removal for:", req.file.originalname);
+        console.log(`${logPrefix} Starting background removal`, { 
+          fileName: req.file.originalname, 
+          fileSize: req.file.size,
+          mode: options.mode,
+          limiterWaitMs: limiterStart - endpointStart
+        });
         await removeBackground(inputPath, outputPath, options);
-        console.log("[Background Remover] Background removal completed");
+        console.log(`${logPrefix} Background removal completed`, { totalDurationMs: Date.now() - endpointStart });
         
+        const readStart = Date.now();
         const outputBuffer = fs.readFileSync(outputPath);
+        console.log(`${logPrefix} Output read`, { outputSize: outputBuffer.length, readDurationMs: Date.now() - readStart });
         
         // Clean up temp files
         fs.unlinkSync(inputPath);
@@ -1169,9 +1204,8 @@ app.post("/image-tools/remove-background", upload.single("file"), async (req, re
           "Content-Length": outputBuffer.length,
           "X-Original-Width": req.body.originalWidth || "",
           "X-Original-Height": req.body.originalHeight || "",
-          "X-Model-Used": options.mode === "logo" ? `logo (submode=${options.submode}, tolerance=${options.tolerance})` : options.model,
-          "X-Processing-Mode": options.mode,
-          "X-Logo-Submode": options.submode || "",
+          "X-Model-Used": "auto",
+          "X-Processing-Mode": "auto",
         });
         
         res.send(outputBuffer);
@@ -1182,7 +1216,7 @@ app.post("/image-tools/remove-background", upload.single("file"), async (req, re
         throw convError;
       }
     } catch (error) {
-      console.error("[Background Remover] Error:", error.message);
+      console.error(`${logPrefix} Error:`, { error: error.message, totalDurationMs: Date.now() - endpointStart });
       const status = error.code === 'INVALID_INPUT' || error.code === 'UNSUPPORTED_FORMAT' ? 400 :
                      error.code === 'FILE_TOO_LARGE' ? 413 :
                      error.code === 'MISSING_DEPENDENCY' ? 503 : 500;

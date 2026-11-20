@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 
 export const metadata: Metadata = {
   title: "AI Background Remover – Remove Image Backgrounds Free Online",
-  description: "Remove backgrounds from images automatically with AI. Upload JPG, PNG, or WEBP and download transparent PNG. Two modes: Photo/AI for complex images, Logo/Graphic for clean edges. Free, no account.",
+  description: "Remove backgrounds from images automatically with AI. Upload JPG, PNG, or WEBP and download transparent PNG. Automatic detection handles photos, products, logos, and graphics. Free, no account.",
   alternates: {
     canonical: "https://zip-drop.vercel.app/image-tools/background-remover",
   },
@@ -27,7 +27,7 @@ const structuredData = {
   url: "https://zip-drop.vercel.app/image-tools/background-remover",
   applicationCategory: "ImageEditor",
   operatingSystem: "Web",
-  description: "Free online AI background remover. Remove backgrounds from JPG, PNG, WEBP images automatically. Two modes: Photo/AI for photographs, Logo/Graphic for graphics. Download transparent PNG. No account required.",
+  description: "Free online AI background remover. Remove backgrounds from JPG, PNG, WEBP images automatically. Automatic detection for photos, products, logos, and graphics. Download transparent PNG. No account required.",
   offers: {
     "@type": "Offer",
     price: "0",
@@ -41,8 +41,8 @@ const structuredData = {
   },
   featureList: [
     "AI-powered background removal",
-    "Photo mode for complex images",
-    "Logo mode for graphics",
+    "Automatic image type detection",
+    "Handles photos, products, logos, graphics",
     "Transparent PNG output",
     "Preserves original dimensions",
     "Max 20MB file size",

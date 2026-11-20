@@ -2,7 +2,7 @@
 
 import { useState, useCallback, useRef, useEffect } from "react";
 import Link from "next/link";
-import { ArrowLeft, Image, Download, Loader2, AlertCircle, Check, X, Eye, Maximize2, Minimize2, RotateCcw } from "lucide-react";
+import { ArrowLeft, Image, Download, Loader2, AlertCircle, Check, X, RotateCcw, Eye, Maximize2, Minimize2 } from "lucide-react";
 import Navbar from "@/components/Navbar";
 import Breadcrumbs from "@/components/Breadcrumbs";
 import { removeBackground, checkBackgroundRemoverHealth, BackgroundRemovalResult } from "@/utils/api";
@@ -15,11 +15,6 @@ const TOOL_NAME = "AI Background Remover";
 const TOOL_DESCRIPTION = "Remove image backgrounds automatically and download clean transparent PNG images.";
 const CATEGORY = "IMAGE TOOLS";
 
-const breadcrumbItems = [
-  { name: "Image Tools", href: "/conversion?category=image-tools" },
-  { name: "Background Remover", href: "/image-tools/background-remover" },
-];
-
 const BACKGROUND_OPTIONS = [
   { id: "transparent", name: "Transparent", color: "transparent", pattern: true },
   { id: "white", name: "White", color: "#FFFFFF", pattern: false },
@@ -28,6 +23,11 @@ const BACKGROUND_OPTIONS = [
   { id: "gradient-1", name: "Blue Gradient", color: "linear-gradient(135deg, #667eea 0%, #764ba2 100%)", pattern: false },
   { id: "gradient-2", name: "Sunset Gradient", color: "linear-gradient(135deg, #f093fb 0%, #f5576c 100%)", pattern: false },
   { id: "gradient-3", name: "Mint Gradient", color: "linear-gradient(135deg, #00d2ff 0%, #3a7bd5 100%)", pattern: false },
+];
+
+const breadcrumbItems = [
+  { name: "Image Tools", href: "/conversion?category=image-tools" },
+  { name: "Background Remover", href: "/image-tools/background-remover" },
 ];
 
 function formatBytes(bytes: number) {
@@ -56,6 +56,27 @@ interface UploadedFile {
   height?: number;
 }
 
+function ErrorDisplay({ error }: { error: string | null }) {
+  if (!error) return null;
+  return (
+    <div style={{
+      marginTop: "16px",
+      padding: "12px 16px",
+      background: "rgba(239, 68, 68, 0.1)",
+      border: "1px solid rgba(239, 68, 68, 0.3)",
+      borderRadius: "8px",
+      display: "flex",
+      alignItems: "center",
+      gap: "10px",
+      color: "#ef4444",
+      fontSize: "13px",
+    }}>
+      <AlertCircle size={18} style={{ flexShrink: 0 }} />
+      <span>{error}</span>
+    </div>
+  );
+}
+
 export default function BackgroundRemoverPage() {
   const [file, setFile] = useState<UploadedFile | null>(null);
   const [dragActive, setDragActive] = useState(false);
@@ -66,11 +87,6 @@ export default function BackgroundRemoverPage() {
   const [showComparison, setShowComparison] = useState(false);
   const [comparisonPosition, setComparisonPosition] = useState(50);
   const [zoomedImage, setZoomedImage] = useState<"original" | "result" | null>(null);
-  const [processingMode, setProcessingMode] = useState<"ai" | "logo">("ai");
-  const [logoSubmode, setLogoSubmode] = useState<"edge" | "enclosed">("edge");
-  const [backgroundColorPreset, setBackgroundColorPreset] = useState<"auto" | "white" | "black" | "custom">("auto");
-  const [backgroundColorCustom, setBackgroundColorCustom] = useState<{r: number; g: number; b: number} | null>(null);
-  const [tolerancePreset, setTolerancePreset] = useState<"low" | "medium" | "high">("medium");
   const inputRef = useRef<HTMLInputElement>(null);
   const originalImgRef = useRef<HTMLImageElement>(null);
   const resultImgRef = useRef<HTMLImageElement>(null);
@@ -165,27 +181,7 @@ export default function BackgroundRemoverPage() {
     setError(null);
     
     try {
-      const options: any = {};
-      if (processingMode === "ai") {
-        options.model = "isnet-general-use";
-        options.alphaMatting = true;
-      } else {
-        // Map tolerance preset to value
-        const toleranceMap = { low: 15, medium: 30, high: 50 };
-        options.tolerance = toleranceMap[tolerancePreset];
-        options.featherRadius = 1.0;
-        options.erodeSize = 0;
-        options.submode = logoSubmode;
-        options.backgroundColorPreset = backgroundColorPreset;
-        if (backgroundColorPreset === "custom" && backgroundColorCustom) {
-          options.backgroundColorCustom = backgroundColorCustom;
-        }
-      }
-      
-      const result = await removeBackground(file.file, {
-        mode: processingMode,
-        ...options,
-      });
+      const result = await removeBackground(file.file);
       
       const objectUrl = URL.createObjectURL(result.blob);
       setResult({ ...result, objectUrl });
@@ -325,7 +321,7 @@ export default function BackgroundRemoverPage() {
                     </div>
                     <div>
                       <p style={{ fontSize: "14px", fontWeight: 600, color: "var(--text-primary)", margin: "0 0 4px" }}>AI removes background</p>
-                      <p style={{ fontSize: "13px", color: "var(--text-secondary)", margin: 0 }}>Our AI model detects the subject and removes the background automatically</p>
+                      <p style={{ fontSize: "13px", color: "var(--text-secondary)", margin: 0 }}>Our AI automatically detects the subject and removes the background</p>
                     </div>
                   </div>
                   <div style={{ flex: 1, minWidth: "180px", display: "flex", alignItems: "flex-start", gap: "12px" }}>
@@ -346,22 +342,9 @@ export default function BackgroundRemoverPage() {
                 </h3>
                 <dl style={{ display: "flex", flexDirection: "column", gap: "16px" }}>
                   <div>
-                    <dt style={{ fontSize: "14px", fontWeight: 600, color: "var(--text-primary)", marginBottom: "4px" }}>What are the two processing modes?</dt>
+                    <dt style={{ fontSize: "14px", fontWeight: 600, color: "var(--text-primary)", marginBottom: "4px" }}>How does the background remover work?</dt>
                     <dd style={{ fontSize: "13px", color: "var(--text-secondary)", margin: 0, lineHeight: 1.6 }}>
-                      <strong>Photo / AI Mode:</strong> Uses a deep learning model (isnet-general-use) trained on diverse image datasets to detect foreground subjects. Best for photographs: portraits, products, animals, and complex scenes with varying backgrounds.<br />
-                      <strong>Logo / Graphic Mode:</strong> Uses edge-connected flood-fill to detect and remove uniform backgrounds. Best for logos, icons, text graphics, and flat illustrations with solid-color backgrounds.
-                    </dd>
-                  </div>
-                  <div>
-                    <dt style={{ fontSize: "14px", fontWeight: 600, color: "var(--text-primary)", marginBottom: "4px" }}>How does the AI background remover work?</dt>
-                    <dd style={{ fontSize: "13px", color: "var(--text-secondary)", margin: 0, lineHeight: 1.6 }}>
-                      We use a state-of-the-art deep learning model (isnet-general-use) trained on diverse image datasets to accurately detect foreground subjects and separate them from backgrounds. The model handles complex edges like hair, fur, and transparent objects.
-                    </dd>
-                  </div>
-                  <div>
-                    <dt style={{ fontSize: "14px", fontWeight: 600, color: "var(--text-primary)", marginBottom: "4px" }}>How does the Logo / Graphic mode work?</dt>
-                    <dd style={{ fontSize: "13px", color: "var(--text-secondary)", margin: 0, lineHeight: 1.6 }}>
-                      This mode samples the background color from image borders, then uses flood-fill from the edges to find all connected pixels within a configurable color tolerance. It preserves enclosed areas (like holes in letters) and applies anti-aliasing for smooth edges.
+                      The tool automatically detects whether your image is a photograph or a graphic/logo, then applies the optimal removal method. For photographs, it uses a deep learning model (isnet-general-use) trained on diverse datasets. For logos and graphics, it uses edge-based color detection to remove uniform backgrounds while preserving details like holes in letters.
                     </dd>
                   </div>
                   <div>
@@ -396,11 +379,11 @@ export default function BackgroundRemoverPage() {
                   </div>
                 </dl>
               </div>
-            </div>
 
-            <p style={{ textAlign: "center", fontSize: "12px", color: "var(--text-muted)" }}>
-              Files are processed securely and deleted after processing. No permanent storage.
-            </p>
+              <p style={{ textAlign: "center", fontSize: "12px", color: "var(--text-muted)" }}>
+                Files are processed securely and deleted after processing. No permanent storage.
+              </p>
+            </div>
           </div>
         </div>
       </>
@@ -485,283 +468,6 @@ export default function BackgroundRemoverPage() {
 
                 <ErrorDisplay error={error} />
 
-                {/* Processing Mode Selector */}
-                <div style={{ marginTop: "16px" }}>
-                  <p style={{ fontSize: "12px", fontWeight: 600, color: "var(--text-secondary)", textTransform: "uppercase", letterSpacing: "0.05em", marginBottom: "8px" }}>
-                    Processing Mode
-                  </p>
-                  <div style={{ display: "flex", gap: "8px", flexWrap: "wrap" }}>
-                    <button
-                      onClick={() => setProcessingMode("ai")}
-                      disabled={processing}
-                      style={{
-                        padding: "10px 16px",
-                        borderRadius: "8px",
-                        border: `2px solid ${processingMode === "ai" ? "var(--primary-teal)" : "var(--border)"}`,
-                        background: processingMode === "ai" ? "var(--teal-light)" : "var(--bg-card)",
-                        color: processingMode === "ai" ? "var(--primary-teal)" : "var(--text-secondary)",
-                        fontSize: "13px",
-                        fontWeight: 500,
-                        cursor: processing ? "not-allowed" : "pointer",
-                        transition: "all 0.2s ease",
-                        opacity: processing ? 0.5 : 1,
-                      }}
-                    >
-                      <span style={{ display: "flex", alignItems: "center", gap: "6px" }}>
-                        <Image size={16} />
-                        Photo / AI Mode
-                      </span>
-                    </button>
-                    <button
-                      onClick={() => setProcessingMode("logo")}
-                      disabled={processing}
-                      style={{
-                        padding: "10px 16px",
-                        borderRadius: "8px",
-                        border: `2px solid ${processingMode === "logo" ? "var(--primary-teal)" : "var(--border)"}`,
-                        background: processingMode === "logo" ? "var(--teal-light)" : "var(--bg-card)",
-                        color: processingMode === "logo" ? "var(--primary-teal)" : "var(--text-secondary)",
-                        fontSize: "13px",
-                        fontWeight: 500,
-                        cursor: processing ? "not-allowed" : "pointer",
-                        transition: "all 0.2s ease",
-                        opacity: processing ? 0.5 : 1,
-                      }}
-                    >
-                      <span style={{ display: "flex", alignItems: "center", gap: "6px" }}>
-                        <Eye size={16} />
-                        Logo / Graphic Mode
-                      </span>
-                    </button>
-                  </div>
-                  <p style={{ fontSize: "11px", color: "var(--text-muted)", marginTop: "8px", lineHeight: 1.5 }}>
-                    {processingMode === "ai" 
-                      ? "Best for photographs: portraits, products, animals, and complex scenes. Uses AI to detect foreground subjects." 
-                      : "Best for logos, icons, text graphics, and flat illustrations with uniform backgrounds. Uses edge-based color detection."}
-                  </p>
-                </div>
-
-                {/* Logo Mode Options - only show when Logo mode is selected */}
-                {processingMode === "logo" && (
-                  <div style={{ marginTop: "16px", padding: "16px", background: "var(--editor-workspace)", border: "1px solid var(--border)", borderRadius: "10px" }}>
-                    {/* Submode Selector */}
-                    <div style={{ marginBottom: "16px" }}>
-                      <p style={{ fontSize: "11px", fontWeight: 600, color: "var(--text-secondary)", textTransform: "uppercase", letterSpacing: "0.05em", marginBottom: "8px" }}>
-                        Background Removal Method
-                      </p>
-                      <div style={{ display: "flex", gap: "8px", flexWrap: "wrap" }}>
-                        <button
-                          onClick={() => setLogoSubmode("edge")}
-                          disabled={processing}
-                          style={{
-                            padding: "8px 14px",
-                            borderRadius: "8px",
-                            border: `2px solid ${logoSubmode === "edge" ? "var(--primary-teal)" : "var(--border)"}`,
-                            background: logoSubmode === "edge" ? "var(--teal-light)" : "var(--bg-card)",
-                            color: logoSubmode === "edge" ? "var(--primary-teal)" : "var(--text-secondary)",
-                            fontSize: "12px",
-                            fontWeight: 500,
-                            cursor: processing ? "not-allowed" : "pointer",
-                            transition: "all 0.2s ease",
-                            opacity: processing ? 0.5 : 1,
-                          }}
-                        >
-                          Edge-Connected Only
-                        </button>
-                        <button
-                          onClick={() => setLogoSubmode("enclosed")}
-                          disabled={processing}
-                          style={{
-                            padding: "8px 14px",
-                            borderRadius: "8px",
-                            border: `2px solid ${logoSubmode === "enclosed" ? "var(--primary-teal)" : "var(--border)"}`,
-                            background: logoSubmode === "enclosed" ? "var(--teal-light)" : "var(--bg-card)",
-                            color: logoSubmode === "enclosed" ? "var(--primary-teal)" : "var(--text-secondary)",
-                            fontSize: "12px",
-                            fontWeight: 500,
-                            cursor: processing ? "not-allowed" : "pointer",
-                            transition: "all 0.2s ease",
-                            opacity: processing ? 0.5 : 1,
-                          }}
-                        >
-                          Remove Enclosed Regions
-                        </button>
-                      </div>
-                      <p style={{ fontSize: "11px", color: "var(--text-muted)", marginTop: "8px", lineHeight: 1.5 }}>
-                        {logoSubmode === "edge" 
-                          ? "Only removes background connected to image edges. Preserves enclosed regions (e.g., white inside letters)." 
-                          : "Removes ALL pixels matching the background color, including enclosed regions like letter counters (o, p, d, etc.)."}
-                      </p>
-                    </div>
-
-                    {/* Background Color Preset */}
-                    <div style={{ marginBottom: "16px" }}>
-                      <p style={{ fontSize: "11px", fontWeight: 600, color: "var(--text-secondary)", textTransform: "uppercase", letterSpacing: "0.05em", marginBottom: "8px" }}>
-                        Background Color
-                      </p>
-                      <div style={{ display: "flex", gap: "8px", flexWrap: "wrap", alignItems: "center" }}>
-                        <button
-                          onClick={() => setBackgroundColorPreset("auto")}
-                          disabled={processing}
-                          style={{
-                            padding: "8px 14px",
-                            borderRadius: "8px",
-                            border: `2px solid ${backgroundColorPreset === "auto" ? "var(--primary-teal)" : "var(--border)"}`,
-                            background: backgroundColorPreset === "auto" ? "var(--teal-light)" : "var(--bg-card)",
-                            color: backgroundColorPreset === "auto" ? "var(--primary-teal)" : "var(--text-secondary)",
-                            fontSize: "12px",
-                            fontWeight: 500,
-                            cursor: processing ? "not-allowed" : "pointer",
-                            transition: "all 0.2s ease",
-                            opacity: processing ? 0.5 : 1,
-                          }}
-                        >
-                          Auto Detect
-                        </button>
-                        <button
-                          onClick={() => setBackgroundColorPreset("white")}
-                          disabled={processing}
-                          style={{
-                            padding: "8px 14px",
-                            borderRadius: "8px",
-                            border: `2px solid ${backgroundColorPreset === "white" ? "var(--primary-teal)" : "var(--border)"}`,
-                            background: backgroundColorPreset === "white" ? "var(--teal-light)" : "var(--bg-card)",
-                            color: backgroundColorPreset === "white" ? "var(--primary-teal)" : "var(--text-secondary)",
-                            fontSize: "12px",
-                            fontWeight: 500,
-                            cursor: processing ? "not-allowed" : "pointer",
-                            transition: "all 0.2s ease",
-                            opacity: processing ? 0.5 : 1,
-                          }}
-                        >
-                          White
-                        </button>
-                        <button
-                          onClick={() => setBackgroundColorPreset("black")}
-                          disabled={processing}
-                          style={{
-                            padding: "8px 14px",
-                            borderRadius: "8px",
-                            border: `2px solid ${backgroundColorPreset === "black" ? "var(--primary-teal)" : "var(--border)"}`,
-                            background: backgroundColorPreset === "black" ? "var(--teal-light)" : "var(--bg-card)",
-                            color: backgroundColorPreset === "black" ? "var(--primary-teal)" : "var(--text-secondary)",
-                            fontSize: "12px",
-                            fontWeight: 500,
-                            cursor: processing ? "not-allowed" : "pointer",
-                            transition: "all 0.2s ease",
-                            opacity: processing ? 0.5 : 1,
-                          }}
-                        >
-                          Black
-                        </button>
-                        <button
-                          onClick={() => setBackgroundColorPreset("custom")}
-                          disabled={processing}
-                          style={{
-                            padding: "8px 14px",
-                            borderRadius: "8px",
-                            border: `2px solid ${backgroundColorPreset === "custom" ? "var(--primary-teal)" : "var(--border)"}`,
-                            background: backgroundColorPreset === "custom" ? "var(--teal-light)" : "var(--bg-card)",
-                            color: backgroundColorPreset === "custom" ? "var(--primary-teal)" : "var(--text-secondary)",
-                            fontSize: "12px",
-                            fontWeight: 500,
-                            cursor: processing ? "not-allowed" : "pointer",
-                            transition: "all 0.2s ease",
-                            opacity: processing ? 0.5 : 1,
-                          }}
-                        >
-                          Custom
-                        </button>
-                        {backgroundColorPreset === "custom" && (
-                          <input
-                            type="color"
-                            value={`rgb(${backgroundColorCustom?.r || 255},${backgroundColorCustom?.g || 255},${backgroundColorCustom?.b || 255})`}
-                            onChange={(e) => {
-                              const hex = e.target.value;
-                              const r = parseInt(hex.slice(1, 3), 16);
-                              const g = parseInt(hex.slice(3, 5), 16);
-                              const b = parseInt(hex.slice(5, 7), 16);
-                              setBackgroundColorCustom({ r, g, b });
-                            }}
-                            disabled={processing}
-                            style={{ width: "36px", height: "36px", border: "none", borderRadius: "6px", cursor: processing ? "not-allowed" : "pointer", opacity: processing ? 0.5 : 1 }}
-                            title="Pick custom background color"
-                          />
-                        )}
-                      </div>
-                      <p style={{ fontSize: "11px", color: "var(--text-muted)", marginTop: "8px", lineHeight: 1.5 }}>
-                        The background color to remove. "Auto Detect" samples from image borders. Choose "White" or "Black" for common backgrounds, or "Custom" to pick a specific color.
-                      </p>
-                    </div>
-
-                    {/* Tolerance Preset */}
-                    <div>
-                      <p style={{ fontSize: "11px", fontWeight: 600, color: "var(--text-secondary)", textTransform: "uppercase", letterSpacing: "0.05em", marginBottom: "8px" }}>
-                        Color Tolerance
-                      </p>
-                      <div style={{ display: "flex", gap: "8px", flexWrap: "wrap" }}>
-                        <button
-                          onClick={() => setTolerancePreset("low")}
-                          disabled={processing}
-                          style={{
-                            padding: "8px 14px",
-                            borderRadius: "8px",
-                            border: `2px solid ${tolerancePreset === "low" ? "var(--primary-teal)" : "var(--border)"}`,
-                            background: tolerancePreset === "low" ? "var(--teal-light)" : "var(--bg-card)",
-                            color: tolerancePreset === "low" ? "var(--primary-teal)" : "var(--text-secondary)",
-                            fontSize: "12px",
-                            fontWeight: 500,
-                            cursor: processing ? "not-allowed" : "pointer",
-                            transition: "all 0.2s ease",
-                            opacity: processing ? 0.5 : 1,
-                          }}
-                        >
-                          Low (15)
-                        </button>
-                        <button
-                          onClick={() => setTolerancePreset("medium")}
-                          disabled={processing}
-                          style={{
-                            padding: "8px 14px",
-                            borderRadius: "8px",
-                            border: `2px solid ${tolerancePreset === "medium" ? "var(--primary-teal)" : "var(--border)"}`,
-                            background: tolerancePreset === "medium" ? "var(--teal-light)" : "var(--bg-card)",
-                            color: tolerancePreset === "medium" ? "var(--primary-teal)" : "var(--text-secondary)",
-                            fontSize: "12px",
-                            fontWeight: 500,
-                            cursor: processing ? "not-allowed" : "pointer",
-                            transition: "all 0.2s ease",
-                            opacity: processing ? 0.5 : 1,
-                          }}
-                        >
-                          Medium (30)
-                        </button>
-                        <button
-                          onClick={() => setTolerancePreset("high")}
-                          disabled={processing}
-                          style={{
-                            padding: "8px 14px",
-                            borderRadius: "8px",
-                            border: `2px solid ${tolerancePreset === "high" ? "var(--primary-teal)" : "var(--border)"}`,
-                            background: tolerancePreset === "high" ? "var(--teal-light)" : "var(--bg-card)",
-                            color: tolerancePreset === "high" ? "var(--primary-teal)" : "var(--text-secondary)",
-                            fontSize: "12px",
-                            fontWeight: 500,
-                            cursor: processing ? "not-allowed" : "pointer",
-                            transition: "all 0.2s ease",
-                            opacity: processing ? 0.5 : 1,
-                          }}
-                        >
-                          High (50)
-                        </button>
-                      </div>
-                      <p style={{ fontSize: "11px", color: "var(--text-muted)", marginTop: "8px", lineHeight: 1.5 }}>
-                        How closely a pixel must match the background color to be removed. Lower = stricter (preserves more detail), Higher = more aggressive (removes more background).
-                      </p>
-                    </div>
-                  </div>
-                )}
-
                 <button
                   onClick={processImage}
                   disabled={processing}
@@ -792,11 +498,7 @@ export default function BackgroundRemoverPage() {
                 <div style={{ display: "flex", alignItems: "center", gap: "12px", padding: "12px", background: "var(--editor-workspace)", border: "1px solid var(--border)", borderRadius: "10px", fontSize: "12px", color: "var(--text-secondary)" }}>
                   <Eye size={16} style={{ color: "var(--text-muted)" }} />
                   <span>
-                    {processingMode === "ai"
-                      ? "Tip: The AI works best on images with clear subject-background separation. Complex edges like hair and fur are handled automatically."
-                      : logoSubmode === "enclosed"
-                        ? "Tip: Enclosed mode removes all matching background color, including inside letters. Use 'White' preset for white backgrounds. Adjust tolerance if details are lost."
-                        : "Tip: Edge mode only removes background connected to edges. Preserves white inside letters. Best for logos with distinct edge separation."}
+                    The AI automatically detects your image type (photo or graphic) and applies the best removal method. No settings needed.
                   </span>
                 </div>
               </>
@@ -982,273 +684,100 @@ export default function BackgroundRemoverPage() {
                       </div>
                     </div>
                   )}
-                </div>
 
-                {/* Download and actions */}
-                <div style={{ display: "flex", gap: "12px", flexWrap: "wrap", paddingTop: "8px" }}>
-                  <button
-                    onClick={downloadResult}
-                    className="btn-cyan"
-                    style={{ padding: "14px 28px", fontSize: "15px", fontWeight: 700 }}
-                  >
-                    <svg width={20} height={20} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round">
-                      <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
-                      <polyline points="7 10 12 15 17 10"></polyline>
-                      <line x1={12} y1={15} x2={12} y2={3}></line>
-                    </svg>
-                    Download PNG
-                  </button>
-                  <button
-                    onClick={removeFile}
-                    className="btn-ghost"
-                    style={{ padding: "14px 28px", fontSize: "15px", fontWeight: 600 }}
-                  >
-                    <RotateCcw size={18} />
-                    Remove Another
-                  </button>
-                </div>
-
-                {/* Stats */}
-                <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(140px, 1fr))", gap: "12px", padding: "16px", background: "var(--editor-workspace)", border: "1px solid var(--border)", borderRadius: "12px" }}>
-                  <div>
-                    <p style={{ fontSize: "11px", fontWeight: 600, color: "var(--text-secondary)", textTransform: "uppercase", letterSpacing: "0.05em", margin: "0 0 4px" }}>
-                      Original Size
-                    </p>
-                    <p style={{ fontSize: "18px", fontWeight: 700, color: "var(--text-primary)", margin: 0, fontFamily: "var(--font-mono)" }}>
-                      {formatBytes(file.size)}
-                    </p>
-                  </div>
-                  <div>
-                    <p style={{ fontSize: "11px", fontWeight: 600, color: "var(--text-secondary)", textTransform: "uppercase", letterSpacing: "0.05em", margin: "0 0 4px" }}>
-                      Output Size
-                    </p>
-                    <p style={{ fontSize: "18px", fontWeight: 700, color: "var(--primary-teal)", margin: 0, fontFamily: "var(--font-mono)" }}>
-                      {formatBytes(result.blob.size)}
-                    </p>
-                  </div>
-                  <div>
-                    <p style={{ fontSize: "11px", fontWeight: 600, color: "var(--text-secondary)", textTransform: "uppercase", letterSpacing: "0.05em", margin: "0 0 4px" }}>
-                      Dimensions
-                    </p>
-                    <p style={{ fontSize: "18px", fontWeight: 700, color: "var(--text-primary)", margin: 0, fontFamily: "var(--font-mono)" }}>
-                      {result.stats.originalWidth}×{result.stats.originalHeight}
-                    </p>
-                  </div>
-                  <div>
-                    <p style={{ fontSize: "11px", fontWeight: 600, color: "var(--text-secondary)", textTransform: "uppercase", letterSpacing: "0.05em", margin: "0 0 4px" }}>
-                      Processing Mode
-                    </p>
-                    <p style={{ fontSize: "14px", fontWeight: 600, color: "var(--primary-teal)", margin: 0, fontFamily: "var(--font-mono)" }}>
-                      {result.stats.processingMode === "ai" ? "Photo / AI" : "Logo / Graphic"}
-                    </p>
-                  </div>
-                  {result.stats.processingMode === "logo" && (
-                    <>
-                      <div>
-                        <p style={{ fontSize: "11px", fontWeight: 600, color: "var(--text-secondary)", textTransform: "uppercase", letterSpacing: "0.05em", margin: "0 0 4px" }}>
-                          Logo Submode
-                        </p>
-                        <p style={{ fontSize: "14px", fontWeight: 600, color: "var(--primary-teal)", margin: 0, fontFamily: "var(--font-mono)" }}>
-                          {result.stats.logoSubmode === "edge" ? "Edge-Connected" : "Enclosed Regions"}
-                        </p>
-                      </div>
-                      <div>
-                        <p style={{ fontSize: "11px", fontWeight: 600, color: "var(--text-secondary)", textTransform: "uppercase", letterSpacing: "0.05em", margin: "0 0 4px" }}>
-                          Background Preset
-                        </p>
-                        <p style={{ fontSize: "14px", fontWeight: 600, color: "var(--primary-teal)", margin: 0, fontFamily: "var(--font-mono)" }}>
-                          {backgroundColorPreset === "custom" && backgroundColorCustom 
-                            ? `Custom (${backgroundColorCustom.r},${backgroundColorCustom.g},${backgroundColorCustom.b})` 
-                            : backgroundColorPreset.charAt(0).toUpperCase() + backgroundColorPreset.slice(1)}
-                        </p>
-                      </div>
-                    </>
-                  )}
-                  <div>
-                    <p style={{ fontSize: "11px", fontWeight: 600, color: "var(--text-secondary)", textTransform: "uppercase", letterSpacing: "0.05em", margin: "0 0 4px" }}>
-                      Model Used
-                    </p>
-                    <p style={{ fontSize: "14px", fontWeight: 600, color: "var(--primary-teal)", margin: 0, fontFamily: "var(--font-mono)" }}>
-                      {result.stats.modelUsed}
-                    </p>
+                  {/* Download button */}
+                  <div style={{ display: "flex", gap: "12px", flexWrap: "wrap" }}>
+                    <button
+                      onClick={downloadResult}
+                      className="btn-cyan"
+                      style={{
+                        flex: 1,
+                        minWidth: 200,
+                        padding: "16px 24px",
+                        fontSize: "15px",
+                        fontWeight: 700,
+                        display: "flex",
+                        alignItems: "center",
+                        justifyContent: "center",
+                        gap: "8px",
+                      }}
+                    >
+                      <Download size={20} />
+                      Download Transparent PNG
+                    </button>
+                    <button
+                      onClick={replaceFile}
+                      className="btn-ghost"
+                      style={{
+                        flex: 1,
+                        minWidth: 200,
+                        padding: "16px 24px",
+                        fontSize: "15px",
+                        fontWeight: 600,
+                        display: "flex",
+                        alignItems: "center",
+                        justifyContent: "center",
+                        gap: "8px",
+                      }}
+                    >
+                      <RotateCcw size={20} />
+                      Replace Image
+                    </button>
                   </div>
                 </div>
               </>
             )}
 
-            {/* How it works */}
-            <div style={{ paddingTop: "16px", borderTop: "1px solid var(--border)" }}>
-              <h3 style={{ fontSize: "14px", fontWeight: 600, color: "var(--text-secondary)", marginBottom: "16px", textTransform: "uppercase", letterSpacing: "0.05em" }}>
-                How it works
-              </h3>
-              <div style={{ display: "flex", gap: "24px", flexWrap: "wrap" }}>
-                <div style={{ flex: 1, minWidth: "180px", display: "flex", alignItems: "flex-start", gap: "12px" }}>
-                  <div style={{ width: 32, height: 32, borderRadius: "8px", background: "var(--teal-light)", color: "var(--primary-teal)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
-                    <span style={{ fontWeight: 700, fontSize: "14px" }}>1</span>
-                  </div>
-                  <div>
-                    <p style={{ fontSize: "14px", fontWeight: 600, color: "var(--text-primary)", margin: "0 0 4px" }}>Upload your image</p>
-                    <p style={{ fontSize: "13px", color: "var(--text-secondary)", margin: 0 }}>Drag and drop or click to select a JPG, PNG, or WEBP file</p>
-                  </div>
-                </div>
-                <div style={{ flex: 1, minWidth: "180px", display: "flex", alignItems: "flex-start", gap: "12px" }}>
-                  <div style={{ width: 32, height: 32, borderRadius: "8px", background: "var(--teal-light)", color: "var(--primary-teal)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
-                    <span style={{ fontWeight: 700, fontSize: "14px" }}>2</span>
-                  </div>
-                  <div>
-                    <p style={{ fontSize: "14px", fontWeight: 600, color: "var(--text-primary)", margin: "0 0 4px" }}>AI removes background</p>
-                    <p style={{ fontSize: "13px", color: "var(--text-secondary)", margin: 0 }}>Our AI model detects the subject and removes the background automatically</p>
-                  </div>
-                </div>
-                <div style={{ flex: 1, minWidth: "180px", display: "flex", alignItems: "flex-start", gap: "12px" }}>
-                  <div style={{ width: 32, height: 32, borderRadius: "8px", background: "var(--teal-light)", color: "var(--primary-teal)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
-                    <span style={{ fontWeight: 700, fontSize: "14px" }}>3</span>
-                  </div>
-                  <div>
-                    <p style={{ fontSize: "14px", fontWeight: 600, color: "var(--text-primary)", margin: "0 0 4px" }}>Download transparent PNG</p>
-                    <p style={{ fontSize: "13px", color: "var(--text-secondary)", margin: 0 }}>Get your result with preserved dimensions and full transparency</p>
-                  </div>
-                </div>
+            {/* Zoom modal */}
+            {zoomedImage && (
+              <div
+                style={{
+                  position: "fixed",
+                  inset: 0,
+                  background: "rgba(0, 0, 0, 0.95)",
+                  zIndex: 1000,
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  padding: "24px",
+                }}
+                onClick={closeZoom}
+              >
+                <button
+                  onClick={(e) => { e.stopPropagation(); closeZoom(); }}
+                  style={{
+                    position: "absolute",
+                    top: "24px",
+                    right: "24px",
+                    width: 48,
+                    height: 48,
+                    borderRadius: "50%",
+                    background: "rgba(255,255,255,0.1)",
+                    border: "none",
+                    color: "white",
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    cursor: "pointer",
+                    fontSize: "24px",
+                  }}
+                >
+                  <X size={24} />
+                </button>
+                <img
+                  src={zoomedImage === "original" ? file.preview : (result?.objectUrl || URL.createObjectURL(result!.blob))}
+                  alt={zoomedImage === "original" ? "Original" : "Background removed"}
+                  style={{
+                    maxWidth: "100%",
+                    maxHeight: "100%",
+                    objectFit: "contain",
+                  }}
+                />
               </div>
-            </div>
-
-            {/* FAQ */}
-            <div style={{ paddingTop: "24px", borderTop: "1px solid var(--border)" }}>
-              <h3 style={{ fontSize: "14px", fontWeight: 600, color: "var(--text-secondary)", marginBottom: "16px", textTransform: "uppercase", letterSpacing: "0.05em" }}>
-                FAQ
-              </h3>
-              <dl style={{ display: "flex", flexDirection: "column", gap: "16px" }}>
-                <div>
-                  <dt style={{ fontSize: "14px", fontWeight: 600, color: "var(--text-primary)", marginBottom: "4px" }}>What are the two processing modes?</dt>
-                  <dd style={{ fontSize: "13px", color: "var(--text-secondary)", margin: 0, lineHeight: 1.6 }}>
-                    <strong>Photo / AI Mode:</strong> Uses a deep learning model (isnet-general-use) trained on diverse image datasets to detect foreground subjects. Best for photographs: portraits, products, animals, and complex scenes with varying backgrounds.<br />
-                    <strong>Logo / Graphic Mode:</strong> Uses edge-connected flood-fill to detect and remove uniform backgrounds. Best for logos, icons, text graphics, and flat illustrations with solid-color backgrounds.
-                  </dd>
-                </div>
-                <div>
-                  <dt style={{ fontSize: "14px", fontWeight: 600, color: "var(--text-primary)", marginBottom: "4px" }}>How does the AI background remover work?</dt>
-                  <dd style={{ fontSize: "13px", color: "var(--text-secondary)", margin: 0, lineHeight: 1.6 }}>
-                    We use a state-of-the-art deep learning model (isnet-general-use) trained on diverse image datasets to accurately detect foreground subjects and separate them from backgrounds. The model handles complex edges like hair, fur, and transparent objects.
-                  </dd>
-                </div>
-                <div>
-                  <dt style={{ fontSize: "14px", fontWeight: 600, color: "var(--text-primary)", marginBottom: "4px" }}>How does the Logo / Graphic mode work?</dt>
-                  <dd style={{ fontSize: "13px", color: "var(--text-secondary)", margin: 0, lineHeight: 1.6 }}>
-                    This mode samples the background color from image borders, then uses flood-fill from the edges to find all connected pixels within a configurable color tolerance. It preserves enclosed areas (like holes in letters) and applies anti-aliasing for smooth edges.
-                  </dd>
-                </div>
-                <div>
-                  <dt style={{ fontSize: "14px", fontWeight: 600, color: "var(--text-primary)", marginBottom: "4px" }}>Which image formats are supported?</dt>
-                  <dd style={{ fontSize: "13px", color: "var(--text-secondary)", margin: 0, lineHeight: 1.6 }}>
-                    JPG, PNG, and WEBP images up to 20 MB. The output is always a transparent PNG to preserve the alpha channel.
-                  </dd>
-                </div>
-                <div>
-                  <dt style={{ fontSize: "14px", fontWeight: 600, color: "var(--text-primary)", marginBottom: "4px" }}>Does the output support transparency?</dt>
-                  <dd style={{ fontSize: "13px", color: "var(--text-secondary)", margin: 0, lineHeight: 1.6 }}>
-                    Yes. The result is a PNG file with a full alpha channel. Transparent areas remain transparent when downloaded.
-                  </dd>
-                </div>
-                <div>
-                  <dt style={{ fontSize: "14px", fontWeight: 600, color: "var(--text-primary)", marginBottom: "4px" }}>Will the original image dimensions be preserved?</dt>
-                  <dd style={{ fontSize: "13px", color: "var(--text-secondary)", margin: 0, lineHeight: 1.6 }}>
-                    Yes. The output maintains the exact same pixel dimensions as the input image.
-                  </dd>
-                </div>
-                <div>
-                  <dt style={{ fontSize: "14px", fontWeight: 600, color: "var(--text-primary)", marginBottom: "4px" }}>Are uploaded images permanently stored?</dt>
-                  <dd style={{ fontSize: "13px", color: "var(--text-secondary)", margin: 0, lineHeight: 1.6 }}>
-                    No. Images are processed in memory and temporary files are deleted immediately after processing. We do not store your images.
-                  </dd>
-                </div>
-                <div>
-                  <dt style={{ fontSize: "14px", fontWeight: 600, color: "var(--text-primary)", marginBottom: "4px" }}>Is the background remover free to use?</dt>
-                  <dd style={{ fontSize: "13px", color: "var(--text-secondary)", margin: 0, lineHeight: 1.6 }}>
-                    Yes, the tool is free to use with no registration required.
-                  </dd>
-                </div>
-              </dl>
-            </div>
+            )}
           </div>
-
-          <p style={{ textAlign: "center", fontSize: "12px", color: "var(--text-muted)" }}>
-            Files are processed securely and deleted after processing. No permanent storage.
-          </p>
         </div>
       </div>
-
-      {/* Zoom modal */}
-      {zoomedImage && (
-        <div
-          style={{
-            position: "fixed",
-            inset: 0,
-            zIndex: 1000,
-            background: "rgba(0,0,0,0.9)",
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "center",
-            padding: "24px",
-          }}
-          onClick={closeZoom}
-        >
-          <div style={{ position: "relative", maxWidth: "90vw", maxHeight: "90vh" }}>
-            <button
-              onClick={closeZoom}
-              style={{
-                position: "absolute",
-                top: "-48px",
-                right: 0,
-                width: 40,
-                height: 40,
-                borderRadius: "50%",
-                background: "rgba(255,255,255,0.1)",
-                border: "none",
-                color: "white",
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "center",
-                cursor: "pointer",
-              }}
-            >
-              <X size={24} />
-            </button>
-            <img
-              src={zoomedImage === "original" ? file.preview : URL.createObjectURL(result!.blob)}
-              alt={zoomedImage === "original" ? "Original" : "Background removed"}
-              style={{
-                maxWidth: "100%",
-                maxHeight: "90vh",
-                objectFit: "contain",
-                borderRadius: "8px",
-                boxShadow: "0 20px 60px rgba(0,0,0,0.5)",
-              }}
-            />
-            <p style={{ textAlign: "center", color: "rgba(255,255,255,0.7)", marginTop: "16px", fontSize: "14px" }}>
-              {zoomedImage === "original" ? "Original Image" : "Background Removed"} — Click outside to close
-            </p>
-          </div>
-        </div>
-      )}
     </>
-  );
-}
-
-function ErrorDisplay({ error }: { error: string | null }) {
-  if (!error) return null;
-  return (
-    <div style={{
-      display: "flex",
-      alignItems: "flex-start",
-      gap: "10px",
-      padding: "12px 16px",
-      background: "var(--danger-light)",
-      border: "1px solid rgba(214,69,69,0.20)",
-      borderRadius: "10px",
-      animation: "slideUp 0.3s ease forwards",
-    }}>
-      <AlertCircle size={20} style={{ color: "var(--danger)", flexShrink: 0, marginTop: "1px" }} />
-      <p style={{ fontSize: "13px", color: "var(--danger)", margin: 0 }}>{error}</p>
-    </div>
   );
 }

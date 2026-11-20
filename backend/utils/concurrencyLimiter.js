@@ -14,45 +14,142 @@ class ConcurrencyLimiter {
 
   /**
    * Execute a function with concurrency limiting
-   * @param {Function} fn - Async function to execute
+   * @param {Function} fn - Async function to execute, receives AbortSignal as argument
+   * @param {AbortSignal} [signal] - Optional abort signal for cancellation
    * @returns {Promise} Result of the function
    */
-  async run(fn) {
+  async run(fn, signal) {
     return new Promise((resolve, reject) => {
-      const task = { fn, resolve, reject, startTime: Date.now() };
+      const task = { fn, resolve, reject, startTime: Date.now(), aborted: false, completed: false, started: false, slotReleased: false, abortHandler: null, signal };
       this.queue.push(task);
-      this.processQueue();
+      
+      // Handle external abort signal
+      if (signal) {
+        if (signal.aborted) {
+          task.aborted = true;
+          this._removeTaskFromQueue(task);
+          reject(new Error('Operation aborted'));
+          return;
+        }
+        task.abortHandler = () => {
+          if (!task.completed && !task.aborted) {
+            task.aborted = true;
+            if (task.started) {
+              // If already running, we can't stop it but we can reject the promise
+              // The slot will be released when the operation actually finishes
+              this._settleCaller(task, new Error('Operation aborted'), true);
+            } else {
+              this._removeTaskFromQueue(task);
+              this._settleCaller(task, new Error('Operation aborted'), true);
+            }
+          }
+        };
+        signal.addEventListener('abort', task.abortHandler, { once: true });
+      }
+      
+      // Process queue asynchronously to allow abort to be handled before task starts
+      setImmediate(() => this.processQueue());
     });
   }
 
+  _removeTaskFromQueue(task) {
+    const index = this.queue.indexOf(task);
+    if (index !== -1) {
+      this.queue.splice(index, 1);
+    }
+  }
+
+  _releaseSlot(task) {
+    // Only release if the task was actually running
+    if (task.started && !task.slotReleased) {
+      task.slotReleased = true;
+      this.running--;
+      this.processQueue();
+    }
+  }
+
+  _settleCaller(task, result, isError) {
+    if (task.callerSettled) return;
+    task.callerSettled = true;
+
+    // Clean up abort handler
+    if (task.abortHandler && task.signal) {
+      task.signal.removeEventListener('abort', task.abortHandler);
+    }
+
+    if (isError) {
+      task.reject(result);
+    } else {
+      task.resolve(result);
+    }
+  }
+
   async processQueue() {
-    if (this.running >= this.maxConcurrent || this.queue.length === 0) {
+    if (
+      this.running >= this.maxConcurrent ||
+      this.queue.length === 0
+    ) {
       return;
     }
 
     const task = this.queue.shift();
-    this.running++;
 
-    // Set up timeout
-    const timeoutId = setTimeout(() => {
-      this.running--;
-      task.reject(new Error(`${this.name} operation timed out after ${this.timeout}ms`));
+    if (task.aborted) {
       this.processQueue();
+      return;
+    }
+
+    this.running++;
+    task.started = true;
+    task.callerSettled = false;
+
+    let timeoutId = null;
+
+    const settleCaller = (result, isError) => {
+      if (task.callerSettled) return;
+      task.callerSettled = true;
+
+      // Clean up abort handler
+      if (task.abortHandler && task.signal) {
+        task.signal.removeEventListener('abort', task.abortHandler);
+      }
+
+      if (isError) {
+        task.reject(result);
+      } else {
+        task.resolve(result);
+      }
+    };
+
+    timeoutId = setTimeout(() => {
+      settleCaller(
+        new Error(
+          `${this.name} operation timed out after ${this.timeout}ms`
+        ),
+        true
+      );
+
+      // IMPORTANT:
+      // Do not release the slot here.
+      // The actual operation may still be running.
     }, this.timeout);
 
     try {
-      const result = await task.fn();
-      clearTimeout(timeoutId);
-      task.resolve(result);
+      // Pass AbortSignal to task function if it accepts one
+      const result = await task.fn(task.signal);
+      settleCaller(result, false);
     } catch (err) {
-      clearTimeout(timeoutId);
-      task.reject(err);
+      settleCaller(err, true);
     } finally {
-      this.running--;
-      // Process next in queue
-      this.processQueue();
+      clearTimeout(timeoutId);
+
+      task.completed = true;
+
+      // Release the slot only when the actual operation settles.
+      this._releaseSlot(task);
     }
   }
+
 
   /**
    * Get current queue status
@@ -72,7 +169,14 @@ class ConcurrencyLimiter {
    */
   clear() {
     for (const task of this.queue) {
-      task.reject(new Error(`${this.name} queue cleared`));
+      if (!task.completed && !task.aborted) {
+        task.aborted = true;
+        // Clean up abort handler
+        if (task.abortHandler && task.signal) {
+          task.signal.removeEventListener('abort', task.abortHandler);
+        }
+        this._settleCaller(task, new Error(`${this.name} queue cleared`), true);
+      }
     }
     this.queue = [];
   }
