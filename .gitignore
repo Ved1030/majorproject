@@ -39,3 +39,12 @@ backend/.env
 .next/
 dist/
 build/frontend/dev-server.log
+
+# Backend runtime artifacts
+backend/temp/*
+backend/api_test_output*.png
+backend/final_test_*.png
+backend/debug_*.txt
+backend/server*.log
+backend/server*.txt
+backend/converters/test_*

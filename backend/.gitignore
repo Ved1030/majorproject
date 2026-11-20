@@ -1,2 +1,11 @@
 node_modules
 .env
+temp/
+__pycache__/
+.libreoffice/
+*.log
+server*.txt
+api_test_output*.png
+final_test_*.png
+debug_*.txt
+converters/test_*
