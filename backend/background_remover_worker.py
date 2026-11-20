@@ -195,7 +195,47 @@ def color_based_background_mask(img_array, background_color, tolerance=30):
     bg_mask = dist <= tolerance
     return bg_mask
 
-def refine_alpha_mask(alpha_mask, feather_radius=1, erode_size=0):
+def decontaminate_foreground_colors(img_array, alpha_mask, background_color):
+    """
+    Remove background color contamination from semi-transparent edge pixels.
+    
+    For pixels with 0 < alpha < 255, the observed color is a blend of foreground and background.
+    We estimate the true foreground color and replace the contaminated color.
+    
+    Formula: C = alpha * F + (1-alpha) * B  =>  F = (C - (1-alpha) * B) / alpha
+    """
+    h, w = img_array.shape[:2]
+    alpha = alpha_mask.astype(np.float32) / 255.0
+    rgb = img_array[:, :, :3].astype(np.float32)
+    bg = background_color.astype(np.float32)
+    
+    # Find semi-transparent pixels
+    semi_mask = (alpha > 0) & (alpha < 1)
+    
+    if not np.any(semi_mask):
+        return img_array
+    
+    # For each semi-transparent pixel, decontaminate
+    # F = (C - (1-a) * B) / a
+    # To avoid noise amplification at very low alpha, only decontaminate where alpha > threshold
+    decontaminate_mask = semi_mask & (alpha > 0.05)
+    
+    if np.any(decontaminate_mask):
+        a = alpha[decontaminate_mask, np.newaxis]
+        c = rgb[decontaminate_mask]
+        # Compute foreground color
+        f = (c - (1 - a) * bg) / a
+        # Clip to valid range
+        f = np.clip(f, 0, 255)
+        # Apply decontaminated colors
+        result = img_array.copy()
+        result[decontaminate_mask, :3] = f.astype(np.uint8)
+        return result
+    
+    return img_array
+
+
+def refine_alpha_mask(alpha_mask, feather_radius=1, erode_size=0, for_logo=False):
     """Refine the alpha mask with feathering and optional erosion."""
     alpha = alpha_mask.astype(np.float32) * 255
     alpha = 255 - alpha
@@ -207,9 +247,13 @@ def refine_alpha_mask(alpha_mask, feather_radius=1, erode_size=0):
         fg_mask = ndimage.binary_erosion(fg_mask, structure=structure).astype(np.uint8)
         alpha = fg_mask * 255
     
-    if feather_radius > 0:
+    # For logos, use minimal feathering (0.3) to preserve sharp edges
+    # For photos, use the provided feather_radius
+    effective_feather = 0.3 if for_logo else feather_radius
+    
+    if effective_feather > 0:
         from scipy import ndimage
-        alpha = ndimage.gaussian_filter(alpha, sigma=feather_radius)
+        alpha = ndimage.gaussian_filter(alpha, sigma=effective_feather)
     
     alpha = np.clip(alpha, 0, 255)
     return alpha.astype(np.uint8)
@@ -409,13 +453,16 @@ def _process_logo_auto(img_array, output_path, analysis, request_id=None):
     
     log_timing("logo_refine_mask_start", {"feather_radius": feather_radius, "erode_size": erode_size}, request_id)
     start = time.time()
-    alpha = refine_alpha_mask(edge_mask, feather_radius=feather_radius, erode_size=erode_size)
+    alpha = refine_alpha_mask(edge_mask, feather_radius=feather_radius, erode_size=erode_size, for_logo=True)
     log_timing("logo_refine_mask_completed", {"duration_sec": time.time() - start}, request_id)
     
     log_timing("logo_png_generation_start", {}, request_id)
     start = time.time()
     output_array = img_array.copy()
     output_array[:, :, 3] = alpha
+    
+    # Decontaminate foreground colors to remove background color bleeding
+    output_array = decontaminate_foreground_colors(output_array, alpha, bg_color)
     
     output_img = Image.fromarray(output_array, 'RGBA')
     output_img.save(output_path, format='PNG')
@@ -610,10 +657,10 @@ def process_request(request):
         request_id = request.get("requestId")
         
         if not input_path or not output_path:
-            return {"success": False, "error": "Missing input_path or output_path"}
+            return {"success": False, "error": "Missing input_path or output_path", "requestId": request_id}
         
         if not os.path.exists(input_path):
-            return {"success": False, "error": f"Input file not found: {input_path}"}
+            return {"success": False, "error": f"Input file not found: {input_path}", "requestId": request_id}
 
         log_timing("request_received", {"mode": mode, "input": input_path}, request_id)
         total_start = time.time()
@@ -642,10 +689,11 @@ def process_request(request):
             )
         
         result["total_duration_sec"] = time.time() - total_start
+        result["requestId"] = request_id
         log_timing("request_completed", {"success": result.get("success"), "total_duration_sec": result["total_duration_sec"]}, request_id)
         return result
     except Exception as e:
-        return {"success": False, "error": str(e), "traceback": traceback.format_exc()}
+        return {"success": False, "error": str(e), "traceback": traceback.format_exc(), "requestId": request_id}
 
 def main():
     """Main worker loop - reads JSON requests from stdin, writes JSON responses to stdout."""

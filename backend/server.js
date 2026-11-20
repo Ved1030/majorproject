@@ -111,6 +111,7 @@ const supabase = createClient(
 const allowedOrigins = [
   "https://zip-drop.vercel.app",
   "http://localhost:3000",
+  "http://localhost:3001",
 ];
 
 // Normalize origin for robust matching: lowercase, strip trailing slash
