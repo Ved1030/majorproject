@@ -16,6 +16,7 @@ const { createClient } = require("@supabase/supabase-js");
 const FileModel = require("./models/FileModel");
 const { PdfMerger, MAX_FILE_COUNT } = require("./pdf-merger");
 const { PdfSplitter } = require("./pdf-splitter");
+const { PdfOrganizer } = require("./pdf-organizer");
 
 // Concurrency limiters for heavy operations
 const {
@@ -170,6 +171,10 @@ const corsOptions = {
     "X-Output-Files",
     "X-Split-Mode",
     "X-Split-Outputs",
+    "X-Organize-Input-Pages",
+    "X-Organize-Output-Pages",
+    "X-Organize-Deleted-Pages",
+    "X-Organize-Rotated-Pages",
     "Content-Disposition"
   ],
   optionsSuccessStatus: 204,
@@ -693,6 +698,7 @@ app.post("/convert-pdf-to-docx", upload.single("file"), async (req, res) => {
 
 const pdfMerger = new PdfMerger();
 const pdfSplitter = new PdfSplitter();
+const pdfOrganizer = new PdfOrganizer();
 
 app.post("/pdf/merge", upload.array("files", MAX_FILE_COUNT), async (req, res) => {
   try {
@@ -800,6 +806,84 @@ app.post("/pdf/split", upload.single("file"), async (req, res) => {
                    error.code === 'MISSING_DEPENDENCY' ? 503 : 500;
     res.status(status).json({
       error: error.message || "Split failed",
+      code: error.code,
+    });
+  }
+});
+
+/* --------------------------------
+   Organize PDF Pages
+-------------------------------- */
+
+app.post("/pdf/organize", upload.single("file"), async (req, res) => {
+  try {
+    if (!req.file) {
+      return res.status(400).json({ error: "No file uploaded", code: "INVALID_INPUT" });
+    }
+
+    let config = {};
+    if (req.body.organizeConfig) {
+      try {
+        config = typeof req.body.organizeConfig === "string"
+          ? JSON.parse(req.body.organizeConfig)
+          : req.body.organizeConfig;
+      } catch (err) {
+        return res.status(400).json({
+          error: "Invalid organize configuration",
+          code: "INVALID_INPUT",
+        });
+      }
+    } else if (req.body.pages) {
+      try {
+        config = {
+          pages: typeof req.body.pages === "string"
+            ? JSON.parse(req.body.pages)
+            : req.body.pages,
+        };
+      } catch (err) {
+        return res.status(400).json({
+          error: "Invalid organize configuration",
+          code: "INVALID_INPUT",
+        });
+      }
+    }
+
+    const result = await pdfOrganizer.organize(
+      {
+        buffer: req.file.buffer,
+        originalName: req.file.originalname,
+        size: req.file.size,
+      },
+      config,
+    );
+
+    res.set({
+      "Content-Type": "application/pdf",
+      "Content-Disposition": `attachment; filename="${result.filename}"`,
+      "Content-Length": result.buffer.length,
+      "X-Success": "true",
+      "X-Output-Filename": result.filename,
+      "X-Organize-Input-Pages": String(result.stats.inputPages || 0),
+      "X-Organize-Output-Pages": String(result.stats.pageCount || 0),
+      "X-Organize-Deleted-Pages": String(result.stats.deletedPages || 0),
+      "X-Organize-Rotated-Pages": String(result.stats.rotatedPages || 0),
+      "X-Original-Size": String(result.stats.originalTotalSize || 0),
+      "X-Output-Size": String(result.stats.outputSize || result.buffer.length),
+    });
+
+    res.send(result.buffer);
+  } catch (error) {
+    console.error("[PDF Organize] Error:", error.message);
+    const status = error.code === 'INVALID_INPUT' || error.code === 'EMPTY_FILE' || error.code === 'PASSWORD_PROTECTED' || error.code === 'CORRUPTED_FILE' ? 400 :
+                   error.code === 'FILE_TOO_LARGE' ? 413 :
+                   error.code === 'MISSING_DEPENDENCY' ? 503 :
+                   error.code === 'TIMEOUT' ? 504 : 500;
+    res.status(status).json({
+      error: status >= 500
+        ? (status === 503
+          ? "PDF organize service unavailable"
+          : "PDF organization failed. Please try again.")
+        : (error.message || "PDF organization failed"),
       code: error.code,
     });
   }

@@ -1,0 +1,11 @@
+{
+  "ignore": [
+    "temp/**",
+    "server*.log",
+    "server*.txt",
+    "*.log",
+    "api_test_output*.png",
+    "final_test_*.png",
+    "debug_*.txt"
+  ]
+}

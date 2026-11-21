@@ -456,3 +456,62 @@ export const splitPdf = async (
 
   return { blob, filename, stats, outputs };
 };
+
+/* Organize PDF Pages */
+
+export interface OrganizePage {
+  originalPage: number;
+  rotation: number;
+}
+
+export interface OrganizeResult {
+  blob: Blob;
+  filename: string;
+  stats: {
+    inputPages: number;
+    pageCount: number;
+    deletedPages: number;
+    rotatedPages: number;
+    originalTotalSize: number;
+    outputSize: number;
+  };
+}
+
+export const organizePdf = async (
+  file: File,
+  pages: OrganizePage[]
+): Promise<OrganizeResult> => {
+  const formData = new FormData();
+  formData.append("file", file);
+  formData.append("organizeConfig", JSON.stringify({ pages }));
+
+  const res = await fetch(`${API}/pdf/organize`, {
+    method: "POST",
+    body: formData,
+  });
+
+  if (!res.ok) {
+    const errorData = await res.json().catch(() => ({}));
+    throw new Error(errorData.error || `PDF organization failed: ${res.status}`);
+  }
+
+  const blob = await res.blob();
+
+  const stats = {
+    inputPages: parseInt(res.headers.get("X-Organize-Input-Pages") || "0"),
+    pageCount: parseInt(res.headers.get("X-Organize-Output-Pages") || "0"),
+    deletedPages: parseInt(res.headers.get("X-Organize-Deleted-Pages") || "0"),
+    rotatedPages: parseInt(res.headers.get("X-Organize-Rotated-Pages") || "0"),
+    originalTotalSize: parseInt(res.headers.get("X-Original-Size") || "0"),
+    outputSize: parseInt(res.headers.get("X-Output-Size") || "0"),
+  };
+
+  const contentDisposition = res.headers.get("Content-Disposition");
+  let filename = "organized.pdf";
+  if (contentDisposition) {
+    const match = contentDisposition.match(/filename="?([^"]+)"?/);
+    if (match) filename = match[1];
+  }
+
+  return { blob, filename, stats };
+};
