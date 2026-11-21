@@ -48,3 +48,4 @@ backend/debug_*.txt
 backend/server*.log
 backend/server*.txt
 backend/converters/test_*
+/test_pdfs

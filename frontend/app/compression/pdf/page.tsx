@@ -35,7 +35,7 @@ const breadcrumbItems = [
 ];
 
 export default function CompressPdfPage() {
-  const [level, setLevel] = useState<"low" | "recommended" | "high">("recommended");
+  const [level, setLevel] = useState<"low" | "medium" | "high">("medium");
   const [compressing, setCompressing] = useState(false);
   const [progress, setProgress] = useState(0);
   const [result, setResult] = useState<{
@@ -124,9 +124,9 @@ export default function CompressPdfPage() {
   };
 
   const levelOptions = [
-    { value: "low", label: "Low Compression", description: "Prioritize visual quality — minimal size reduction" },
-    { value: "recommended", label: "Recommended", description: "Balanced quality and size reduction (default)" },
-    { value: "high", label: "High Compression", description: "Stronger optimization — possible quality loss for raster content" },
+    { value: "low", label: "Low", description: "Target 10–35% reduction — preserve visual quality, text, vectors, links" },
+    { value: "medium", label: "Medium", description: "Target 35–75% reduction — downsample images, optimize JPEG encoding" },
+    { value: "high", label: "High", description: "Target 75–100% reduction — aggressive downsampling, lower JPEG quality" },
   ];
 
   return (
@@ -154,7 +154,7 @@ export default function CompressPdfPage() {
               <CompressionRadioGroup
                 label="Compression Level"
                 value={level}
-                onChange={(v: string) => setLevel(v as "low" | "recommended" | "high")}
+                onChange={(v: string) => setLevel(v as "low" | "medium" | "high")}
                 options={levelOptions}
                 disabled={compressing}
                 helperText="Higher compression may reduce quality of embedded images. Already-optimized PDFs may see little reduction."
@@ -223,6 +223,8 @@ export default function CompressPdfPage() {
                 compressionMethod={result.stats.method}
                 warning={result.stats.warning}
                 fallbackUsed={result.stats.fallbackUsed}
+                targetAchieved={result.stats.targetAchieved}
+                level={level}
                 extraStats={
                   result.stats.pageCount && (
                     <p style={{ fontSize: "11px", color: "var(--text-muted)", margin: 0 }}>
@@ -234,9 +236,10 @@ export default function CompressPdfPage() {
             )}
 
             <InfoBox>
-              <InfoItem>Compression preserves text, vector graphics, links, and bookmarks</InfoItem>
-              <InfoItem>Embedded images are optimized based on the selected level</InfoItem>
-              <InfoItem>Already-optimized PDFs may not reduce significantly</InfoItem>
+              <InfoItem>Low: Target 10–35% reduction — preserves visual quality, text, vectors, links</InfoItem>
+              <InfoItem>Medium: Target 35–75% reduction — downsamples images, optimizes JPEG encoding</InfoItem>
+              <InfoItem>High: Target 75–100% reduction — aggressive downsampling, lower JPEG quality</InfoItem>
+              <InfoItem>Files under 10 KB are returned unchanged — further compression not possible</InfoItem>
               <InfoItem>Password-protected PDFs cannot be compressed</InfoItem>
             </InfoBox>
           </div>

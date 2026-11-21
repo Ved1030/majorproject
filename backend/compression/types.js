@@ -28,7 +28,7 @@ const COMPRESSION_FORMATS = {
 
 const PDF_COMPRESSION_LEVELS = {
   low: 'low',
-  recommended: 'recommended',
+  medium: 'medium',
   high: 'high',
 };
 

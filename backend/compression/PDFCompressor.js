@@ -71,7 +71,7 @@ class PDFCompressor extends BaseCompressor {
     }
 
     // Get compression level
-    const level = options.level || 'recommended';
+    const level = options.level || 'medium';
     if (!Object.values(PDF_COMPRESSION_LEVELS).includes(level)) {
       throw new CompressionError(
         `Invalid compression level: ${level}. Must be one of: ${Object.values(PDF_COMPRESSION_LEVELS).join(', ')}`,
@@ -136,6 +136,8 @@ class PDFCompressor extends BaseCompressor {
           method: parsed.method,
           smaller: parsed.smaller,
           warning: parsed.warning,
+          targetAchieved: parsed.target_achieved,
+          analysis: parsed.analysis,
         },
       };
     } finally {

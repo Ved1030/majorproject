@@ -438,6 +438,8 @@ interface SuccessDisplayProps {
   compressionMethod?: string;
   warning?: string;
   fallbackUsed?: boolean;
+  targetAchieved?: boolean;
+  level?: string;
 }
 
 export function SuccessDisplay({
@@ -455,9 +457,38 @@ export function SuccessDisplay({
   compressionMethod,
   warning,
   fallbackUsed,
+  targetAchieved,
+  level,
 }: SuccessDisplayProps) {
   const isNotSmaller = bytesSaved <= 0;
   const showWarning = warning || isNotSmaller || fallbackUsed;
+
+  // Determine status message based on actual results
+  const getStatusMessage = () => {
+    if (isNotSmaller) {
+      return "File is already optimized. No further compression possible.";
+    }
+    if (targetAchieved === false && level) {
+      return "Best possible compression achieved";
+    }
+    if (targetAchieved === true) {
+      return "Compression complete";
+    }
+    return "Compression complete";
+  };
+
+  const getStatusColor = () => {
+    if (isNotSmaller) {
+      return { bg: "var(--warning-light)", border: "1px solid rgba(214,158,46,0.24)", color: "var(--warning)", icon: <Info size={20} /> };
+    }
+    if (targetAchieved === false && level) {
+      return { bg: "var(--teal-light)", border: "1px solid rgba(7,140,145,0.24)", color: "var(--primary-teal)", icon: <Check size={20} /> };
+    }
+    return { bg: "var(--teal-light)", border: "1px solid rgba(7,140,145,0.24)", color: "var(--primary-teal)", icon: <Check size={20} /> };
+  };
+
+  const statusColor = getStatusColor();
+  const statusMessage = getStatusMessage();
 
   return (
     <div style={{
@@ -491,22 +522,18 @@ export function SuccessDisplay({
                 width: 40,
                 height: 40,
                 borderRadius: "10px",
-                background: isNotSmaller ? "var(--warning-light)" : "var(--teal-light)",
-                border: isNotSmaller ? "1px solid rgba(214,158,46,0.24)" : "1px solid rgba(7,140,145,0.24)",
+                background: statusColor.bg,
+                border: statusColor.border,
                 display: "flex",
                 alignItems: "center",
                 justifyContent: "center",
-                color: isNotSmaller ? "var(--warning)" : "var(--primary-teal)",
+                color: statusColor.color,
               }}>
-                {isNotSmaller ? (
-                  <Info size={20} />
-                ) : (
-                  <Check size={20} />
-                )}
+                {statusColor.icon}
               </div>
               <div>
                 <p style={{ fontSize: "14px", fontWeight: 600, color: "var(--text-primary)", margin: 0 }}>
-                  {isNotSmaller ? "Compression complete (no size reduction)" : "Compression complete"}
+                  {statusMessage}
                 </p>
                 <p style={{ fontSize: "12px", color: "var(--text-secondary)", margin: 0 }}>
                   {fileName} • {format.toUpperCase()}

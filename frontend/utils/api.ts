@@ -166,10 +166,10 @@ async function compressFile(
 
 export const compressPdf = async (
   file: File,
-  options: { level?: "low" | "recommended" | "high" } = {}
+  options: { level?: "low" | "medium" | "high" } = {}
 ): Promise<CompressionResult> => {
   return compressFile("/compress/pdf", file, {
-    level: options.level || "recommended",
+    level: options.level || "medium",
   });
 };
 
