@@ -10,6 +10,9 @@ numpy>=1.26.4
 opencv-python-headless>=4.10.0.84
 fire>=0.6.0
 
+# PDF merging (pypdf) - used by pdf_merger.py for the Merge PDF tool
+pypdf>=5.0.0
+
 # Background Removal (rembg with ONNX Runtime)
 rembg>=2.0.57
 onnxruntime>=1.18.0

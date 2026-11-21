@@ -146,8 +146,8 @@ export const TOOL_CATEGORIES: ToolCategory[] = [
       {
         title: "Organize PDF",
         tools: [
-          { id: "merge-pdf", name: "Merge PDF", description: "Combine multiple PDFs into one document", href: "/conversion/pdf-tools/merge", available: false, comingSoon: true, icon: Plus, iconColor: "#E45B55" },
-          { id: "split-pdf", name: "Split PDF", description: "Split PDF into separate files", href: "/conversion/pdf-tools/split", available: false, comingSoon: true, icon: Scissors, iconColor: "#E45B55" },
+          { id: "merge-pdf", name: "Merge PDF", description: "Combine multiple PDFs into one document", href: "/pdf/merge", available: true, icon: Plus, iconColor: "#078C91" },
+          { id: "split-pdf", name: "Split PDF", description: "Split PDF into separate files by page range or page count", href: "/pdf/split", available: true, icon: Scissors, iconColor: "#E45B55" },
           { id: "organize-pdf", name: "Organize PDF Pages", description: "Reorder, rotate, delete pages", href: "/conversion/pdf-tools/organize", available: false, comingSoon: true, icon: LayoutGrid, iconColor: "#E45B55" },
           { id: "delete-pdf-pages", name: "Delete PDF Pages", description: "Remove unwanted pages from PDF", href: "/conversion/pdf-tools/delete-pages", available: false, comingSoon: true, icon: Minus, iconColor: "#E45B55" },
           { id: "extract-pdf-pages", name: "Extract PDF Pages", description: "Extract specific pages as new PDF", href: "/conversion/pdf-tools/extract", available: false, comingSoon: true, icon: Scissors, iconColor: "#E45B55" },

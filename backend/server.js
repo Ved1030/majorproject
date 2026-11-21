@@ -14,6 +14,8 @@ const fs = require("fs");
 const { createClient } = require("@supabase/supabase-js");
 
 const FileModel = require("./models/FileModel");
+const { PdfMerger, MAX_FILE_COUNT } = require("./pdf-merger");
+const { PdfSplitter } = require("./pdf-splitter");
 
 // Concurrency limiters for heavy operations
 const {
@@ -164,6 +166,10 @@ const corsOptions = {
     "X-Total-Compressed-Size",
     "X-Total-Bytes-Saved",
     "X-Total-Reduction-Percent",
+    "X-Input-Pages",
+    "X-Output-Files",
+    "X-Split-Mode",
+    "X-Split-Outputs",
     "Content-Disposition"
   ],
   optionsSuccessStatus: 204,
@@ -674,11 +680,129 @@ app.post("/convert-pdf-to-docx", upload.single("file"), async (req, res) => {
         if (fs.existsSync(outputPath)) fs.unlinkSync(outputPath);
         throw convError;
       }
-    } catch (error) {
-      console.error("[PDF-to-DOCX] Error:", error.message);
-      res.status(500).json({ error: error.message || "PDF conversion failed" });
-    }
+      } catch (error) {
+        console.error("[PDF-to-DOCX] Error:", error.message);
+        res.status(500).json({ error: error.message || "PDF conversion failed" });
+      }
   });
+});
+
+/* --------------------------------
+   Merge PDF
+------------------------------- */
+
+const pdfMerger = new PdfMerger();
+const pdfSplitter = new PdfSplitter();
+
+app.post("/pdf/merge", upload.array("files", MAX_FILE_COUNT), async (req, res) => {
+  try {
+    if (!req.files || req.files.length === 0) {
+      return res.status(400).json({ error: "No files uploaded", code: "INVALID_INPUT" });
+    }
+    if (req.files.length < 2) {
+      return res.status(400).json({
+        error: "Please upload at least two PDF files to merge.",
+        code: "INVALID_INPUT",
+      });
+    }
+
+    const files = req.files.map((f) => ({
+      buffer: f.buffer,
+      originalName: f.originalname,
+      size: f.size,
+    }));
+
+    const merged = await pdfMerger.merge(files);
+
+    const filename = merged.filename;
+    const stats = merged.stats || {};
+
+    res.set({
+      "Content-Type": "application/pdf",
+      "Content-Disposition": `attachment; filename="${filename}"`,
+      "Content-Length": merged.buffer.length,
+      "X-Success": "true",
+      "X-Output-Filename": filename,
+      "X-Input-Files": String(stats.inputFiles || files.length),
+      "X-Page-Count": String(stats.pageCount || 0),
+      "X-Original-Size": String(stats.originalTotalSize || 0),
+      "X-Output-Size": String(stats.outputSize || merged.buffer.length),
+    });
+
+    res.send(merged.buffer);
+  } catch (error) {
+    console.error("[PDF Merge] Error:", error.message);
+    const status = error.code === 'INVALID_INPUT' || error.code === 'EMPTY_FILE' || error.code === 'PASSWORD_PROTECTED' || error.code === 'CORRUPTED_FILE' ? 400 :
+                   error.code === 'FILE_TOO_LARGE' ? 413 :
+                   error.code === 'MISSING_DEPENDENCY' ? 503 : 500;
+    res.status(status).json({
+      error: error.message || "Merge failed",
+      code: error.code,
+    });
+  }
+});
+
+/* --------------------------------
+   Split PDF
+-------------------------------- */
+
+app.post("/pdf/split", upload.single("file"), async (req, res) => {
+  try {
+    if (!req.file) {
+      return res.status(400).json({ error: "No file uploaded", code: "INVALID_INPUT" });
+    }
+
+    // Parse split configuration from the request body (JSON string or parsed object).
+    let config = {};
+    if (req.body.splitConfig) {
+      try {
+        config = typeof req.body.splitConfig === "string"
+          ? JSON.parse(req.body.splitConfig)
+          : req.body.splitConfig;
+      } catch (err) {
+        return res.status(400).json({
+          error: "Invalid split configuration",
+          code: "INVALID_INPUT",
+        });
+      }
+    } else if (req.body.mode) {
+      config = { ...req.body };
+    }
+
+    const result = await pdfSplitter.split(
+      {
+        buffer: req.file.buffer,
+        originalName: req.file.originalname,
+        size: req.file.size,
+      },
+      config,
+    );
+
+    res.set({
+      "Content-Type": "application/zip",
+      "Content-Disposition": `attachment; filename="${result.filename}"`,
+      "Content-Length": result.buffer.length,
+      "X-Success": "true",
+      "X-Output-Filename": result.filename,
+      "X-Input-Pages": String(result.stats.inputPages || 0),
+      "X-Output-Files": String(result.stats.outputFiles || 0),
+      "X-Split-Mode": result.stats.mode || "",
+      "X-Split-Outputs": JSON.stringify(result.outputs || []),
+      "X-Original-Size": String(result.stats.originalTotalSize || 0),
+      "X-Output-Size": String(result.stats.outputSize || result.buffer.length),
+    });
+
+    res.send(result.buffer);
+  } catch (error) {
+    console.error("[PDF Split] Error:", error.message);
+    const status = error.code === 'INVALID_INPUT' || error.code === 'EMPTY_FILE' || error.code === 'PASSWORD_PROTECTED' || error.code === 'CORRUPTED_FILE' ? 400 :
+                   error.code === 'FILE_TOO_LARGE' ? 413 :
+                   error.code === 'MISSING_DEPENDENCY' ? 503 : 500;
+    res.status(status).json({
+      error: error.message || "Split failed",
+      code: error.code,
+    });
+  }
 });
 
 /* --------------------------------

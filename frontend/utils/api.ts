@@ -329,3 +329,130 @@ export const checkBackgroundRemoverHealth = async () => {
   const res = await fetch(`${API}/health/background-remover`);
   return res.json();
 };
+
+/* Merge PDF */
+
+export interface MergeResult {
+  blob: Blob;
+  filename: string;
+  stats: {
+    inputFiles: number;
+    pageCount: number;
+    originalTotalSize: number;
+    outputSize: number;
+  };
+}
+
+export const mergePdf = async (
+  files: File[]
+): Promise<MergeResult> => {
+  const formData = new FormData();
+
+  // Append in the displayed order so the backend merges in that exact order.
+  files.forEach((file) => formData.append("files", file));
+
+  const res = await fetch(`${API}/pdf/merge`, {
+    method: "POST",
+    body: formData,
+  });
+
+  if (!res.ok) {
+    const errorData = await res.json().catch(() => ({}));
+    throw new Error(errorData.error || `Merge failed: ${res.status}`);
+  }
+
+  const blob = await res.blob();
+
+  const stats = {
+    inputFiles: parseInt(res.headers.get("X-Input-Files") || "0"),
+    pageCount: parseInt(res.headers.get("X-Page-Count") || "0"),
+    originalTotalSize: parseInt(res.headers.get("X-Original-Size") || "0"),
+    outputSize: parseInt(res.headers.get("X-Output-Size") || "0"),
+  };
+
+  const contentDisposition = res.headers.get("Content-Disposition");
+  let filename = "merged.pdf";
+  if (contentDisposition) {
+    const match = contentDisposition.match(/filename="?([^"]+)"?/);
+    if (match) filename = match[1];
+  }
+
+  return { blob, filename, stats };
+};
+
+/* Split PDF */
+
+export interface SplitOutput {
+  filename: string;
+  pages: string;
+  pageCount: number;
+}
+
+export interface SplitResult {
+  blob: Blob;
+  filename: string;
+  stats: {
+    inputPages: number;
+    outputFiles: number;
+    mode: string;
+    originalTotalSize: number;
+    outputSize: number;
+    totalOutputSize: number;
+  };
+  outputs: SplitOutput[];
+}
+
+export const splitPdf = async (
+  file: File,
+  config: {
+    mode: "ranges" | "every_n" | "every_page";
+    ranges?: Array<{ start: number; end: number }>;
+    everyN?: number;
+  }
+): Promise<SplitResult> => {
+  const formData = new FormData();
+  formData.append("file", file);
+  formData.append("splitConfig", JSON.stringify(config));
+
+  const res = await fetch(`${API}/pdf/split`, {
+    method: "POST",
+    body: formData,
+  });
+
+  if (!res.ok) {
+    const errorData = await res.json().catch(() => ({}));
+    throw new Error(errorData.error || `Split failed: ${res.status}`);
+  }
+
+  const blob = await res.blob();
+
+  const stats = {
+    inputPages: parseInt(res.headers.get("X-Input-Pages") || "0"),
+    outputFiles: parseInt(res.headers.get("X-Output-Files") || "0"),
+    mode: res.headers.get("X-Split-Mode") || "",
+    originalTotalSize: parseInt(res.headers.get("X-Original-Size") || "0"),
+    outputSize: parseInt(res.headers.get("X-Output-Size") || "0"),
+    totalOutputSize: parseInt(res.headers.get("X-Total-Output-Size") || "0"),
+  };
+
+  const contentDisposition = res.headers.get("Content-Disposition");
+  let filename = "split.zip";
+  if (contentDisposition) {
+    const match = contentDisposition.match(/filename="?([^"]+)"?/);
+    if (match) filename = match[1];
+  }
+
+  // The server advertises the individual files inside the ZIP so the
+  // frontend can offer per-file downloads by extracting client-side.
+  let outputs: SplitOutput[] = [];
+  const outputsHeader = res.headers.get("X-Split-Outputs");
+  if (outputsHeader) {
+    try {
+      outputs = JSON.parse(outputsHeader);
+    } catch {
+      outputs = [];
+    }
+  }
+
+  return { blob, filename, stats, outputs };
+};
