@@ -112,6 +112,8 @@ const supabase = createClient(
 
 
 const allowedOrigins = [
+  "https://www.getzipdrop.com",
+  "https://getzipdrop.com",
   "https://zip-drop.vercel.app",
   "http://localhost:3000",
   "http://localhost:3001",
