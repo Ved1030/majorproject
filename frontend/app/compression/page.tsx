@@ -48,7 +48,7 @@ const COMPRESSION_CATEGORIES = [
     color: "var(--green-highlight)",
     bg: "var(--green-light)",
     tools: [
-      { id: "bulk-images", name: "Bulk Image Compressor", description: "Multiple images → ZIP archive", from: "Images", to: "ZIP", modes: ["Mixed formats"], available: true },
+      { id: "bulk-images", name: "Bulk Image Compressor", description: "Multiple images → ZIP archive", from: "Images", to: "ZIP", modes: ["Mixed formats"], available: false, comingSoon: true },
     ],
   },
   {

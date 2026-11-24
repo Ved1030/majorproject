@@ -297,7 +297,7 @@ export const TOOL_CATEGORIES: ToolCategory[] = [
       {
         title: "Bulk Compression",
         tools: [
-          { id: "bulk-images", name: "Bulk Image Compressor", description: "Multiple images → ZIP archive", href: "/compression/bulk-images", available: true, icon: Download, iconColor: "#25A85A" },
+          { id: "bulk-images", name: "Bulk Image Compressor", description: "Multiple images → ZIP archive", href: "/compression/bulk-images", available: false, comingSoon: true, icon: Download, iconColor: "#25A85A" },
         ],
       },
     ],
