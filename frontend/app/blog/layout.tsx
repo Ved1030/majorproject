@@ -7,7 +7,7 @@ export const metadata: Metadata = {
   title: "ZipDrop Blog – File Sharing Guides, Tool Comparisons & Tips",
   description: "Guides, comparisons, and tips for sharing files, converting documents, compressing images, and managing your files online with ZipDrop.",
   alternates: {
-    canonical: "https://zip-drop.vercel.app/blog",
+    canonical: `${SITE_URL}/blog`,
   },
   openGraph: {
     title: "ZipDrop Blog – File Sharing Guides, Tool Comparisons & Tips",

@@ -1,14 +1,42 @@
+import { SITE_URL } from "@/lib/site";
+import { BlogPostingJsonLd } from "@/components/BlogArticleShared";
+
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {
   title: "How to Transfer Files From iPhone to Windows",
   description:
     "Learn how to transfer files from iPhone to Windows quickly without cables or complicated software.",
+  alternates: {
+    canonical: `${SITE_URL}/blog/transfer-files-iphone-to-windows`,
+  },
+  openGraph: {
+    title: "How to Transfer Files From iPhone to Windows",
+    description: "Learn how to transfer files from iPhone to Windows quickly without cables or complicated software.",
+    url: `${SITE_URL}/blog/transfer-files-iphone-to-windows`,
+    siteName: "ZipDrop",
+    type: "article",
+    images: [
+      {
+        url: "/og-image.png",
+        width: 1200,
+        height: 630,
+        alt: "How to Transfer Files From iPhone to Windows",
+      },
+    ],
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "How to Transfer Files From iPhone to Windows",
+    description: "Learn how to transfer files from iPhone to Windows quickly without cables or complicated software.",
+    images: ["/og-image.png"],
+  },
 };
 
 export default function Page() {
   return (
     <main className="max-w-4xl mx-auto p-8">
+      <BlogPostingJsonLd slug="transfer-files-iphone-to-windows" title={"How to Transfer Files From iPhone to Windows"} description={"Learn how to transfer files from iPhone to Windows quickly without cables or complicated software."} />
       <h1>How to Transfer Files From iPhone to Windows</h1>
 
       <p>

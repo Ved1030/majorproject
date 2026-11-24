@@ -4,9 +4,10 @@ export const metadata: Metadata = {
   title: "Word to HTML Converter – Convert DOCX to HTML Free Online",
   description: "Convert Word documents (DOCX/DOC) to clean HTML online for free. Preserve formatting and structure. No account required, max 50MB.",
   alternates: {
-    canonical: "https://zip-drop.vercel.app/conversion/word-to-html",
+    canonical: "https://www.getzipdrop.com/conversion/word-to-html",
   },
   openGraph: {
+    url: "https://www.getzipdrop.com/conversion/word-to-html",
     title: "Word to HTML Converter – Convert DOCX to HTML Free Online",
     description: "Convert Word documents to clean HTML online for free. No account required.",
     type: "website",
@@ -24,7 +25,7 @@ const structuredData = {
   "@context": "https://schema.org",
   "@type": "SoftwareApplication",
   name: "Word to HTML Converter",
-  url: "https://zip-drop.vercel.app/conversion/word-to-html",
+  url: "https://www.getzipdrop.com/conversion/word-to-html",
   applicationCategory: "FileConverter",
   operatingSystem: "Web",
   description: "Free online Word to HTML converter. Convert DOCX/DOC to clean HTML. No account required.",
@@ -37,15 +38,15 @@ const structuredData = {
   creator: {
     "@type": "Organization",
     name: "ZipDrop",
-    url: "https://zip-drop.vercel.app",
+    url: "https://www.getzipdrop.com",
   },
   breadcrumb: {
     "@context": "https://schema.org",
     "@type": "BreadcrumbList",
     itemListElement: [
-      { "@type": "ListItem", position: 1, name: "Home", item: "https://zip-drop.vercel.app" },
-      { "@type": "ListItem", position: 2, name: "Conversion Tools", item: "https://zip-drop.vercel.app/conversion" },
-      { "@type": "ListItem", position: 3, name: "Word to HTML", item: "https://zip-drop.vercel.app/conversion/word-to-html" },
+      { "@type": "ListItem", position: 1, name: "Home", item: "https://www.getzipdrop.com" },
+      { "@type": "ListItem", position: 2, name: "Conversion Tools", item: "https://www.getzipdrop.com/conversion" },
+      { "@type": "ListItem", position: 3, name: "Word to HTML", item: "https://www.getzipdrop.com/conversion/word-to-html" },
     ],
   },
 };

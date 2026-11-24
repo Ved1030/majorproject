@@ -4,9 +4,10 @@ export const metadata: Metadata = {
   title: "Compress PNG Online – Reduce PNG File Size Free",
   description: "Compress PNG images online for free with ZipDrop. Lossless and optimized compression modes. Preserve transparency. No account required.",
   alternates: {
-    canonical: "https://zip-drop.vercel.app/compression/png",
+    canonical: "https://www.getzipdrop.com/compression/png",
   },
   openGraph: {
+    url: "https://www.getzipdrop.com/compression/png",
     title: "Compress PNG Online – Reduce PNG File Size Free",
     description: "Compress PNG images online for free. Lossless and optimized modes. No account required.",
     type: "website",
@@ -24,7 +25,7 @@ const structuredData = {
   "@context": "https://schema.org",
   "@type": "SoftwareApplication",
   name: "Compress PNG",
-  url: "https://zip-drop.vercel.app/compression/png",
+  url: "https://www.getzipdrop.com/compression/png",
   applicationCategory: "ImageCompression",
   operatingSystem: "Web",
   description: "Free online PNG compression with lossless and optimized modes. Preserves transparency. No account required.",
@@ -37,7 +38,7 @@ const structuredData = {
   creator: {
     "@type": "Organization",
     name: "ZipDrop",
-    url: "https://zip-drop.vercel.app",
+    url: "https://www.getzipdrop.com",
   },
   featureList: [
     "Lossless compression",
@@ -50,9 +51,9 @@ const structuredData = {
     "@context": "https://schema.org",
     "@type": "BreadcrumbList",
     itemListElement: [
-      { "@type": "ListItem", position: 1, name: "Home", item: "https://zip-drop.vercel.app" },
-      { "@type": "ListItem", position: 2, name: "Compression Tools", item: "https://zip-drop.vercel.app/compression" },
-      { "@type": "ListItem", position: 3, name: "Compress PNG", item: "https://zip-drop.vercel.app/compression/png" },
+      { "@type": "ListItem", position: 1, name: "Home", item: "https://www.getzipdrop.com" },
+      { "@type": "ListItem", position: 2, name: "Compression Tools", item: "https://www.getzipdrop.com/compression" },
+      { "@type": "ListItem", position: 3, name: "Compress PNG", item: "https://www.getzipdrop.com/compression/png" },
     ],
   },
 };

@@ -4,9 +4,10 @@ export const metadata: Metadata = {
   title: "PDF to PDF/A Converter – Convert to Archival PDF/A Free Online",
   description: "Convert PDF to archival PDF/A standard online for free. Ensure long-term document preservation. No account required, max 50MB.",
   alternates: {
-    canonical: "https://zip-drop.vercel.app/conversion/pdf-to-pdfa",
+    canonical: "https://www.getzipdrop.com/conversion/pdf-to-pdfa",
   },
   openGraph: {
+    url: "https://www.getzipdrop.com/conversion/pdf-to-pdfa",
     title: "PDF to PDF/A Converter – Convert to Archival PDF/A Free Online",
     description: "Convert PDF to archival PDF/A standard online for free. No account required.",
     type: "website",
@@ -24,7 +25,7 @@ const structuredData = {
   "@context": "https://schema.org",
   "@type": "SoftwareApplication",
   name: "PDF to PDF/A Converter",
-  url: "https://zip-drop.vercel.app/conversion/pdf-to-pdfa",
+  url: "https://www.getzipdrop.com/conversion/pdf-to-pdfa",
   applicationCategory: "FileConverter",
   operatingSystem: "Web",
   description: "Free online PDF to PDF/A converter. Convert to archival PDF/A standard for long-term preservation. No account required.",
@@ -37,15 +38,15 @@ const structuredData = {
   creator: {
     "@type": "Organization",
     name: "ZipDrop",
-    url: "https://zip-drop.vercel.app",
+    url: "https://www.getzipdrop.com",
   },
   breadcrumb: {
     "@context": "https://schema.org",
     "@type": "BreadcrumbList",
     itemListElement: [
-      { "@type": "ListItem", position: 1, name: "Home", item: "https://zip-drop.vercel.app" },
-      { "@type": "ListItem", position: 2, name: "Conversion Tools", item: "https://zip-drop.vercel.app/conversion" },
-      { "@type": "ListItem", position: 3, name: "PDF to PDF/A", item: "https://zip-drop.vercel.app/conversion/pdf-to-pdfa" },
+      { "@type": "ListItem", position: 1, name: "Home", item: "https://www.getzipdrop.com" },
+      { "@type": "ListItem", position: 2, name: "Conversion Tools", item: "https://www.getzipdrop.com/conversion" },
+      { "@type": "ListItem", position: 3, name: "PDF to PDF/A", item: "https://www.getzipdrop.com/conversion/pdf-to-pdfa" },
     ],
   },
 };

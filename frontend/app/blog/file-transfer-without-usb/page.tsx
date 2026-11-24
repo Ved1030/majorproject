@@ -1,14 +1,42 @@
+import { SITE_URL } from "@/lib/site";
+import { BlogPostingJsonLd } from "@/components/BlogArticleShared";
+
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {
   title: "How to Transfer Files Without a USB Cable",
   description:
     "Discover how to transfer files between devices without using USB cables.",
+  alternates: {
+    canonical: `${SITE_URL}/blog/file-transfer-without-usb`,
+  },
+  openGraph: {
+    title: "How to Transfer Files Without a USB Cable",
+    description: "Discover how to transfer files between devices without using USB cables.",
+    url: `${SITE_URL}/blog/file-transfer-without-usb`,
+    siteName: "ZipDrop",
+    type: "article",
+    images: [
+      {
+        url: "/og-image.png",
+        width: 1200,
+        height: 630,
+        alt: "How to Transfer Files Without a USB Cable",
+      },
+    ],
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "How to Transfer Files Without a USB Cable",
+    description: "Discover how to transfer files between devices without using USB cables.",
+    images: ["/og-image.png"],
+  },
 };
 
 export default function Page() {
   return (
     <main className="max-w-4xl mx-auto p-8">
+      <BlogPostingJsonLd slug="file-transfer-without-usb" title={"How to Transfer Files Without a USB Cable"} description={"Discover how to transfer files between devices without using USB cables."} />
       <h1>How to Transfer Files Without a USB Cable</h1>
 
       <p>

@@ -1,14 +1,42 @@
+import { SITE_URL } from "@/lib/site";
+import { BlogPostingJsonLd } from "@/components/BlogArticleShared";
+
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {
   title: "How to Transfer Files from Android to PC Wirelessly Without Apps",
   description:
     "Learn how to transfer files from Android to PC wirelessly without USB cables or apps. ZipDrop takes up to 10 files, using a 4-digit code.",
+  alternates: {
+    canonical: `${SITE_URL}/blog/transfer-files-from-android-to-pc-wireless`,
+  },
+  openGraph: {
+    title: "How to Transfer Files from Android to PC Wirelessly Without Apps",
+    description: "Learn how to transfer files from Android to PC wirelessly without USB cables or apps. ZipDrop takes up to 10 files, using a 4-digit code.",
+    url: `${SITE_URL}/blog/transfer-files-from-android-to-pc-wireless`,
+    siteName: "ZipDrop",
+    type: "article",
+    images: [
+      {
+        url: "/og-image.png",
+        width: 1200,
+        height: 630,
+        alt: "How to Transfer Files from Android to PC Wirelessly Without Apps",
+      },
+    ],
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "How to Transfer Files from Android to PC Wirelessly Without Apps",
+    description: "Learn how to transfer files from Android to PC wirelessly without USB cables or apps. ZipDrop takes up to 10 files, using a 4-digit code.",
+    images: ["/og-image.png"],
+  },
 };
 
 export default function Page() {
   return (
     <main className="max-w-4xl mx-auto p-8">
+      <BlogPostingJsonLd slug="transfer-files-from-android-to-pc-wireless" title={"How to Transfer Files from Android to PC Wirelessly Without Apps"} description={"Learn how to transfer files from Android to PC wirelessly without USB cables or apps. ZipDrop takes up to 10 files, using a 4-digit code."} />
       <h1>How to Transfer Files from Android to PC Wirelessly Without Apps</h1>
 
       <p>

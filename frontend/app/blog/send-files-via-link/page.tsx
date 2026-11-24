@@ -1,14 +1,42 @@
+import { SITE_URL } from "@/lib/site";
+import { BlogPostingJsonLd } from "@/components/BlogArticleShared";
+
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {
   title: "Send Files via Link vs a 4-Digit Code (2026 Guide)",
   description:
     "Compare sharing a file link with a 4-digit code. ZipDrop does not generate a shareable link yet: you upload up to 10 files, get a 4-digit code, and the recipient enters it on the site.",
+  alternates: {
+    canonical: `${SITE_URL}/blog/send-files-via-link`,
+  },
+  openGraph: {
+    title: "Send Files via Link vs a 4-Digit Code (2026 Guide)",
+    description: "Compare sharing a file link with a 4-digit code. ZipDrop does not generate a shareable link yet: you upload up to 10 files, get a 4-digit code, and the recipient enters it on the site.",
+    url: `${SITE_URL}/blog/send-files-via-link`,
+    siteName: "ZipDrop",
+    type: "article",
+    images: [
+      {
+        url: "/og-image.png",
+        width: 1200,
+        height: 630,
+        alt: "Send Files via Link vs a 4-Digit Code (2026 Guide)",
+      },
+    ],
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "Send Files via Link vs a 4-Digit Code (2026 Guide)",
+    description: "Compare sharing a file link with a 4-digit code. ZipDrop does not generate a shareable link yet: you upload up to 10 files, get a 4-digit code, and the recipient enters it on the site.",
+    images: ["/og-image.png"],
+  },
 };
 
 export default function Page() {
   return (
     <main className="max-w-4xl mx-auto p-8">
+      <BlogPostingJsonLd slug="send-files-via-link" title={"Send Files via Link vs a 4-Digit Code (2026 Guide)"} description={"Compare sharing a file link with a 4-digit code. ZipDrop does not generate a shareable link yet: you upload up to 10 files, get a 4-digit code, and the recipient enters it on the site."} />
       <h1>Send Files via Link vs a 4-Digit Code (2026 Guide)</h1>
 
       <p>

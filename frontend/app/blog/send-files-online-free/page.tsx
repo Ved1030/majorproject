@@ -1,14 +1,42 @@
+import { SITE_URL } from "@/lib/site";
+import { BlogPostingJsonLd } from "@/components/BlogArticleShared";
+
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {
   title: "How to Send Files Online Free in 2026",
   description:
     "Learn how to send files online free with no account, no software, and no hidden fees. ZipDrop supports up to 10 files per transfer.",
+  alternates: {
+    canonical: `${SITE_URL}/blog/send-files-online-free`,
+  },
+  openGraph: {
+    title: "How to Send Files Online Free in 2026",
+    description: "Learn how to send files online free with no account, no software, and no hidden fees. ZipDrop supports up to 10 files per transfer.",
+    url: `${SITE_URL}/blog/send-files-online-free`,
+    siteName: "ZipDrop",
+    type: "article",
+    images: [
+      {
+        url: "/og-image.png",
+        width: 1200,
+        height: 630,
+        alt: "How to Send Files Online Free in 2026",
+      },
+    ],
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "How to Send Files Online Free in 2026",
+    description: "Learn how to send files online free with no account, no software, and no hidden fees. ZipDrop supports up to 10 files per transfer.",
+    images: ["/og-image.png"],
+  },
 };
 
 export default function Page() {
   return (
     <main className="max-w-4xl mx-auto p-8">
+      <BlogPostingJsonLd slug="send-files-online-free" title={"How to Send Files Online Free in 2026"} description={"Learn how to send files online free with no account, no software, and no hidden fees. ZipDrop supports up to 10 files per transfer."} />
       <h1>How to Send Files Online Free in 2026</h1>
 
       <p>

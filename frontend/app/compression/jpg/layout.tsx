@@ -4,9 +4,10 @@ export const metadata: Metadata = {
   title: "Compress JPG Online – Reduce JPG File Size Free",
   description: "Compress JPG images online for free with ZipDrop. Adjustable quality presets (High, Balanced, Smaller, Custom). Progressive JPG option. No account required.",
   alternates: {
-    canonical: "https://zip-drop.vercel.app/compression/jpg",
+    canonical: "https://www.getzipdrop.com/compression/jpg",
   },
   openGraph: {
+    url: "https://www.getzipdrop.com/compression/jpg",
     title: "Compress JPG Online – Reduce JPG File Size Free",
     description: "Compress JPG images online for free. Quality presets, progressive option. No account required.",
     type: "website",
@@ -24,7 +25,7 @@ const structuredData = {
   "@context": "https://schema.org",
   "@type": "SoftwareApplication",
   name: "Compress JPG",
-  url: "https://zip-drop.vercel.app/compression/jpg",
+  url: "https://www.getzipdrop.com/compression/jpg",
   applicationCategory: "ImageCompression",
   operatingSystem: "Web",
   description: "Free online JPG compression with adjustable quality: High, Balanced, Smaller, Custom. Progressive JPG support. No account required.",
@@ -37,7 +38,7 @@ const structuredData = {
   creator: {
     "@type": "Organization",
     name: "ZipDrop",
-    url: "https://zip-drop.vercel.app",
+    url: "https://www.getzipdrop.com",
   },
   featureList: [
     "Quality presets",
@@ -50,9 +51,9 @@ const structuredData = {
     "@context": "https://schema.org",
     "@type": "BreadcrumbList",
     itemListElement: [
-      { "@type": "ListItem", position: 1, name: "Home", item: "https://zip-drop.vercel.app" },
-      { "@type": "ListItem", position: 2, name: "Compression Tools", item: "https://zip-drop.vercel.app/compression" },
-      { "@type": "ListItem", position: 3, name: "Compress JPG", item: "https://zip-drop.vercel.app/compression/jpg" },
+      { "@type": "ListItem", position: 1, name: "Home", item: "https://www.getzipdrop.com" },
+      { "@type": "ListItem", position: 2, name: "Compression Tools", item: "https://www.getzipdrop.com/compression" },
+      { "@type": "ListItem", position: 3, name: "Compress JPG", item: "https://www.getzipdrop.com/compression/jpg" },
     ],
   },
 };

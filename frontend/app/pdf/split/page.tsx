@@ -349,7 +349,7 @@ const getErrorMessage = (err: unknown): string => {
     "@context": "https://schema.org",
     "@type": "SoftwareApplication",
     name: "Split PDF",
-    url: "https://zip-drop.vercel.app/pdf/split",
+    url: "https://www.getzipdrop.com/pdf/split",
     applicationCategory: "FileConverter",
     operatingSystem: "Web",
     description: "Free online PDF splitter. Split a PDF into multiple documents by page ranges, every N pages, or one PDF per page. No account required.",
@@ -362,7 +362,7 @@ const getErrorMessage = (err: unknown): string => {
     creator: {
       "@type": "Organization",
       name: "ZipDrop",
-      url: "https://zip-drop.vercel.app",
+      url: "https://www.getzipdrop.com",
     },
   };
 

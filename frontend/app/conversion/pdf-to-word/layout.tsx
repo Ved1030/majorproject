@@ -4,9 +4,10 @@ export const metadata: Metadata = {
   title: "PDF to Word Converter – Free Online DOCX Conversion",
   description: "Convert PDF to editable Word (DOCX) online for free. Choose between Editable mode for editing or Visual Fidelity mode for layout preservation. No account required.",
   alternates: {
-    canonical: "https://zip-drop.vercel.app/conversion/pdf-to-word",
+    canonical: "https://www.getzipdrop.com/conversion/pdf-to-word",
   },
   openGraph: {
+    url: "https://www.getzipdrop.com/conversion/pdf-to-word",
     title: "PDF to Word Converter – Free Online DOCX Conversion",
     description: "Convert PDF to editable Word (DOCX) online for free. Choose between Editable mode for editing or Visual Fidelity mode for layout preservation. No account required.",
     type: "website",
@@ -24,7 +25,7 @@ const structuredData = {
   "@context": "https://schema.org",
   "@type": "SoftwareApplication",
   name: "PDF to Word Converter",
-  url: "https://zip-drop.vercel.app/conversion/pdf-to-word",
+  url: "https://www.getzipdrop.com/conversion/pdf-to-word",
   applicationCategory: "FileConverter",
   operatingSystem: "Web",
   description: "Free online PDF to Word converter with Editable and Visual Fidelity modes. Convert PDF to editable DOCX without an account.",
@@ -37,7 +38,7 @@ const structuredData = {
   creator: {
     "@type": "Organization",
     name: "ZipDrop",
-    url: "https://zip-drop.vercel.app",
+    url: "https://www.getzipdrop.com",
   },
   featureList: [
     "Editable Word mode",
@@ -52,9 +53,9 @@ const structuredData = {
     "@context": "https://schema.org",
     "@type": "BreadcrumbList",
     itemListElement: [
-      { "@type": "ListItem", position: 1, name: "Home", item: "https://zip-drop.vercel.app" },
-      { "@type": "ListItem", position: 2, name: "Conversion Tools", item: "https://zip-drop.vercel.app/conversion" },
-      { "@type": "ListItem", position: 3, name: "PDF to Word", item: "https://zip-drop.vercel.app/conversion/pdf-to-word" },
+      { "@type": "ListItem", position: 1, name: "Home", item: "https://www.getzipdrop.com" },
+      { "@type": "ListItem", position: 2, name: "Conversion Tools", item: "https://www.getzipdrop.com/conversion" },
+      { "@type": "ListItem", position: 3, name: "PDF to Word", item: "https://www.getzipdrop.com/conversion/pdf-to-word" },
     ],
   },
 };

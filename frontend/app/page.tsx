@@ -11,7 +11,8 @@ import PopularTools from "../components/PopularTools";
 import WhatCanYouDo from "../components/WhatCanYouDo";
 import SupportedFileFormats from "../components/SupportedFileFormats";
 import HowToGuides from "../components/HowToGuides";
-import FAQ from "../components/FAQ";
+import FAQ, { FAQ_ITEMS } from "../components/FAQ";
+import { SITE_URL } from "@/lib/site";
 
 /* ─── Background Waves ───────────────────── */
 
@@ -393,7 +394,7 @@ export default function Home() {
     "@context": "https://schema.org",
     "@type": "SoftwareApplication",
     name: "ZipDrop",
-    url: "https://zip-drop.vercel.app",
+    url: SITE_URL,
     applicationCategory: "FileSharingApplication",
     operatingSystem: "Web",
     description:
@@ -434,6 +435,19 @@ export default function Home() {
     ],
   };
 
+  const faqPageData = {
+    "@context": "https://schema.org",
+    "@type": "FAQPage",
+    mainEntity: FAQ_ITEMS.map((item) => ({
+      "@type": "Question",
+      name: item.question,
+      acceptedAnswer: {
+        "@type": "Answer",
+        text: item.answer,
+      },
+    })),
+  };
+
   return (
     <>
       {/* Background layers */}
@@ -445,6 +459,12 @@ export default function Home() {
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(softwareApplicationData) }}
+      />
+
+      {/* Structured Data - FAQPage (homepage only) */}
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(faqPageData) }}
       />
 
       <main

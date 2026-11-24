@@ -1,14 +1,42 @@
+import { SITE_URL } from "@/lib/site";
+import { BlogPostingJsonLd } from "@/components/BlogArticleShared";
+
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {
   title: "How to Transfer Files From Android to PC",
   description:
     "Learn how to transfer files from Android to PC without cables or additional software.",
+  alternates: {
+    canonical: `${SITE_URL}/blog/transfer-files-android-to-pc`,
+  },
+  openGraph: {
+    title: "How to Transfer Files From Android to PC",
+    description: "Learn how to transfer files from Android to PC without cables or additional software.",
+    url: `${SITE_URL}/blog/transfer-files-android-to-pc`,
+    siteName: "ZipDrop",
+    type: "article",
+    images: [
+      {
+        url: "/og-image.png",
+        width: 1200,
+        height: 630,
+        alt: "How to Transfer Files From Android to PC",
+      },
+    ],
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "How to Transfer Files From Android to PC",
+    description: "Learn how to transfer files from Android to PC without cables or additional software.",
+    images: ["/og-image.png"],
+  },
 };
 
 export default function Page() {
   return (
     <main className="max-w-4xl mx-auto p-8">
+      <BlogPostingJsonLd slug="transfer-files-android-to-pc" title={"How to Transfer Files From Android to PC"} description={"Learn how to transfer files from Android to PC without cables or additional software."} />
       <h1>How to Transfer Files From Android to PC</h1>
 
       <p>

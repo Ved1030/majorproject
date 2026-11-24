@@ -7,13 +7,13 @@ export const metadata: Metadata = {
   description:
     "Learn about ZipDrop: a free, browser-based file utility platform built by Ved Mehta and Virti Panchamia. Share files with a 4-digit code, convert 30+ formats, compress PDFs and images, remove backgrounds, and edit documents online — no account needed.",
   alternates: {
-    canonical: "https://zip-drop.vercel.app/about",
+    canonical: `${SITE_URL}/about`,
   },
   openGraph: {
     title: "About ZipDrop – Free File Sharing, Conversion & Editing Platform",
     description:
       "Learn about ZipDrop: a free file utility platform for sharing, converting, compressing, and editing files online.",
-    url: "https://zip-drop.vercel.app/about",
+    url: `${SITE_URL}/about`,
     siteName: "ZipDrop",
     type: "website",
     images: ["/og-image.png"],
@@ -31,7 +31,7 @@ const structuredData = {
   "@type": "AboutPage",
   name: "About ZipDrop",
   description: "Learn about ZipDrop: a free, browser-based file utility platform built by Ved Mehta and Virti Panchamia.",
-  url: "https://zip-drop.vercel.app/about",
+  url: `${SITE_URL}/about`,
   mainEntity: {
     "@type": "Organization",
     name: "ZipDrop",

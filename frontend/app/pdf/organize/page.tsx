@@ -632,7 +632,7 @@ export default function OrganizePdfPage() {
     "@context": "https://schema.org",
     "@type": "SoftwareApplication",
     name: "Organize PDF Pages",
-    url: "https://zip-drop.vercel.app/pdf/organize",
+    url: "https://www.getzipdrop.com/pdf/organize",
     applicationCategory: "FileConverter",
     operatingSystem: "Web",
     description:
@@ -646,7 +646,7 @@ export default function OrganizePdfPage() {
     creator: {
       "@type": "Organization",
       name: "ZipDrop",
-      url: "https://zip-drop.vercel.app",
+      url: "https://www.getzipdrop.com",
     },
   };
 

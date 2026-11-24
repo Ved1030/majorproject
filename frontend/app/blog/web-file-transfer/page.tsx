@@ -1,14 +1,42 @@
+import { SITE_URL } from "@/lib/site";
+import { BlogPostingJsonLd } from "@/components/BlogArticleShared";
+
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {
   title: "Web File Transfer — Send Files Instantly Through Your Browser",
   description:
     "Learn how web file transfer tools work and why ZipDrop is the easiest way to send files between devices using only a browser.",
+  alternates: {
+    canonical: `${SITE_URL}/blog/web-file-transfer`,
+  },
+  openGraph: {
+    title: "Web File Transfer — Send Files Instantly Through Your Browser",
+    description: "Learn how web file transfer tools work and why ZipDrop is the easiest way to send files between devices using only a browser.",
+    url: `${SITE_URL}/blog/web-file-transfer`,
+    siteName: "ZipDrop",
+    type: "article",
+    images: [
+      {
+        url: "/og-image.png",
+        width: 1200,
+        height: 630,
+        alt: "Web File Transfer — Send Files Instantly Through Your Browser",
+      },
+    ],
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "Web File Transfer — Send Files Instantly Through Your Browser",
+    description: "Learn how web file transfer tools work and why ZipDrop is the easiest way to send files between devices using only a browser.",
+    images: ["/og-image.png"],
+  },
 };
 
 export default function Page() {
   return (
     <main className="max-w-4xl mx-auto p-8">
+      <BlogPostingJsonLd slug="web-file-transfer" title={"Web File Transfer — Send Files Instantly Through Your Browser"} description={"Learn how web file transfer tools work and why ZipDrop is the easiest way to send files between devices using only a browser."} />
       <h1>Web File Transfer — Send Files Instantly Through Your Browser</h1>
 
       <p>

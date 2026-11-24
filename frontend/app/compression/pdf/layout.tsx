@@ -4,9 +4,10 @@ export const metadata: Metadata = {
   title: "Compress PDF Online – Reduce PDF File Size Free",
   description: "Compress PDF files online for free with ZipDrop. Choose from 3 compression levels (Low, Recommended, High). Reduce file size while preserving text, images, and layout. No account required, max 100MB.",
   alternates: {
-    canonical: "https://zip-drop.vercel.app/compression/pdf",
+    canonical: "https://www.getzipdrop.com/compression/pdf",
   },
   openGraph: {
+    url: "https://www.getzipdrop.com/compression/pdf",
     title: "Compress PDF Online – Reduce PDF File Size Free",
     description: "Compress PDF files online for free with ZipDrop. 3 compression levels. No account required, max 100MB.",
     type: "website",
@@ -24,7 +25,7 @@ const structuredData = {
   "@context": "https://schema.org",
   "@type": "SoftwareApplication",
   name: "Compress PDF",
-  url: "https://zip-drop.vercel.app/compression/pdf",
+  url: "https://www.getzipdrop.com/compression/pdf",
   applicationCategory: "FileCompression",
   operatingSystem: "Web",
   description: "Free online PDF compression tool with 3 levels: Low, Recommended, High. Reduce PDF file size while preserving text, images, and layout. Max 100MB, no account required.",
@@ -37,7 +38,7 @@ const structuredData = {
   creator: {
     "@type": "Organization",
     name: "ZipDrop",
-    url: "https://zip-drop.vercel.app",
+    url: "https://www.getzipdrop.com",
   },
   featureList: [
     "3 compression levels",
@@ -51,9 +52,9 @@ const structuredData = {
     "@context": "https://schema.org",
     "@type": "BreadcrumbList",
     itemListElement: [
-      { "@type": "ListItem", position: 1, name: "Home", item: "https://zip-drop.vercel.app" },
-      { "@type": "ListItem", position: 2, name: "Compression Tools", item: "https://zip-drop.vercel.app/compression" },
-      { "@type": "ListItem", position: 3, name: "Compress PDF", item: "https://zip-drop.vercel.app/compression/pdf" },
+      { "@type": "ListItem", position: 1, name: "Home", item: "https://www.getzipdrop.com" },
+      { "@type": "ListItem", position: 2, name: "Compression Tools", item: "https://www.getzipdrop.com/compression" },
+      { "@type": "ListItem", position: 3, name: "Compress PDF", item: "https://www.getzipdrop.com/compression/pdf" },
     ],
   },
 };

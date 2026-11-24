@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { ChevronDown, HelpCircle } from "lucide-react";
 
-const FAQ_ITEMS = [
+export const FAQ_ITEMS = [
   {
     id: "what-is-zipdrop",
     question: "What is ZipDrop?",

@@ -4,9 +4,10 @@ export const metadata: Metadata = {
   title: "Excel to CSV Converter – Convert XLSX to CSV Free Online",
   description: "Convert Excel spreadsheets (XLSX/XLS) to CSV format online for free. Preserve data integrity. No account required, max 50MB.",
   alternates: {
-    canonical: "https://zip-drop.vercel.app/conversion/excel-to-csv",
+    canonical: "https://www.getzipdrop.com/conversion/excel-to-csv",
   },
   openGraph: {
+    url: "https://www.getzipdrop.com/conversion/excel-to-csv",
     title: "Excel to CSV Converter – Convert XLSX to CSV Free Online",
     description: "Convert Excel spreadsheets to CSV online for free. No account required.",
     type: "website",
@@ -24,7 +25,7 @@ const structuredData = {
   "@context": "https://schema.org",
   "@type": "SoftwareApplication",
   name: "Excel to CSV Converter",
-  url: "https://zip-drop.vercel.app/conversion/excel-to-csv",
+  url: "https://www.getzipdrop.com/conversion/excel-to-csv",
   applicationCategory: "FileConverter",
   operatingSystem: "Web",
   description: "Free online Excel to CSV converter. Convert XLSX/XLS to CSV format. No account required.",
@@ -37,15 +38,15 @@ const structuredData = {
   creator: {
     "@type": "Organization",
     name: "ZipDrop",
-    url: "https://zip-drop.vercel.app",
+    url: "https://www.getzipdrop.com",
   },
   breadcrumb: {
     "@context": "https://schema.org",
     "@type": "BreadcrumbList",
     itemListElement: [
-      { "@type": "ListItem", position: 1, name: "Home", item: "https://zip-drop.vercel.app" },
-      { "@type": "ListItem", position: 2, name: "Conversion Tools", item: "https://zip-drop.vercel.app/conversion" },
-      { "@type": "ListItem", position: 3, name: "Excel to CSV", item: "https://zip-drop.vercel.app/conversion/excel-to-csv" },
+      { "@type": "ListItem", position: 1, name: "Home", item: "https://www.getzipdrop.com" },
+      { "@type": "ListItem", position: 2, name: "Conversion Tools", item: "https://www.getzipdrop.com/conversion" },
+      { "@type": "ListItem", position: 3, name: "Excel to CSV", item: "https://www.getzipdrop.com/conversion/excel-to-csv" },
     ],
   },
 };

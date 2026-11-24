@@ -4,9 +4,10 @@ export const metadata: Metadata = {
   title: "PDF to JPG Converter – Free Online Image Conversion",
   description: "Convert PDF pages to high-quality JPG images online for free. Rasterize each page as a separate JPG. No account required.",
   alternates: {
-    canonical: "https://zip-drop.vercel.app/conversion/pdf-to-jpg",
+    canonical: "https://www.getzipdrop.com/conversion/pdf-to-jpg",
   },
   openGraph: {
+    url: "https://www.getzipdrop.com/conversion/pdf-to-jpg",
     title: "PDF to JPG Converter – Free Online Image Conversion",
     description: "Convert PDF pages to high-quality JPG images online for free. No account required.",
     type: "website",
@@ -24,7 +25,7 @@ const structuredData = {
   "@context": "https://schema.org",
   "@type": "SoftwareApplication",
   name: "PDF to JPG Converter",
-  url: "https://zip-drop.vercel.app/conversion/pdf-to-jpg",
+  url: "https://www.getzipdrop.com/conversion/pdf-to-jpg",
   applicationCategory: "FileConverter",
   operatingSystem: "Web",
   description: "Free online PDF to JPG converter. Rasterize PDF pages to high-quality JPG images. No account required.",
@@ -37,15 +38,15 @@ const structuredData = {
   creator: {
     "@type": "Organization",
     name: "ZipDrop",
-    url: "https://zip-drop.vercel.app",
+    url: "https://www.getzipdrop.com",
   },
   breadcrumb: {
     "@context": "https://schema.org",
     "@type": "BreadcrumbList",
     itemListElement: [
-      { "@type": "ListItem", position: 1, name: "Home", item: "https://zip-drop.vercel.app" },
-      { "@type": "ListItem", position: 2, name: "Conversion Tools", item: "https://zip-drop.vercel.app/conversion" },
-      { "@type": "ListItem", position: 3, name: "PDF to JPG", item: "https://zip-drop.vercel.app/conversion/pdf-to-jpg" },
+      { "@type": "ListItem", position: 1, name: "Home", item: "https://www.getzipdrop.com" },
+      { "@type": "ListItem", position: 2, name: "Conversion Tools", item: "https://www.getzipdrop.com/conversion" },
+      { "@type": "ListItem", position: 3, name: "PDF to JPG", item: "https://www.getzipdrop.com/conversion/pdf-to-jpg" },
     ],
   },
 };

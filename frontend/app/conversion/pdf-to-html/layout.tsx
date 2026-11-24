@@ -4,9 +4,10 @@ export const metadata: Metadata = {
   title: "PDF to HTML Converter – Convert PDF to HTML Free Online",
   description: "Convert PDF to structured HTML with layout preservation online for free. High-quality conversion. No account required, max 50MB.",
   alternates: {
-    canonical: "https://zip-drop.vercel.app/conversion/pdf-to-html",
+    canonical: "https://www.getzipdrop.com/conversion/pdf-to-html",
   },
   openGraph: {
+    url: "https://www.getzipdrop.com/conversion/pdf-to-html",
     title: "PDF to HTML Converter – Convert PDF to HTML Free Online",
     description: "Convert PDF to structured HTML with layout preservation online for free. No account required.",
     type: "website",
@@ -24,7 +25,7 @@ const structuredData = {
   "@context": "https://schema.org",
   "@type": "SoftwareApplication",
   name: "PDF to HTML Converter",
-  url: "https://zip-drop.vercel.app/conversion/pdf-to-html",
+  url: "https://www.getzipdrop.com/conversion/pdf-to-html",
   applicationCategory: "FileConverter",
   operatingSystem: "Web",
   description: "Free online PDF to HTML converter. Convert PDF to structured HTML with layout preservation. No account required.",
@@ -37,15 +38,15 @@ const structuredData = {
   creator: {
     "@type": "Organization",
     name: "ZipDrop",
-    url: "https://zip-drop.vercel.app",
+    url: "https://www.getzipdrop.com",
   },
   breadcrumb: {
     "@context": "https://schema.org",
     "@type": "BreadcrumbList",
     itemListElement: [
-      { "@type": "ListItem", position: 1, name: "Home", item: "https://zip-drop.vercel.app" },
-      { "@type": "ListItem", position: 2, name: "Conversion Tools", item: "https://zip-drop.vercel.app/conversion" },
-      { "@type": "ListItem", position: 3, name: "PDF to HTML", item: "https://zip-drop.vercel.app/conversion/pdf-to-html" },
+      { "@type": "ListItem", position: 1, name: "Home", item: "https://www.getzipdrop.com" },
+      { "@type": "ListItem", position: 2, name: "Conversion Tools", item: "https://www.getzipdrop.com/conversion" },
+      { "@type": "ListItem", position: 3, name: "PDF to HTML", item: "https://www.getzipdrop.com/conversion/pdf-to-html" },
     ],
   },
 };

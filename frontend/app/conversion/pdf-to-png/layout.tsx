@@ -4,9 +4,10 @@ export const metadata: Metadata = {
   title: "PDF to PNG Converter – Free Online Image Conversion",
   description: "Convert PDF pages to PNG images with transparency support online for free. High-quality rasterization. No account required.",
   alternates: {
-    canonical: "https://zip-drop.vercel.app/conversion/pdf-to-png",
+    canonical: "https://www.getzipdrop.com/conversion/pdf-to-png",
   },
   openGraph: {
+    url: "https://www.getzipdrop.com/conversion/pdf-to-png",
     title: "PDF to PNG Converter – Free Online Image Conversion",
     description: "Convert PDF pages to PNG images with transparency online for free. No account required.",
     type: "website",
@@ -24,7 +25,7 @@ const structuredData = {
   "@context": "https://schema.org",
   "@type": "SoftwareApplication",
   name: "PDF to PNG Converter",
-  url: "https://zip-drop.vercel.app/conversion/pdf-to-png",
+  url: "https://www.getzipdrop.com/conversion/pdf-to-png",
   applicationCategory: "FileConverter",
   operatingSystem: "Web",
   description: "Free online PDF to PNG converter. Convert PDF pages to PNG with transparency support. No account required.",
@@ -37,15 +38,15 @@ const structuredData = {
   creator: {
     "@type": "Organization",
     name: "ZipDrop",
-    url: "https://zip-drop.vercel.app",
+    url: "https://www.getzipdrop.com",
   },
   breadcrumb: {
     "@context": "https://schema.org",
     "@type": "BreadcrumbList",
     itemListElement: [
-      { "@type": "ListItem", position: 1, name: "Home", item: "https://zip-drop.vercel.app" },
-      { "@type": "ListItem", position: 2, name: "Conversion Tools", item: "https://zip-drop.vercel.app/conversion" },
-      { "@type": "ListItem", position: 3, name: "PDF to PNG", item: "https://zip-drop.vercel.app/conversion/pdf-to-png" },
+      { "@type": "ListItem", position: 1, name: "Home", item: "https://www.getzipdrop.com" },
+      { "@type": "ListItem", position: 2, name: "Conversion Tools", item: "https://www.getzipdrop.com/conversion" },
+      { "@type": "ListItem", position: 3, name: "PDF to PNG", item: "https://www.getzipdrop.com/conversion/pdf-to-png" },
     ],
   },
 };

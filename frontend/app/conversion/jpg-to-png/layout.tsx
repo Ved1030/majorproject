@@ -4,9 +4,10 @@ export const metadata: Metadata = {
   title: "JPG to PNG Converter – Free Online Image Conversion",
   description: "Convert JPG images to lossless PNG with transparency support online for free. High-quality conversion. No account required.",
   alternates: {
-    canonical: "https://zip-drop.vercel.app/conversion/jpg-to-png",
+    canonical: "https://www.getzipdrop.com/conversion/jpg-to-png",
   },
   openGraph: {
+    url: "https://www.getzipdrop.com/conversion/jpg-to-png",
     title: "JPG to PNG Converter – Free Online Image Conversion",
     description: "Convert JPG to lossless PNG with transparency online for free. No account required.",
     type: "website",
@@ -24,7 +25,7 @@ const structuredData = {
   "@context": "https://schema.org",
   "@type": "SoftwareApplication",
   name: "JPG to PNG Converter",
-  url: "https://zip-drop.vercel.app/conversion/jpg-to-png",
+  url: "https://www.getzipdrop.com/conversion/jpg-to-png",
   applicationCategory: "ImageConverter",
   operatingSystem: "Web",
   description: "Free online JPG to PNG converter. Convert JPG to lossless PNG with transparency support. No account required.",
@@ -37,15 +38,15 @@ const structuredData = {
   creator: {
     "@type": "Organization",
     name: "ZipDrop",
-    url: "https://zip-drop.vercel.app",
+    url: "https://www.getzipdrop.com",
   },
   breadcrumb: {
     "@context": "https://schema.org",
     "@type": "BreadcrumbList",
     itemListElement: [
-      { "@type": "ListItem", position: 1, name: "Home", item: "https://zip-drop.vercel.app" },
-      { "@type": "ListItem", position: 2, name: "Conversion Tools", item: "https://zip-drop.vercel.app/conversion" },
-      { "@type": "ListItem", position: 3, name: "JPG to PNG", item: "https://zip-drop.vercel.app/conversion/jpg-to-png" },
+      { "@type": "ListItem", position: 1, name: "Home", item: "https://www.getzipdrop.com" },
+      { "@type": "ListItem", position: 2, name: "Conversion Tools", item: "https://www.getzipdrop.com/conversion" },
+      { "@type": "ListItem", position: 3, name: "JPG to PNG", item: "https://www.getzipdrop.com/conversion/jpg-to-png" },
     ],
   },
 };

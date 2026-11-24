@@ -1,14 +1,42 @@
+import { SITE_URL } from "@/lib/site";
+import { BlogPostingJsonLd } from "@/components/BlogArticleShared";
+
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {
   title: "Best File Transfer Website: What to Look For in 2026",
   description:
     "Looking for a reliable file transfer website? Learn what to check and how ZipDrop works: up to 10 files and a 4-digit code. No login required.",
+  alternates: {
+    canonical: `${SITE_URL}/blog/file-transfer-website`,
+  },
+  openGraph: {
+    title: "Best File Transfer Website: What to Look For in 2026",
+    description: "Looking for a reliable file transfer website? Learn what to check and how ZipDrop works: up to 10 files and a 4-digit code. No login required.",
+    url: `${SITE_URL}/blog/file-transfer-website`,
+    siteName: "ZipDrop",
+    type: "article",
+    images: [
+      {
+        url: "/og-image.png",
+        width: 1200,
+        height: 630,
+        alt: "Best File Transfer Website: What to Look For in 2026",
+      },
+    ],
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "Best File Transfer Website: What to Look For in 2026",
+    description: "Looking for a reliable file transfer website? Learn what to check and how ZipDrop works: up to 10 files and a 4-digit code. No login required.",
+    images: ["/og-image.png"],
+  },
 };
 
 export default function Page() {
   return (
     <main className="max-w-4xl mx-auto p-8">
+      <BlogPostingJsonLd slug="file-transfer-website" title={"Best File Transfer Website: What to Look For in 2026"} description={"Looking for a reliable file transfer website? Learn what to check and how ZipDrop works: up to 10 files and a 4-digit code. No login required."} />
       <h1>Best File Transfer Website: What to Look For in 2026</h1>
 
       <p>

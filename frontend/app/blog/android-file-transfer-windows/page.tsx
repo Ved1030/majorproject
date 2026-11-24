@@ -1,14 +1,42 @@
+import { SITE_URL } from "@/lib/site";
+import { BlogPostingJsonLd } from "@/components/BlogArticleShared";
+
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {
   title: "Android File Transfer Windows: Quick Guide for 2026",
   description:
     "Looking for an Android file transfer Windows solution? Skip the cables and cloud account. Transfer files between Android and PC with a 4-digit code.",
+  alternates: {
+    canonical: `${SITE_URL}/blog/android-file-transfer-windows`,
+  },
+  openGraph: {
+    title: "Android File Transfer Windows: Quick Guide for 2026",
+    description: "Looking for an Android file transfer Windows solution? Skip the cables and cloud account. Transfer files between Android and PC with a 4-digit code.",
+    url: `${SITE_URL}/blog/android-file-transfer-windows`,
+    siteName: "ZipDrop",
+    type: "article",
+    images: [
+      {
+        url: "/og-image.png",
+        width: 1200,
+        height: 630,
+        alt: "Android File Transfer Windows: Quick Guide for 2026",
+      },
+    ],
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "Android File Transfer Windows: Quick Guide for 2026",
+    description: "Looking for an Android file transfer Windows solution? Skip the cables and cloud account. Transfer files between Android and PC with a 4-digit code.",
+    images: ["/og-image.png"],
+  },
 };
 
 export default function Page() {
   return (
     <main className="max-w-4xl mx-auto p-8">
+      <BlogPostingJsonLd slug="android-file-transfer-windows" title={"Android File Transfer Windows: Quick Guide for 2026"} description={"Looking for an Android file transfer Windows solution? Skip the cables and cloud account. Transfer files between Android and PC with a 4-digit code."} />
       <h1>Android File Transfer Windows: Quick Guide for 2026</h1>
 
       <p>

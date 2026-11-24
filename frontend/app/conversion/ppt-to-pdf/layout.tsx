@@ -4,9 +4,10 @@ export const metadata: Metadata = {
   title: "PowerPoint to PDF Converter – Convert PPTX to PDF Free Online",
   description: "Convert PowerPoint presentations (PPTX/PPT) to PDF online for free. Preserve slides and formatting. No account required, max 50MB.",
   alternates: {
-    canonical: "https://zip-drop.vercel.app/conversion/ppt-to-pdf",
+    canonical: "https://www.getzipdrop.com/conversion/ppt-to-pdf",
   },
   openGraph: {
+    url: "https://www.getzipdrop.com/conversion/ppt-to-pdf",
     title: "PowerPoint to PDF Converter – Convert PPTX to PDF Free Online",
     description: "Convert PowerPoint presentations to PDF online for free. No account required.",
     type: "website",
@@ -24,7 +25,7 @@ const structuredData = {
   "@context": "https://schema.org",
   "@type": "SoftwareApplication",
   name: "PowerPoint to PDF Converter",
-  url: "https://zip-drop.vercel.app/conversion/ppt-to-pdf",
+  url: "https://www.getzipdrop.com/conversion/ppt-to-pdf",
   applicationCategory: "FileConverter",
   operatingSystem: "Web",
   description: "Free online PowerPoint to PDF converter. Convert PPTX/PPT to PDF preserving slides. No account required.",
@@ -37,15 +38,15 @@ const structuredData = {
   creator: {
     "@type": "Organization",
     name: "ZipDrop",
-    url: "https://zip-drop.vercel.app",
+    url: "https://www.getzipdrop.com",
   },
   breadcrumb: {
     "@context": "https://schema.org",
     "@type": "BreadcrumbList",
     itemListElement: [
-      { "@type": "ListItem", position: 1, name: "Home", item: "https://zip-drop.vercel.app" },
-      { "@type": "ListItem", position: 2, name: "Conversion Tools", item: "https://zip-drop.vercel.app/conversion" },
-      { "@type": "ListItem", position: 3, name: "PowerPoint to PDF", item: "https://zip-drop.vercel.app/conversion/ppt-to-pdf" },
+      { "@type": "ListItem", position: 1, name: "Home", item: "https://www.getzipdrop.com" },
+      { "@type": "ListItem", position: 2, name: "Conversion Tools", item: "https://www.getzipdrop.com/conversion" },
+      { "@type": "ListItem", position: 3, name: "PowerPoint to PDF", item: "https://www.getzipdrop.com/conversion/ppt-to-pdf" },
     ],
   },
 };

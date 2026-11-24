@@ -4,9 +4,10 @@ export const metadata: Metadata = {
   title: "Compress WEBP Online – Reduce WEBP File Size Free",
   description: "Compress WEBP images online for free with ZipDrop. Lossy and lossless compression modes. Preserve transparency and animation. No account required.",
   alternates: {
-    canonical: "https://zip-drop.vercel.app/compression/webp",
+    canonical: "https://www.getzipdrop.com/compression/webp",
   },
   openGraph: {
+    url: "https://www.getzipdrop.com/compression/webp",
     title: "Compress WEBP Online – Reduce WEBP File Size Free",
     description: "Compress WEBP images online for free. Lossy and lossless modes. No account required.",
     type: "website",
@@ -24,7 +25,7 @@ const structuredData = {
   "@context": "https://schema.org",
   "@type": "SoftwareApplication",
   name: "Compress WEBP",
-  url: "https://zip-drop.vercel.app/compression/webp",
+  url: "https://www.getzipdrop.com/compression/webp",
   applicationCategory: "ImageCompression",
   operatingSystem: "Web",
   description: "Free online WEBP compression with lossy and lossless modes. Preserves transparency and animation. No account required.",
@@ -37,7 +38,7 @@ const structuredData = {
   creator: {
     "@type": "Organization",
     name: "ZipDrop",
-    url: "https://zip-drop.vercel.app",
+    url: "https://www.getzipdrop.com",
   },
   featureList: [
     "Lossy compression",
@@ -50,9 +51,9 @@ const structuredData = {
     "@context": "https://schema.org",
     "@type": "BreadcrumbList",
     itemListElement: [
-      { "@type": "ListItem", position: 1, name: "Home", item: "https://zip-drop.vercel.app" },
-      { "@type": "ListItem", position: 2, name: "Compression Tools", item: "https://zip-drop.vercel.app/compression" },
-      { "@type": "ListItem", position: 3, name: "Compress WEBP", item: "https://zip-drop.vercel.app/compression/webp" },
+      { "@type": "ListItem", position: 1, name: "Home", item: "https://www.getzipdrop.com" },
+      { "@type": "ListItem", position: 2, name: "Compression Tools", item: "https://www.getzipdrop.com/compression" },
+      { "@type": "ListItem", position: 3, name: "Compress WEBP", item: "https://www.getzipdrop.com/compression/webp" },
     ],
   },
 };

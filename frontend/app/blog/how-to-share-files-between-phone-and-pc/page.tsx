@@ -1,14 +1,42 @@
+import { SITE_URL } from "@/lib/site";
+import { BlogPostingJsonLd } from "@/components/BlogArticleShared";
+
 import { Metadata } from "next";
 
 export const metadata: Metadata = {
   title: "How to Share Files Between Phone and PC",
   description:
     "Learn how to transfer files between your phone and PC without cables.",
+  alternates: {
+    canonical: `${SITE_URL}/blog/how-to-share-files-between-phone-and-pc`,
+  },
+  openGraph: {
+    title: "How to Share Files Between Phone and PC",
+    description: "Learn how to transfer files between your phone and PC without cables.",
+    url: `${SITE_URL}/blog/how-to-share-files-between-phone-and-pc`,
+    siteName: "ZipDrop",
+    type: "article",
+    images: [
+      {
+        url: "/og-image.png",
+        width: 1200,
+        height: 630,
+        alt: "How to Share Files Between Phone and PC",
+      },
+    ],
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "How to Share Files Between Phone and PC",
+    description: "Learn how to transfer files between your phone and PC without cables.",
+    images: ["/og-image.png"],
+  },
 };
 
 export default function Page() {
   return (
     <main className="max-w-4xl mx-auto p-8">
+      <BlogPostingJsonLd slug="how-to-share-files-between-phone-and-pc" title={"How to Share Files Between Phone and PC"} description={"Learn how to transfer files between your phone and PC without cables."} />
       <h1>How to Share Files Between Phone and PC</h1>
 
       <p>

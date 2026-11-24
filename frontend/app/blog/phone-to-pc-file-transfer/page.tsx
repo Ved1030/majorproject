@@ -1,14 +1,42 @@
+import { SITE_URL } from "@/lib/site";
+import { BlogPostingJsonLd } from "@/components/BlogArticleShared";
+
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {
   title: "Phone to PC File Transfer: Send Files Instantly Without Cables",
   description:
     "Learn how to do a phone to PC file transfer without USB cables or a cloud account. Send photos, videos, and documents with a 4-digit code.",
+  alternates: {
+    canonical: `${SITE_URL}/blog/phone-to-pc-file-transfer`,
+  },
+  openGraph: {
+    title: "Phone to PC File Transfer: Send Files Instantly Without Cables",
+    description: "Learn how to do a phone to PC file transfer without USB cables or a cloud account. Send photos, videos, and documents with a 4-digit code.",
+    url: `${SITE_URL}/blog/phone-to-pc-file-transfer`,
+    siteName: "ZipDrop",
+    type: "article",
+    images: [
+      {
+        url: "/og-image.png",
+        width: 1200,
+        height: 630,
+        alt: "Phone to PC File Transfer: Send Files Instantly Without Cables",
+      },
+    ],
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "Phone to PC File Transfer: Send Files Instantly Without Cables",
+    description: "Learn how to do a phone to PC file transfer without USB cables or a cloud account. Send photos, videos, and documents with a 4-digit code.",
+    images: ["/og-image.png"],
+  },
 };
 
 export default function Page() {
   return (
     <main className="max-w-4xl mx-auto p-8">
+      <BlogPostingJsonLd slug="phone-to-pc-file-transfer" title={"Phone to PC File Transfer: Send Files Instantly Without Cables"} description={"Learn how to do a phone to PC file transfer without USB cables or a cloud account. Send photos, videos, and documents with a 4-digit code."} />
       <h1>Phone to PC File Transfer: Send Files Instantly Without Cables</h1>
 
       <p>

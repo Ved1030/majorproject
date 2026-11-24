@@ -4,9 +4,10 @@ export const metadata: Metadata = {
   title: "Excel to PDF Converter – Convert XLSX to PDF Free Online",
   description: "Convert Excel spreadsheets (XLSX/XLS) to PDF online for free. Preserve sheet fidelity and formatting. No account required, max 50MB.",
   alternates: {
-    canonical: "https://zip-drop.vercel.app/conversion/excel-to-pdf",
+    canonical: "https://www.getzipdrop.com/conversion/excel-to-pdf",
   },
   openGraph: {
+    url: "https://www.getzipdrop.com/conversion/excel-to-pdf",
     title: "Excel to PDF Converter – Convert XLSX to PDF Free Online",
     description: "Convert Excel spreadsheets to PDF online for free. Preserve formatting. No account required.",
     type: "website",
@@ -24,7 +25,7 @@ const structuredData = {
   "@context": "https://schema.org",
   "@type": "SoftwareApplication",
   name: "Excel to PDF Converter",
-  url: "https://zip-drop.vercel.app/conversion/excel-to-pdf",
+  url: "https://www.getzipdrop.com/conversion/excel-to-pdf",
   applicationCategory: "FileConverter",
   operatingSystem: "Web",
   description: "Free online Excel to PDF converter. Convert XLSX/XLS to PDF preserving sheet fidelity. No account required.",
@@ -37,15 +38,15 @@ const structuredData = {
   creator: {
     "@type": "Organization",
     name: "ZipDrop",
-    url: "https://zip-drop.vercel.app",
+    url: "https://www.getzipdrop.com",
   },
   breadcrumb: {
     "@context": "https://schema.org",
     "@type": "BreadcrumbList",
     itemListElement: [
-      { "@type": "ListItem", position: 1, name: "Home", item: "https://zip-drop.vercel.app" },
-      { "@type": "ListItem", position: 2, name: "Conversion Tools", item: "https://zip-drop.vercel.app/conversion" },
-      { "@type": "ListItem", position: 3, name: "Excel to PDF", item: "https://zip-drop.vercel.app/conversion/excel-to-pdf" },
+      { "@type": "ListItem", position: 1, name: "Home", item: "https://www.getzipdrop.com" },
+      { "@type": "ListItem", position: 2, name: "Conversion Tools", item: "https://www.getzipdrop.com/conversion" },
+      { "@type": "ListItem", position: 3, name: "Excel to PDF", item: "https://www.getzipdrop.com/conversion/excel-to-pdf" },
     ],
   },
 };

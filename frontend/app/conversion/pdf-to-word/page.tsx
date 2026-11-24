@@ -144,7 +144,7 @@ export default function PdfToWordPage() {
     "@context": "https://schema.org",
     "@type": "SoftwareApplication",
     name: "PDF to Word Converter",
-    url: "https://zip-drop.vercel.app/conversion/pdf-to-word",
+    url: "https://www.getzipdrop.com/conversion/pdf-to-word",
     applicationCategory: "FileConverter",
     operatingSystem: "Web",
     description: "Free online PDF to Word converter with Editable and Visual Fidelity modes. Convert PDF to editable DOCX without an account.",
@@ -157,7 +157,7 @@ export default function PdfToWordPage() {
     creator: {
       "@type": "Organization",
       name: "ZipDrop",
-      url: "https://zip-drop.vercel.app",
+      url: "https://www.getzipdrop.com",
     },
   };
 

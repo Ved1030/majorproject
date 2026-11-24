@@ -21,6 +21,47 @@ export const BLOG_AUTHOR = {
   secondAuthor: AUTHORS[1].name,
 };
 
+export function BlogPostingJsonLd({
+  slug,
+  title,
+  description,
+  datePublished,
+  dateModified,
+}: {
+  slug: string;
+  title: string;
+  description: string;
+  datePublished?: string;
+  dateModified?: string;
+}) {
+  const url = `${SITE_URL}/blog/${slug}`;
+  const data = {
+    "@context": "https://schema.org",
+    "@type": "BlogPosting",
+    headline: title,
+    description,
+    url,
+    mainEntityOfPage: { "@type": "WebPage", "@id": url },
+    ...(datePublished ? { datePublished } : {}),
+    ...(dateModified ? { dateModified } : {}),
+    author: AUTHORS.map((author) => ({
+      "@type": "Person",
+      name: author.name,
+      url: author.linkedin,
+    })),
+    publisher: { "@type": "Organization", name: "ZipDrop", url: SITE_URL },
+    image: `${SITE_URL}/og-image.png`,
+    isPartOf: { "@type": "Blog", name: "ZipDrop Blog", url: `${SITE_URL}/blog` },
+  };
+
+  return (
+    <script
+      type="application/ld+json"
+      dangerouslySetInnerHTML={{ __html: JSON.stringify(data) }}
+    />
+  );
+}
+
 export function blogMetadata(meta: BlogMeta) {
   const url = `${SITE_URL}/blog/${meta.slug}`;
   const image = { url: "/og-image.png", width: 1200, height: 630, alt: meta.title };

@@ -4,9 +4,10 @@ export const metadata: Metadata = {
   title: "RTF to Word Converter – Convert RTF to DOCX Free Online",
   description: "Convert Rich Text Format (RTF) to Word documents (DOCX) online for free. Preserve formatting. No account required, max 50MB.",
   alternates: {
-    canonical: "https://zip-drop.vercel.app/conversion/rtf-to-word",
+    canonical: "https://www.getzipdrop.com/conversion/rtf-to-word",
   },
   openGraph: {
+    url: "https://www.getzipdrop.com/conversion/rtf-to-word",
     title: "RTF to Word Converter – Convert RTF to DOCX Free Online",
     description: "Convert RTF to Word documents online for free. No account required.",
     type: "website",
@@ -24,7 +25,7 @@ const structuredData = {
   "@context": "https://schema.org",
   "@type": "SoftwareApplication",
   name: "RTF to Word Converter",
-  url: "https://zip-drop.vercel.app/conversion/rtf-to-word",
+  url: "https://www.getzipdrop.com/conversion/rtf-to-word",
   applicationCategory: "FileConverter",
   operatingSystem: "Web",
   description: "Free online RTF to Word converter. Convert RTF to DOCX preserving formatting. No account required.",
@@ -37,15 +38,15 @@ const structuredData = {
   creator: {
     "@type": "Organization",
     name: "ZipDrop",
-    url: "https://zip-drop.vercel.app",
+    url: "https://www.getzipdrop.com",
   },
   breadcrumb: {
     "@context": "https://schema.org",
     "@type": "BreadcrumbList",
     itemListElement: [
-      { "@type": "ListItem", position: 1, name: "Home", item: "https://zip-drop.vercel.app" },
-      { "@type": "ListItem", position: 2, name: "Conversion Tools", item: "https://zip-drop.vercel.app/conversion" },
-      { "@type": "ListItem", position: 3, name: "RTF to Word", item: "https://zip-drop.vercel.app/conversion/rtf-to-word" },
+      { "@type": "ListItem", position: 1, name: "Home", item: "https://www.getzipdrop.com" },
+      { "@type": "ListItem", position: 2, name: "Conversion Tools", item: "https://www.getzipdrop.com/conversion" },
+      { "@type": "ListItem", position: 3, name: "RTF to Word", item: "https://www.getzipdrop.com/conversion/rtf-to-word" },
     ],
   },
 };

@@ -7,12 +7,12 @@ export const metadata: Metadata = {
   description:
     "Contact ZipDrop for feedback, bug reports, privacy requests, and file deletion requests. Email us at mehtaved12@gmail.com with details about your transfer.",
   alternates: {
-    canonical: "https://zip-drop.vercel.app/contact",
+    canonical: `${SITE_URL}/contact`,
   },
   openGraph: {
     title: "Contact ZipDrop – Feedback, Bug Reports & Privacy Requests",
     description: "Contact ZipDrop for feedback, bug reports, and privacy requests.",
-    url: "https://zip-drop.vercel.app/contact",
+    url: `${SITE_URL}/contact`,
     siteName: "ZipDrop",
     type: "website",
     images: ["/og-image.png"],
@@ -30,7 +30,7 @@ const structuredData = {
   "@type": "ContactPage",
   name: "Contact ZipDrop",
   description: "Contact ZipDrop for feedback, bug reports, privacy requests, and file deletion requests.",
-  url: "https://zip-drop.vercel.app/contact",
+  url: `${SITE_URL}/contact`,
   mainEntity: {
     "@type": "Organization",
     name: "ZipDrop",

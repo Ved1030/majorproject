@@ -1,14 +1,42 @@
+import { SITE_URL } from "@/lib/site";
+import { BlogPostingJsonLd } from "@/components/BlogArticleShared";
+
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {
   title: "Mobile to PC File Transfer: Fastest Ways to Send Files in 2026",
   description:
     "Need to transfer files from your mobile to PC? Learn the fastest ways to send photos, videos, and documents between devices without cables or cloud accounts.",
+  alternates: {
+    canonical: `${SITE_URL}/blog/mobile-to-pc-file-transfer`,
+  },
+  openGraph: {
+    title: "Mobile to PC File Transfer: Fastest Ways to Send Files in 2026",
+    description: "Need to transfer files from your mobile to PC? Learn the fastest ways to send photos, videos, and documents between devices without cables or cloud accounts.",
+    url: `${SITE_URL}/blog/mobile-to-pc-file-transfer`,
+    siteName: "ZipDrop",
+    type: "article",
+    images: [
+      {
+        url: "/og-image.png",
+        width: 1200,
+        height: 630,
+        alt: "Mobile to PC File Transfer: Fastest Ways to Send Files in 2026",
+      },
+    ],
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "Mobile to PC File Transfer: Fastest Ways to Send Files in 2026",
+    description: "Need to transfer files from your mobile to PC? Learn the fastest ways to send photos, videos, and documents between devices without cables or cloud accounts.",
+    images: ["/og-image.png"],
+  },
 };
 
 export default function Page() {
   return (
     <main className="max-w-4xl mx-auto p-8">
+      <BlogPostingJsonLd slug="mobile-to-pc-file-transfer" title={"Mobile to PC File Transfer: Fastest Ways to Send Files in 2026"} description={"Need to transfer files from your mobile to PC? Learn the fastest ways to send photos, videos, and documents between devices without cables or cloud accounts."} />
       <h1>Mobile to PC File Transfer: The Fastest Ways to Send Files in 2026</h1>
 
       <p>

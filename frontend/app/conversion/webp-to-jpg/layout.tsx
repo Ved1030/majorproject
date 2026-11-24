@@ -4,9 +4,10 @@ export const metadata: Metadata = {
   title: "WEBP to JPG Converter – Convert WEBP to JPG Free Online",
   description: "Convert WEBP images to widely compatible JPG format online for free. High-quality conversion. No account required, max 50MB.",
   alternates: {
-    canonical: "https://zip-drop.vercel.app/conversion/webp-to-jpg",
+    canonical: "https://www.getzipdrop.com/conversion/webp-to-jpg",
   },
   openGraph: {
+    url: "https://www.getzipdrop.com/conversion/webp-to-jpg",
     title: "WEBP to JPG Converter – Convert WEBP to JPG Free Online",
     description: "Convert WEBP images to JPG online for free. No account required.",
     type: "website",
@@ -24,7 +25,7 @@ const structuredData = {
   "@context": "https://schema.org",
   "@type": "SoftwareApplication",
   name: "WEBP to JPG Converter",
-  url: "https://zip-drop.vercel.app/conversion/webp-to-jpg",
+  url: "https://www.getzipdrop.com/conversion/webp-to-jpg",
   applicationCategory: "ImageConverter",
   operatingSystem: "Web",
   description: "Free online WEBP to JPG converter. Convert WEBP to widely compatible JPG format. No account required.",
@@ -37,15 +38,15 @@ const structuredData = {
   creator: {
     "@type": "Organization",
     name: "ZipDrop",
-    url: "https://zip-drop.vercel.app",
+    url: "https://www.getzipdrop.com",
   },
   breadcrumb: {
     "@context": "https://schema.org",
     "@type": "BreadcrumbList",
     itemListElement: [
-      { "@type": "ListItem", position: 1, name: "Home", item: "https://zip-drop.vercel.app" },
-      { "@type": "ListItem", position: 2, name: "Conversion Tools", item: "https://zip-drop.vercel.app/conversion" },
-      { "@type": "ListItem", position: 3, name: "WEBP to JPG", item: "https://zip-drop.vercel.app/conversion/webp-to-jpg" },
+      { "@type": "ListItem", position: 1, name: "Home", item: "https://www.getzipdrop.com" },
+      { "@type": "ListItem", position: 2, name: "Conversion Tools", item: "https://www.getzipdrop.com/conversion" },
+      { "@type": "ListItem", position: 3, name: "WEBP to JPG", item: "https://www.getzipdrop.com/conversion/webp-to-jpg" },
     ],
   },
 };

@@ -4,9 +4,10 @@ export const metadata: Metadata = {
   title: "PNG to JPG Converter – Free Online Image Conversion",
   description: "Convert PNG images to compressed JPG online for free. Adjustable quality. No account required.",
   alternates: {
-    canonical: "https://zip-drop.vercel.app/conversion/png-to-jpg",
+    canonical: "https://www.getzipdrop.com/conversion/png-to-jpg",
   },
   openGraph: {
+    url: "https://www.getzipdrop.com/conversion/png-to-jpg",
     title: "PNG to JPG Converter – Free Online Image Conversion",
     description: "Convert PNG to compressed JPG online for free. No account required.",
     type: "website",
@@ -24,7 +25,7 @@ const structuredData = {
   "@context": "https://schema.org",
   "@type": "SoftwareApplication",
   name: "PNG to JPG Converter",
-  url: "https://zip-drop.vercel.app/conversion/png-to-jpg",
+  url: "https://www.getzipdrop.com/conversion/png-to-jpg",
   applicationCategory: "ImageConverter",
   operatingSystem: "Web",
   description: "Free online PNG to JPG converter. Convert PNG to compressed JPG with adjustable quality. No account required.",
@@ -37,15 +38,15 @@ const structuredData = {
   creator: {
     "@type": "Organization",
     name: "ZipDrop",
-    url: "https://zip-drop.vercel.app",
+    url: "https://www.getzipdrop.com",
   },
   breadcrumb: {
     "@context": "https://schema.org",
     "@type": "BreadcrumbList",
     itemListElement: [
-      { "@type": "ListItem", position: 1, name: "Home", item: "https://zip-drop.vercel.app" },
-      { "@type": "ListItem", position: 2, name: "Conversion Tools", item: "https://zip-drop.vercel.app/conversion" },
-      { "@type": "ListItem", position: 3, name: "PNG to JPG", item: "https://zip-drop.vercel.app/conversion/png-to-jpg" },
+      { "@type": "ListItem", position: 1, name: "Home", item: "https://www.getzipdrop.com" },
+      { "@type": "ListItem", position: 2, name: "Conversion Tools", item: "https://www.getzipdrop.com/conversion" },
+      { "@type": "ListItem", position: 3, name: "PNG to JPG", item: "https://www.getzipdrop.com/conversion/png-to-jpg" },
     ],
   },
 };

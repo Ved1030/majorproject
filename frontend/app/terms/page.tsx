@@ -7,12 +7,12 @@ export const metadata: Metadata = {
   description:
     "The terms that apply when you use ZipDrop: acceptable use, file limits, storage and retention, and the limits of the service. Free file utility platform terms.",
   alternates: {
-    canonical: "https://zip-drop.vercel.app/terms",
+    canonical: `${SITE_URL}/terms`,
   },
   openGraph: {
     title: "Terms of Use – ZipDrop File Sharing & Tools",
     description: "The terms that apply when you use ZipDrop: acceptable use, file limits, storage and retention.",
-    url: "https://zip-drop.vercel.app/terms",
+    url: `${SITE_URL}/terms`,
     siteName: "ZipDrop",
     type: "website",
     images: ["/og-image.png"],
@@ -30,7 +30,7 @@ const structuredData = {
   "@type": "WebPage",
   name: "Terms of Use",
   description: "The terms that apply when you use ZipDrop: acceptable use, file limits, storage and retention, and the limits of the service.",
-  url: "https://zip-drop.vercel.app/terms",
+  url: `${SITE_URL}/terms`,
   publisher: {
     "@type": "Organization",
     name: "ZipDrop",

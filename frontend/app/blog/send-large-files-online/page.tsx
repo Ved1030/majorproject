@@ -1,14 +1,42 @@
+import { SITE_URL } from "@/lib/site";
+import { BlogPostingJsonLd } from "@/components/BlogArticleShared";
+
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {
   title: "Best Way to Send Large Files Online",
   description:
     "Learn how to send large files online. ZipDrop takes up to 10 files per transfer, with no compression and no account needed.",
+  alternates: {
+    canonical: `${SITE_URL}/blog/send-large-files-online`,
+  },
+  openGraph: {
+    title: "Best Way to Send Large Files Online",
+    description: "Learn how to send large files online. ZipDrop takes up to 10 files per transfer, with no compression and no account needed.",
+    url: `${SITE_URL}/blog/send-large-files-online`,
+    siteName: "ZipDrop",
+    type: "article",
+    images: [
+      {
+        url: "/og-image.png",
+        width: 1200,
+        height: 630,
+        alt: "Best Way to Send Large Files Online",
+      },
+    ],
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "Best Way to Send Large Files Online",
+    description: "Learn how to send large files online. ZipDrop takes up to 10 files per transfer, with no compression and no account needed.",
+    images: ["/og-image.png"],
+  },
 };
 
 export default function Page() {
   return (
     <main className="max-w-4xl mx-auto p-8">
+      <BlogPostingJsonLd slug="send-large-files-online" title={"Best Way to Send Large Files Online"} description={"Learn how to send large files online. ZipDrop takes up to 10 files per transfer, with no compression and no account needed."} />
       <h1>Best Way to Send Large Files Online</h1>
 
       <p>

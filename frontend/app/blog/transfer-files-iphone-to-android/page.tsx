@@ -1,14 +1,42 @@
+import { SITE_URL } from "@/lib/site";
+import { BlogPostingJsonLd } from "@/components/BlogArticleShared";
+
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {
   title: "How to Transfer Files From iPhone to Android",
   description:
     "Learn how to transfer files from iPhone to Android quickly without cables, apps, or complicated setup.",
+  alternates: {
+    canonical: `${SITE_URL}/blog/transfer-files-iphone-to-android`,
+  },
+  openGraph: {
+    title: "How to Transfer Files From iPhone to Android",
+    description: "Learn how to transfer files from iPhone to Android quickly without cables, apps, or complicated setup.",
+    url: `${SITE_URL}/blog/transfer-files-iphone-to-android`,
+    siteName: "ZipDrop",
+    type: "article",
+    images: [
+      {
+        url: "/og-image.png",
+        width: 1200,
+        height: 630,
+        alt: "How to Transfer Files From iPhone to Android",
+      },
+    ],
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "How to Transfer Files From iPhone to Android",
+    description: "Learn how to transfer files from iPhone to Android quickly without cables, apps, or complicated setup.",
+    images: ["/og-image.png"],
+  },
 };
 
 export default function Page() {
   return (
     <main className="max-w-4xl mx-auto p-8">
+      <BlogPostingJsonLd slug="transfer-files-iphone-to-android" title={"How to Transfer Files From iPhone to Android"} description={"Learn how to transfer files from iPhone to Android quickly without cables, apps, or complicated setup."} />
       <h1>How to Transfer Files From iPhone to Android</h1>
 
       <p>

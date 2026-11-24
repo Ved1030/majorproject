@@ -4,9 +4,10 @@ export const metadata: Metadata = {
   title: "Online Document Editor – Edit Word, PDF & Text Files Free",
   description: "Edit DOCX, PDF, TXT, Markdown and HTML documents in your browser with ZipDrop's free online editor. Full formatting, images, tables, and collaboration. No account required.",
   alternates: {
-    canonical: "https://zip-drop.vercel.app/editor",
+    canonical: "https://www.getzipdrop.com/editor",
   },
   openGraph: {
+    url: "https://www.getzipdrop.com/editor",
     title: "Online Document Editor – Edit Word, PDF & Text Files Free",
     description: "Edit DOCX, PDF, TXT, Markdown and HTML documents in your browser with ZipDrop's free online editor. No account required.",
     type: "website",
@@ -24,7 +25,7 @@ const structuredData = {
   "@context": "https://schema.org",
   "@type": "SoftwareApplication",
   name: "ZipDrop Online Editor",
-  url: "https://zip-drop.vercel.app/editor",
+  url: "https://www.getzipdrop.com/editor",
   applicationCategory: "DocumentEditor",
   operatingSystem: "Web",
   description: "Free online document editor for Word (DOCX), PDF, TXT, Markdown, and HTML files. Edit with full formatting, images, tables, and share edited copies. No account required.",
@@ -37,7 +38,7 @@ const structuredData = {
   creator: {
     "@type": "Organization",
     name: "ZipDrop",
-    url: "https://zip-drop.vercel.app",
+    url: "https://www.getzipdrop.com",
   },
   featureList: [
     "Edit DOCX documents",
@@ -53,8 +54,8 @@ const structuredData = {
     "@context": "https://schema.org",
     "@type": "BreadcrumbList",
     itemListElement: [
-      { "@type": "ListItem", position: 1, name: "Home", item: "https://zip-drop.vercel.app" },
-      { "@type": "ListItem", position: 2, name: "Online Editor", item: "https://zip-drop.vercel.app/editor" },
+      { "@type": "ListItem", position: 1, name: "Home", item: "https://www.getzipdrop.com" },
+      { "@type": "ListItem", position: 2, name: "Online Editor", item: "https://www.getzipdrop.com/editor" },
     ],
   },
 };

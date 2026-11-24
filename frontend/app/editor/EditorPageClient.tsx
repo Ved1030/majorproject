@@ -1,0 +1,293 @@
+"use client";
+
+import { useState, useEffect, useCallback, Suspense } from "react";
+import { useSearchParams } from "next/navigation";
+import dynamic from "next/dynamic";
+import Breadcrumbs from "@/components/Breadcrumbs";
+
+const EditorShell = dynamic(
+  () => import("@/components/editor/EditorShell"),
+  {
+    ssr: false,
+    loading: () => (
+      <div style={{ display: "flex", alignItems: "center", justifyContent: "center", height: "100vh", background: "var(--editor-workspace)" }}>
+        <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 20 }}>
+          <div style={{ width: 40, height: 40, border: "2px solid var(--teal-light)", borderTop: "2px solid #078C91", borderRadius: "50%", animation: "spin 1s linear infinite" }} />
+          <p style={{ fontSize: 13, color: "var(--text-secondary)" }}>Loading editor...</p>
+        </div>
+      </div>
+    ),
+  }
+);
+
+const breadcrumbItems = [
+  { name: "Online Editor", href: "/editor" },
+];
+
+function getExtension(filename: string): string {
+  return filename.split(".").pop()?.toLowerCase() || "";
+}
+
+function formatFileSize(bytes: number): string {
+  if (bytes < 1024) return bytes + " B";
+  if (bytes < 1024 * 1024) return (bytes / 1024).toFixed(1) + " KB";
+  return (bytes / (1024 * 1024)).toFixed(1) + " MB";
+}
+
+function simpleMarkdownToHtml(md: string): string {
+  let html = md;
+  html = html.replace(/^#### (.+)$/gm, "<h4>$1</h4>");
+  html = html.replace(/^### (.+)$/gm, "<h3>$1</h3>");
+  html = html.replace(/^## (.+)$/gm, "<h2>$1</h2>");
+  html = html.replace(/^# (.+)$/gm, "<h1>$1</h1>");
+  html = html.replace(/\*\*\*(.+?)\*\*\*/g, "<strong><em>$1</em></strong>");
+  html = html.replace(/\*\*(.+?)\*\*/g, "<strong>$1</strong>");
+  html = html.replace(/\*(.+?)\*/g, "<em>$1</em>");
+  html = html.replace(/```([\s\S]*?)```/g, "<pre><code>$1</code></pre>");
+  html = html.replace(/`([^`]+)`/g, "<code>$1</code>");
+  html = html.replace(/^> (.+)$/gm, "<blockquote>$1</blockquote>");
+  html = html.replace(/\[([^\]]+)\]\(([^)]+)\)/g, '<a href="$2">$1</a>');
+  html = html.replace(/!\[([^\]]*)\]\(([^)]+)\)/g, '<img src="$2" alt="$1" />');
+  html = html.replace(/^---$/gm, "<hr />");
+  html = html.replace(/^- (.+)$/gm, "<li>$1</li>");
+  html = html.replace(/(<li>[\s\S]*<\/li>)/g, "<ul>$1</ul>");
+  html = html.replace(/\n{2,}/g, "</p><p>");
+  html = "<p>" + html + "</p>";
+  html = html.replace(/<p><\/p>/g, "");
+  html = html.replace(/<p>(<h[1-6]>)/g, "$1");
+  html = html.replace(/(<\/h[1-6]>)<\/p>/g, "$1");
+  html = html.replace(/<p>(<ul>)/g, "$1");
+  html = html.replace(/(<\/ul>)<\/p>/g, "$1");
+  html = html.replace(/<p>(<blockquote>)/g, "$1");
+  html = html.replace(/(<\/blockquote>)<\/p>/g, "$1");
+  html = html.replace(/<p>(<pre>)/g, "$1");
+  html = html.replace(/(<\/pre>)<\/p>/g, "$1");
+  html = html.replace(/<p>(<hr \/>)/g, "$1");
+  return html;
+}
+
+function EditorPageInner() {
+  const searchParams = useSearchParams();
+  const fileUrl = searchParams.get("fileUrl") || "";
+  const filename = searchParams.get("filename") || "";
+  const recipientCode = searchParams.get("code") || "";
+
+  const hasFileUrl = !!fileUrl;
+
+  const [loading, setLoading] = useState(true);
+  const [loadingLabel, setLoadingLabel] = useState("Opening document...");
+  const [error, setError] = useState<string | null>(null);
+  const [fileName, setFileName] = useState(filename || "Untitled document");
+  const [fileType, setFileType] = useState("docx");
+  const [fileSize, setFileSize] = useState("\u2014");
+  const [content, setContent] = useState("");
+  const [docxBuffer, setDocxBuffer] = useState<ArrayBuffer | null>(null);
+  const [loadKey, setLoadKey] = useState(0);
+
+  const API_URL = process.env.NEXT_PUBLIC_API_URL || "https://zipdrop.onrender.com";
+
+  const isExternalUrl = (url: string): boolean => {
+    try {
+      const parsed = new URL(url);
+      return parsed.hostname !== window.location.hostname;
+    } catch {
+      return false;
+    }
+  };
+
+  const getProxyUrl = (url: string, filename: string): string => {
+    const params = new URLSearchParams({ url, filename });
+    return `/api/proxy-file?${params.toString()}`;
+  };
+
+  const processFile = useCallback(async (url: string, name: string) => {
+    try {
+      setLoading(true);
+      setError(null);
+
+      const ext = getExtension(name);
+      setFileType(ext);
+      setFileName(name);
+      setLoadingLabel(ext === "pdf" ? "Preparing PDF..." : "Opening document...");
+
+      const fetchUrl = isExternalUrl(url) ? getProxyUrl(url, name) : url;
+      console.log("[editor] Fetching file:", fetchUrl);
+      const response = await fetch(fetchUrl);
+      console.log("[editor] Response status:", response.status, response.statusText);
+
+      if (!response.ok) {
+        if (ext === "pdf" && response.status === 404) {
+          throw new Error(
+            "The PDF could not be found. The share link may have expired or the file was removed."
+          );
+        }
+        throw new Error(`Failed to fetch file: ${response.status} ${response.statusText}`);
+      }
+
+      const contentLength = response.headers.get("content-length");
+      if (contentLength) setFileSize(formatFileSize(Number(contentLength)));
+
+      if (ext === "pdf") {
+        setLoadingLabel("Converting PDF to Word (high-fidelity)...");
+        const pdfBuffer = await response.arrayBuffer();
+        const formData = new FormData();
+        formData.append(
+          "file",
+          new Blob([pdfBuffer], { type: "application/pdf" }),
+          name
+        );
+
+        console.log("[editor] Calling backend conversion API:", `${API_URL}/convert-pdf-to-docx`);
+        const conversion = await fetch(`${API_URL}/convert-pdf-to-docx`, {
+          method: "POST",
+          body: formData,
+        });
+
+        console.log("[editor] Conversion response status:", conversion.status, conversion.statusText);
+
+        if (!conversion.ok) {
+          const details = await conversion.json().catch(() => null);
+          throw new Error(
+            details?.error ||
+              `PDF conversion failed: ${conversion.status} ${conversion.statusText}`
+          );
+        }
+
+        setLoadingLabel("Opening Word editor...");
+        const docx = await conversion.arrayBuffer();
+        if (docx.byteLength === 0) {
+          throw new Error("PDF conversion returned an empty document.");
+        }
+        setContent("");
+        setDocxBuffer(docx);
+        setFileName(name.replace(/\.pdf$/i, ".docx"));
+        setFileType("docx");
+      } else if (ext === "txt") {
+        const text = await response.text();
+        console.log("[editor] TXT loaded:", text.length, "chars");
+        setDocxBuffer(null);
+        setContent(text.split("\n").map((l) => `<p>${l || "&nbsp;"}</p>`).join(""));
+      } else if (ext === "md" || ext === "markdown") {
+        const text = await response.text();
+        console.log("[editor] Markdown loaded:", text.length, "chars");
+        setDocxBuffer(null);
+        setContent(simpleMarkdownToHtml(text));
+      } else if (ext === "html") {
+        const text = await response.text();
+        console.log("[editor] HTML loaded:", text.length, "chars");
+        setDocxBuffer(null);
+        setContent(text);
+      } else if (ext === "docx" || ext === "doc") {
+        console.log("[editor] DOCX: downloading binary...");
+        const arrayBuffer = await response.arrayBuffer();
+        console.log("[editor] DOCX: downloaded", arrayBuffer.byteLength, "bytes");
+        setContent("");
+        setDocxBuffer(arrayBuffer);
+      } else {
+        const text = await response.text();
+        console.log("[editor] Unknown format, loading as text:", text.length, "chars");
+        setDocxBuffer(null);
+        setContent(text.split("\n").map((l) => `<p>${l || "&nbsp;"}</p>`).join(""));
+      }
+      setLoadKey((k) => k + 1);
+    } catch (err: any) {
+      console.error("[editor] Error:", err.message);
+      setError(err.message || "Failed to load file");
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    if (fileUrl && filename) {
+      processFile(fileUrl, filename);
+    } else if (!fileUrl) {
+      setLoading(false);
+    }
+  }, [fileUrl, filename, processFile]);
+
+  if (error) {
+    return (
+    <div style={{ 
+      minHeight: "100vh", 
+      background: "var(--editor-workspace)",
+      display: "flex",
+      flexDirection: "column",
+    }}>
+      <Breadcrumbs items={breadcrumbItems} />
+      <div style={{ display: "flex", alignItems: "center", justifyContent: "center", height: "100vh", background: "var(--editor-workspace)", flexDirection: "column", gap: 16 }}>
+        <div style={{ width: 56, height: 56, borderRadius: 12, background: "var(--danger-light)", border: "1px solid rgba(214,69,69,0.20)", display: "flex", alignItems: "center", justifyContent: "center" }}>
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="var(--danger)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            <circle cx="12" cy="12" r="10" />
+            <line x1="15" y1="9" x2="9" y2="15" />
+            <line x1="9" y1="9" x2="15" y2="15" />
+          </svg>
+        </div>
+        <p style={{ color: "var(--danger)", fontSize: 15, fontWeight: 600 }}>Unable to open this document</p>
+        <p style={{ color: "var(--text-secondary)", fontSize: 13, maxWidth: 400, textAlign: "center" }}>{error}</p>
+        <a href="/" style={{ color: "#078C91", fontSize: 13, marginTop: 8 }}>Go to ZipDrop</a>
+      </div>
+    </div>
+  );
+  }
+
+  if (loading) {
+    return (
+      <div style={{ 
+        minHeight: "100vh", 
+        background: "var(--editor-workspace)",
+        display: "flex",
+        flexDirection: "column",
+      }}>
+        <Breadcrumbs items={breadcrumbItems} />
+        <div style={{ display: "flex", alignItems: "center", justifyContent: "center", height: "100vh", background: "var(--editor-workspace)" }}>
+          <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 20 }}>
+            <div style={{ width: 40, height: 40, border: "2px solid var(--teal-light)", borderTop: "2px solid #078C91", borderRadius: "50%", animation: "spin 1s linear infinite" }} />
+            <p style={{ fontSize: 13, color: "var(--text-secondary)" }}>{loadingLabel}</p>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div style={{ 
+      minHeight: "100vh", 
+      background: "var(--editor-workspace)",
+      display: "flex",
+      flexDirection: "column",
+    }}>
+      <Breadcrumbs items={breadcrumbItems} />
+      <EditorShell
+        fileName={fileName}
+        fileType={fileType}
+        fileSize={fileSize}
+        initialContent={content}
+        docxBuffer={docxBuffer}
+        loadKey={loadKey}
+        hasFileUrl={hasFileUrl}
+        recipientCode={recipientCode}
+        originalFileUrl={fileUrl}
+        onBack={() => (window.history.length > 1 ? window.history.back() : (window.location.href = "/"))}
+        onFileSelect={(file) => {
+          const url = URL.createObjectURL(file);
+          processFile(url, file.name);
+        }}
+      />
+    </div>
+  );
+}
+
+export default function EditorPage() {
+  return (
+    <Suspense
+      fallback={
+        <div style={{ display: "flex", alignItems: "center", justifyContent: "center", height: "100vh", background: "var(--editor-workspace)" }}>
+          <div style={{ width: 40, height: 40, border: "2px solid var(--teal-light)", borderTop: "2px solid #078C91", borderRadius: "50%", animation: "spin 1s linear infinite" }} />
+        </div>
+      }
+    >
+      <EditorPageInner />
+    </Suspense>
+  );
+}

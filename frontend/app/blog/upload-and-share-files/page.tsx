@@ -1,14 +1,42 @@
+import { SITE_URL } from "@/lib/site";
+import { BlogPostingJsonLd } from "@/components/BlogArticleShared";
+
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {
   title: "Upload and Share Files Online (2026 Guide)",
   description:
     "Learn how to upload and share files online with ZipDrop: up to 10 files, no account, and a 4-digit code the recipient enters on the site.",
+  alternates: {
+    canonical: `${SITE_URL}/blog/upload-and-share-files`,
+  },
+  openGraph: {
+    title: "Upload and Share Files Online (2026 Guide)",
+    description: "Learn how to upload and share files online with ZipDrop: up to 10 files, no account, and a 4-digit code the recipient enters on the site.",
+    url: `${SITE_URL}/blog/upload-and-share-files`,
+    siteName: "ZipDrop",
+    type: "article",
+    images: [
+      {
+        url: "/og-image.png",
+        width: 1200,
+        height: 630,
+        alt: "Upload and Share Files Online (2026 Guide)",
+      },
+    ],
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "Upload and Share Files Online (2026 Guide)",
+    description: "Learn how to upload and share files online with ZipDrop: up to 10 files, no account, and a 4-digit code the recipient enters on the site.",
+    images: ["/og-image.png"],
+  },
 };
 
 export default function Page() {
   return (
     <main className="max-w-4xl mx-auto p-8">
+      <BlogPostingJsonLd slug="upload-and-share-files" title={"Upload and Share Files Online (2026 Guide)"} description={"Learn how to upload and share files online with ZipDrop: up to 10 files, no account, and a 4-digit code the recipient enters on the site."} />
       <h1>Upload and Share Files Online (2026 Guide)</h1>
 
       <p>

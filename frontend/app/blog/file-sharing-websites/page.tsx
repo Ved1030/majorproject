@@ -1,14 +1,42 @@
+import { SITE_URL } from "@/lib/site";
+import { BlogPostingJsonLd } from "@/components/BlogArticleShared";
+
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {
   title: "Best File Sharing Websites for Quick and Easy Transfers",
   description:
     "Compare the best file sharing websites and discover why ZipDrop offers the simplest way to share files with a 4-digit code.",
+  alternates: {
+    canonical: `${SITE_URL}/blog/file-sharing-websites`,
+  },
+  openGraph: {
+    title: "Best File Sharing Websites for Quick and Easy Transfers",
+    description: "Compare the best file sharing websites and discover why ZipDrop offers the simplest way to share files with a 4-digit code.",
+    url: `${SITE_URL}/blog/file-sharing-websites`,
+    siteName: "ZipDrop",
+    type: "article",
+    images: [
+      {
+        url: "/og-image.png",
+        width: 1200,
+        height: 630,
+        alt: "Best File Sharing Websites for Quick and Easy Transfers",
+      },
+    ],
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "Best File Sharing Websites for Quick and Easy Transfers",
+    description: "Compare the best file sharing websites and discover why ZipDrop offers the simplest way to share files with a 4-digit code.",
+    images: ["/og-image.png"],
+  },
 };
 
 export default function Page() {
   return (
     <main className="max-w-4xl mx-auto p-8">
+      <BlogPostingJsonLd slug="file-sharing-websites" title={"Best File Sharing Websites for Quick and Easy Transfers"} description={"Compare the best file sharing websites and discover why ZipDrop offers the simplest way to share files with a 4-digit code."} />
       <h1>Best File Sharing Websites for Quick and Easy Transfers</h1>
 
       <p>

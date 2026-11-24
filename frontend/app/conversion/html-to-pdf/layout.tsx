@@ -4,9 +4,10 @@ export const metadata: Metadata = {
   title: "HTML to PDF Converter – Convert Web Pages to PDF Free Online",
   description: "Convert HTML pages to PDF documents online for free. Preserve layout and styling. No account required, max 50MB.",
   alternates: {
-    canonical: "https://zip-drop.vercel.app/conversion/html-to-pdf",
+    canonical: "https://www.getzipdrop.com/conversion/html-to-pdf",
   },
   openGraph: {
+    url: "https://www.getzipdrop.com/conversion/html-to-pdf",
     title: "HTML to PDF Converter – Convert Web Pages to PDF Free Online",
     description: "Convert HTML pages to PDF online for free. No account required.",
     type: "website",
@@ -24,7 +25,7 @@ const structuredData = {
   "@context": "https://schema.org",
   "@type": "SoftwareApplication",
   name: "HTML to PDF Converter",
-  url: "https://zip-drop.vercel.app/conversion/html-to-pdf",
+  url: "https://www.getzipdrop.com/conversion/html-to-pdf",
   applicationCategory: "FileConverter",
   operatingSystem: "Web",
   description: "Free online HTML to PDF converter. Convert HTML pages to PDF preserving layout. No account required.",
@@ -37,15 +38,15 @@ const structuredData = {
   creator: {
     "@type": "Organization",
     name: "ZipDrop",
-    url: "https://zip-drop.vercel.app",
+    url: "https://www.getzipdrop.com",
   },
   breadcrumb: {
     "@context": "https://schema.org",
     "@type": "BreadcrumbList",
     itemListElement: [
-      { "@type": "ListItem", position: 1, name: "Home", item: "https://zip-drop.vercel.app" },
-      { "@type": "ListItem", position: 2, name: "Conversion Tools", item: "https://zip-drop.vercel.app/conversion" },
-      { "@type": "ListItem", position: 3, name: "HTML to PDF", item: "https://zip-drop.vercel.app/conversion/html-to-pdf" },
+      { "@type": "ListItem", position: 1, name: "Home", item: "https://www.getzipdrop.com" },
+      { "@type": "ListItem", position: 2, name: "Conversion Tools", item: "https://www.getzipdrop.com/conversion" },
+      { "@type": "ListItem", position: 3, name: "HTML to PDF", item: "https://www.getzipdrop.com/conversion/html-to-pdf" },
     ],
   },
 };

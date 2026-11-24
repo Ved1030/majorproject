@@ -1,12 +1,40 @@
+import { SITE_URL } from "@/lib/site";
+import { BlogPostingJsonLd } from "@/components/BlogArticleShared";
+
 export const metadata = {
   title: "Best AirDrop Alternative for Windows in 2026",
   description:
     "Looking for an AirDrop alternative for Windows? ZipDrop works in any browser: share up to 10 files with a 4-digit code.",
+  alternates: {
+    canonical: `${SITE_URL}/blog/airdrop-alternative-windows`,
+  },
+  openGraph: {
+    title: "Best AirDrop Alternative for Windows in 2026",
+    description: "Looking for an AirDrop alternative for Windows? ZipDrop works in any browser: share up to 10 files with a 4-digit code.",
+    url: `${SITE_URL}/blog/airdrop-alternative-windows`,
+    siteName: "ZipDrop",
+    type: "article",
+    images: [
+      {
+        url: "/og-image.png",
+        width: 1200,
+        height: 630,
+        alt: "Best AirDrop Alternative for Windows in 2026",
+      },
+    ],
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "Best AirDrop Alternative for Windows in 2026",
+    description: "Looking for an AirDrop alternative for Windows? ZipDrop works in any browser: share up to 10 files with a 4-digit code.",
+    images: ["/og-image.png"],
+  },
 };
 
 export default function Page() {
   return (
     <main className="max-w-4xl mx-auto p-8">
+      <BlogPostingJsonLd slug="airdrop-alternative-windows" title={"Best AirDrop Alternative for Windows in 2026"} description={"Looking for an AirDrop alternative for Windows? ZipDrop works in any browser: share up to 10 files with a 4-digit code."} />
       <h1>Best AirDrop Alternative for Windows in 2026</h1>
 
       <p>

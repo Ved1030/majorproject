@@ -4,9 +4,10 @@ export const metadata: Metadata = {
   title: "Images to PDF Converter – Combine Images to PDF Free Online",
   description: "Combine multiple images (JPG, PNG, WEBP) into a single PDF online for free. Reorder, rotate, and adjust pages. No account required.",
   alternates: {
-    canonical: "https://zip-drop.vercel.app/conversion/images-to-pdf",
+    canonical: "https://www.getzipdrop.com/conversion/images-to-pdf",
   },
   openGraph: {
+    url: "https://www.getzipdrop.com/conversion/images-to-pdf",
     title: "Images to PDF Converter – Combine Images to PDF Free Online",
     description: "Combine multiple images into a single PDF online for free. No account required.",
     type: "website",
@@ -24,7 +25,7 @@ const structuredData = {
   "@context": "https://schema.org",
   "@type": "SoftwareApplication",
   name: "Images to PDF Converter",
-  url: "https://zip-drop.vercel.app/conversion/images-to-pdf",
+  url: "https://www.getzipdrop.com/conversion/images-to-pdf",
   applicationCategory: "FileConverter",
   operatingSystem: "Web",
   description: "Free online Images to PDF converter. Combine multiple JPG, PNG, WEBP images into a single PDF. Reorder and rotate pages. No account required.",
@@ -37,15 +38,15 @@ const structuredData = {
   creator: {
     "@type": "Organization",
     name: "ZipDrop",
-    url: "https://zip-drop.vercel.app",
+    url: "https://www.getzipdrop.com",
   },
   breadcrumb: {
     "@context": "https://schema.org",
     "@type": "BreadcrumbList",
     itemListElement: [
-      { "@type": "ListItem", position: 1, name: "Home", item: "https://zip-drop.vercel.app" },
-      { "@type": "ListItem", position: 2, name: "Conversion Tools", item: "https://zip-drop.vercel.app/conversion" },
-      { "@type": "ListItem", position: 3, name: "Images to PDF", item: "https://zip-drop.vercel.app/conversion/images-to-pdf" },
+      { "@type": "ListItem", position: 1, name: "Home", item: "https://www.getzipdrop.com" },
+      { "@type": "ListItem", position: 2, name: "Conversion Tools", item: "https://www.getzipdrop.com/conversion" },
+      { "@type": "ListItem", position: 3, name: "Images to PDF", item: "https://www.getzipdrop.com/conversion/images-to-pdf" },
     ],
   },
 };

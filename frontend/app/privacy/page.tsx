@@ -7,12 +7,12 @@ export const metadata: Metadata = {
   description:
     "How ZipDrop handles your files and data: where files are stored, which third-party services are used, what is logged, and how retention currently works. Transparent privacy policy for our free file utility platform.",
   alternates: {
-    canonical: "https://zip-drop.vercel.app/privacy",
+    canonical: `${SITE_URL}/privacy`,
   },
   openGraph: {
     title: "Privacy Policy – ZipDrop File Sharing & Tools",
     description: "How ZipDrop handles your files and data. Transparent privacy policy for our free file utility platform.",
-    url: "https://zip-drop.vercel.app/privacy",
+    url: `${SITE_URL}/privacy`,
     siteName: "ZipDrop",
     type: "website",
     images: ["/og-image.png"],
@@ -30,7 +30,7 @@ const structuredData = {
   "@type": "WebPage",
   name: "Privacy Policy",
   description: "How ZipDrop handles your files and data: storage, third-party services, logging, and retention.",
-  url: "https://zip-drop.vercel.app/privacy",
+  url: `${SITE_URL}/privacy`,
   publisher: {
     "@type": "Organization",
     name: "ZipDrop",

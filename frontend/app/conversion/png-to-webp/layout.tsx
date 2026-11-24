@@ -4,9 +4,10 @@ export const metadata: Metadata = {
   title: "PNG to WEBP Converter – Convert PNG to WEBP Free Online",
   description: "Convert PNG images to WEBP format with transparency support online for free. Smaller file sizes. No account required, max 50MB.",
   alternates: {
-    canonical: "https://zip-drop.vercel.app/conversion/png-to-webp",
+    canonical: "https://www.getzipdrop.com/conversion/png-to-webp",
   },
   openGraph: {
+    url: "https://www.getzipdrop.com/conversion/png-to-webp",
     title: "PNG to WEBP Converter – Convert PNG to WEBP Free Online",
     description: "Convert PNG images to WEBP online for free. No account required.",
     type: "website",
@@ -24,7 +25,7 @@ const structuredData = {
   "@context": "https://schema.org",
   "@type": "SoftwareApplication",
   name: "PNG to WEBP Converter",
-  url: "https://zip-drop.vercel.app/conversion/png-to-webp",
+  url: "https://www.getzipdrop.com/conversion/png-to-webp",
   applicationCategory: "ImageConverter",
   operatingSystem: "Web",
   description: "Free online PNG to WEBP converter. Convert PNG to WEBP with transparency support. No account required.",
@@ -37,15 +38,15 @@ const structuredData = {
   creator: {
     "@type": "Organization",
     name: "ZipDrop",
-    url: "https://zip-drop.vercel.app",
+    url: "https://www.getzipdrop.com",
   },
   breadcrumb: {
     "@context": "https://schema.org",
     "@type": "BreadcrumbList",
     itemListElement: [
-      { "@type": "ListItem", position: 1, name: "Home", item: "https://zip-drop.vercel.app" },
-      { "@type": "ListItem", position: 2, name: "Conversion Tools", item: "https://zip-drop.vercel.app/conversion" },
-      { "@type": "ListItem", position: 3, name: "PNG to WEBP", item: "https://zip-drop.vercel.app/conversion/png-to-webp" },
+      { "@type": "ListItem", position: 1, name: "Home", item: "https://www.getzipdrop.com" },
+      { "@type": "ListItem", position: 2, name: "Conversion Tools", item: "https://www.getzipdrop.com/conversion" },
+      { "@type": "ListItem", position: 3, name: "PNG to WEBP", item: "https://www.getzipdrop.com/conversion/png-to-webp" },
     ],
   },
 };

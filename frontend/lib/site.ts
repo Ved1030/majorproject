@@ -1,4 +1,4 @@
-export const SITE_URL = "https://zip-drop.vercel.app";
+export const SITE_URL = "https://www.getzipdrop.com";
 export const SITE_NAME = "ZipDrop";
 export const CONTACT_EMAIL = "mehtaved12@gmail.com";
 export const GITHUB_URL = "https://github.com/Ved1030";

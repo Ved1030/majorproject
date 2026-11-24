@@ -206,7 +206,7 @@ export default function MergePdfPage() {
     "@context": "https://schema.org",
     "@type": "SoftwareApplication",
     name: "Merge PDF",
-    url: "https://zip-drop.vercel.app/pdf/merge",
+    url: "https://www.getzipdrop.com/pdf/merge",
     applicationCategory: "FileConverter",
     operatingSystem: "Web",
     description: "Free online PDF merger. Combine multiple PDF files into one document, reorder before merging, and download. No account required.",
@@ -219,7 +219,7 @@ export default function MergePdfPage() {
     creator: {
       "@type": "Organization",
       name: "ZipDrop",
-      url: "https://zip-drop.vercel.app",
+      url: "https://www.getzipdrop.com",
     },
   };
 

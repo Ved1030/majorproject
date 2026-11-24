@@ -4,9 +4,10 @@ export const metadata: Metadata = {
   title: "Word to PDF Converter – Free Online DOCX to PDF",
   description: "Convert Word documents (DOCX/DOC) to PDF online for free. Preserve formatting, fonts, and layout. No account required.",
   alternates: {
-    canonical: "https://zip-drop.vercel.app/conversion/word-to-pdf",
+    canonical: "https://www.getzipdrop.com/conversion/word-to-pdf",
   },
   openGraph: {
+    url: "https://www.getzipdrop.com/conversion/word-to-pdf",
     title: "Word to PDF Converter – Free Online DOCX to PDF",
     description: "Convert Word documents to PDF online for free. Preserve formatting. No account required.",
     type: "website",
@@ -24,7 +25,7 @@ const structuredData = {
   "@context": "https://schema.org",
   "@type": "SoftwareApplication",
   name: "Word to PDF Converter",
-  url: "https://zip-drop.vercel.app/conversion/word-to-pdf",
+  url: "https://www.getzipdrop.com/conversion/word-to-pdf",
   applicationCategory: "FileConverter",
   operatingSystem: "Web",
   description: "Free online Word to PDF converter. Convert DOCX/DOC to PDF preserving formatting. No account required.",
@@ -37,15 +38,15 @@ const structuredData = {
   creator: {
     "@type": "Organization",
     name: "ZipDrop",
-    url: "https://zip-drop.vercel.app",
+    url: "https://www.getzipdrop.com",
   },
   breadcrumb: {
     "@context": "https://schema.org",
     "@type": "BreadcrumbList",
     itemListElement: [
-      { "@type": "ListItem", position: 1, name: "Home", item: "https://zip-drop.vercel.app" },
-      { "@type": "ListItem", position: 2, name: "Conversion Tools", item: "https://zip-drop.vercel.app/conversion" },
-      { "@type": "ListItem", position: 3, name: "Word to PDF", item: "https://zip-drop.vercel.app/conversion/word-to-pdf" },
+      { "@type": "ListItem", position: 1, name: "Home", item: "https://www.getzipdrop.com" },
+      { "@type": "ListItem", position: 2, name: "Conversion Tools", item: "https://www.getzipdrop.com/conversion" },
+      { "@type": "ListItem", position: 3, name: "Word to PDF", item: "https://www.getzipdrop.com/conversion/word-to-pdf" },
     ],
   },
 };

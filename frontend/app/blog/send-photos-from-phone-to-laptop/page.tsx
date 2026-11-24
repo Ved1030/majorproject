@@ -1,14 +1,42 @@
+import { SITE_URL } from "@/lib/site";
+import { BlogPostingJsonLd } from "@/components/BlogArticleShared";
+
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {
   title: "How to Send Photos From Phone to Laptop",
   description:
     "Learn how to transfer photos from your phone to your laptop quickly without cables or extra software.",
+  alternates: {
+    canonical: `${SITE_URL}/blog/send-photos-from-phone-to-laptop`,
+  },
+  openGraph: {
+    title: "How to Send Photos From Phone to Laptop",
+    description: "Learn how to transfer photos from your phone to your laptop quickly without cables or extra software.",
+    url: `${SITE_URL}/blog/send-photos-from-phone-to-laptop`,
+    siteName: "ZipDrop",
+    type: "article",
+    images: [
+      {
+        url: "/og-image.png",
+        width: 1200,
+        height: 630,
+        alt: "How to Send Photos From Phone to Laptop",
+      },
+    ],
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "How to Send Photos From Phone to Laptop",
+    description: "Learn how to transfer photos from your phone to your laptop quickly without cables or extra software.",
+    images: ["/og-image.png"],
+  },
 };
 
 export default function Page() {
   return (
     <main className="max-w-4xl mx-auto p-8">
+      <BlogPostingJsonLd slug="send-photos-from-phone-to-laptop" title={"How to Send Photos From Phone to Laptop"} description={"Learn how to transfer photos from your phone to your laptop quickly without cables or extra software."} />
       <h1>How to Send Photos From Phone to Laptop</h1>
 
       <p>

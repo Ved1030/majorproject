@@ -4,9 +4,10 @@ export const metadata: Metadata = {
   title: "PDF to Text Converter – Extract Text from PDF Free Online",
   description: "Extract plain text from PDF documents online for free. Preserve text content and structure. No account required, max 50MB.",
   alternates: {
-    canonical: "https://zip-drop.vercel.app/conversion/pdf-to-txt",
+    canonical: "https://www.getzipdrop.com/conversion/pdf-to-txt",
   },
   openGraph: {
+    url: "https://www.getzipdrop.com/conversion/pdf-to-txt",
     title: "PDF to Text Converter – Extract Text from PDF Free Online",
     description: "Extract plain text from PDF documents online for free. No account required.",
     type: "website",
@@ -24,7 +25,7 @@ const structuredData = {
   "@context": "https://schema.org",
   "@type": "SoftwareApplication",
   name: "PDF to Text Converter",
-  url: "https://zip-drop.vercel.app/conversion/pdf-to-txt",
+  url: "https://www.getzipdrop.com/conversion/pdf-to-txt",
   applicationCategory: "FileConverter",
   operatingSystem: "Web",
   description: "Free online PDF to Text converter. Extract plain text from PDF documents. No account required.",
@@ -37,15 +38,15 @@ const structuredData = {
   creator: {
     "@type": "Organization",
     name: "ZipDrop",
-    url: "https://zip-drop.vercel.app",
+    url: "https://www.getzipdrop.com",
   },
   breadcrumb: {
     "@context": "https://schema.org",
     "@type": "BreadcrumbList",
     itemListElement: [
-      { "@type": "ListItem", position: 1, name: "Home", item: "https://zip-drop.vercel.app" },
-      { "@type": "ListItem", position: 2, name: "Conversion Tools", item: "https://zip-drop.vercel.app/conversion" },
-      { "@type": "ListItem", position: 3, name: "PDF to Text", item: "https://zip-drop.vercel.app/conversion/pdf-to-txt" },
+      { "@type": "ListItem", position: 1, name: "Home", item: "https://www.getzipdrop.com" },
+      { "@type": "ListItem", position: 2, name: "Conversion Tools", item: "https://www.getzipdrop.com/conversion" },
+      { "@type": "ListItem", position: 3, name: "PDF to Text", item: "https://www.getzipdrop.com/conversion/pdf-to-txt" },
     ],
   },
 };

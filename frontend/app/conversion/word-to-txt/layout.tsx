@@ -4,9 +4,10 @@ export const metadata: Metadata = {
   title: "Word to Text Converter – Extract Text from DOCX Free Online",
   description: "Extract plain text from Word documents (DOCX/DOC) online for free. Preserve text content. No account required, max 50MB.",
   alternates: {
-    canonical: "https://zip-drop.vercel.app/conversion/word-to-txt",
+    canonical: "https://www.getzipdrop.com/conversion/word-to-txt",
   },
   openGraph: {
+    url: "https://www.getzipdrop.com/conversion/word-to-txt",
     title: "Word to Text Converter – Extract Text from DOCX Free Online",
     description: "Extract plain text from Word documents online for free. No account required.",
     type: "website",
@@ -24,7 +25,7 @@ const structuredData = {
   "@context": "https://schema.org",
   "@type": "SoftwareApplication",
   name: "Word to Text Converter",
-  url: "https://zip-drop.vercel.app/conversion/word-to-txt",
+  url: "https://www.getzipdrop.com/conversion/word-to-txt",
   applicationCategory: "FileConverter",
   operatingSystem: "Web",
   description: "Free online Word to Text converter. Extract plain text from DOCX/DOC documents. No account required.",
@@ -37,15 +38,15 @@ const structuredData = {
   creator: {
     "@type": "Organization",
     name: "ZipDrop",
-    url: "https://zip-drop.vercel.app",
+    url: "https://www.getzipdrop.com",
   },
   breadcrumb: {
     "@context": "https://schema.org",
     "@type": "BreadcrumbList",
     itemListElement: [
-      { "@type": "ListItem", position: 1, name: "Home", item: "https://zip-drop.vercel.app" },
-      { "@type": "ListItem", position: 2, name: "Conversion Tools", item: "https://zip-drop.vercel.app/conversion" },
-      { "@type": "ListItem", position: 3, name: "Word to Text", item: "https://zip-drop.vercel.app/conversion/word-to-txt" },
+      { "@type": "ListItem", position: 1, name: "Home", item: "https://www.getzipdrop.com" },
+      { "@type": "ListItem", position: 2, name: "Conversion Tools", item: "https://www.getzipdrop.com/conversion" },
+      { "@type": "ListItem", position: 3, name: "Word to Text", item: "https://www.getzipdrop.com/conversion/word-to-txt" },
     ],
   },
 };

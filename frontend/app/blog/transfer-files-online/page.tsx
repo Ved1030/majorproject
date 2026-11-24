@@ -1,14 +1,42 @@
+import { SITE_URL } from "@/lib/site";
+import { BlogPostingJsonLd } from "@/components/BlogArticleShared";
+
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {
   title: "How to Transfer Files Online Fast in 2026",
   description:
     "Learn how to transfer files online between any devices quickly. No account needed, no software install, just a simple code.",
+  alternates: {
+    canonical: `${SITE_URL}/blog/transfer-files-online`,
+  },
+  openGraph: {
+    title: "How to Transfer Files Online Fast in 2026",
+    description: "Learn how to transfer files online between any devices quickly. No account needed, no software install, just a simple code.",
+    url: `${SITE_URL}/blog/transfer-files-online`,
+    siteName: "ZipDrop",
+    type: "article",
+    images: [
+      {
+        url: "/og-image.png",
+        width: 1200,
+        height: 630,
+        alt: "How to Transfer Files Online Fast in 2026",
+      },
+    ],
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "How to Transfer Files Online Fast in 2026",
+    description: "Learn how to transfer files online between any devices quickly. No account needed, no software install, just a simple code.",
+    images: ["/og-image.png"],
+  },
 };
 
 export default function Page() {
   return (
     <main className="max-w-4xl mx-auto p-8">
+      <BlogPostingJsonLd slug="transfer-files-online" title={"How to Transfer Files Online Fast in 2026"} description={"Learn how to transfer files online between any devices quickly. No account needed, no software install, just a simple code."} />
       <h1>How to Transfer Files Online Fast in 2026</h1>
 
       <p>
