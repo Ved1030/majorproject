@@ -1,6 +1,6 @@
 services:
   backend:
-    image: zipdrop-backend:v3
+    image: zipdrop-backend:v4
     container_name: zipdrop-backend
 
     restart: unless-stopped
