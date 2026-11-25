@@ -1,5 +1,12 @@
 export const SITE_URL = "https://www.getzipdrop.com";
 export const SITE_NAME = "ZipDrop";
+export const SITE_TITLE =
+  "ZipDrop — Official Site for File Sharing, Compression & Conversion";
+export const SITE_DESCRIPTION =
+  "ZipDrop is the official free online tool for sharing files and text between devices with a four-digit code, compressing PDFs and images, converting files, and removing backgrounds. No account required.";
+export const BRAND_DESCRIPTION =
+  "ZipDrop is a browser-based platform for sharing files and text between devices using a four-digit code, with online file conversion, compression, and other file tools.";
+export const OG_IMAGE = "/og-image.png";
 export const CONTACT_EMAIL = "mehtaved12@gmail.com";
 export const GITHUB_URL = "https://github.com/Ved1030";
 

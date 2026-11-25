@@ -52,6 +52,15 @@ const POPULAR_TOOLS = [
     iconBg: "var(--purple-light)",
   },
   {
+    id: "png-to-jpg",
+    name: "PNG to JPG",
+    description: "Convert PNG images to JPG with adjustable quality",
+    href: "/conversion/png-to-jpg",
+    icon: FileImage,
+    iconColor: "#07999A",
+    iconBg: "var(--teal-light)",
+  },
+  {
     id: "pdf-to-jpg",
     name: "PDF to JPG",
     description: "Rasterize PDF pages to high-quality JPG images",

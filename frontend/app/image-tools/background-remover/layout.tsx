@@ -1,23 +1,35 @@
 import type { Metadata } from "next";
+import ToolSeoSection from "@/components/ToolSeoSection";
+import { OG_IMAGE, SITE_NAME } from "@/lib/site";
+
+const TITLE = "ZipDrop Background Remover — Free Online BG Removal";
+const DESCRIPTION =
+  "Remove image backgrounds for free at getzipdrop.com with ZipDrop's background remover. Upload JPG, PNG or WEBP and download a transparent PNG. No account required.";
 
 export const metadata: Metadata = {
-  title: "AI Background Remover – Remove Image Backgrounds Free Online",
-  description: "Remove backgrounds from images automatically with AI. Upload JPG, PNG, or WEBP and download transparent PNG. Automatic detection handles photos, products, logos, and graphics. Free, no account.",
+  title: TITLE,
+  description: DESCRIPTION,
+  keywords: [
+    "bg remover getzipdrop",
+    "ZipDrop background remover",
+    "remove image background getzipdrop",
+  ],
   alternates: {
     canonical: "https://www.getzipdrop.com/image-tools/background-remover",
   },
   openGraph: {
     url: "https://www.getzipdrop.com/image-tools/background-remover",
-    title: "AI Background Remover – Remove Image Backgrounds Free Online",
-    description: "Remove backgrounds from images automatically with AI. Upload JPG, PNG, or WEBP and download transparent PNG. Free, no account.",
+    title: TITLE,
+    description: DESCRIPTION,
+    siteName: SITE_NAME,
     type: "website",
-    images: ["/og-image.png"],
+    images: [OG_IMAGE],
   },
   twitter: {
     card: "summary_large_image",
-    title: "AI Background Remover – Remove Image Backgrounds Free Online",
-    description: "Remove backgrounds from images automatically with AI. Free, no account.",
-    images: ["/og-image.png"],
+    title: TITLE,
+    description: DESCRIPTION,
+    images: [OG_IMAGE],
   },
 };
 
@@ -72,6 +84,33 @@ export default function BackgroundRemoverLayout({
         dangerouslySetInnerHTML={{ __html: JSON.stringify(structuredData) }}
       />
       {children}
+      <ToolSeoSection
+        title="Why use ZipDrop's background remover?"
+        intro="ZipDrop removes backgrounds from JPG, PNG and WEBP images automatically and returns a transparent PNG. It works in your browser with no account or software install required."
+        faqs={[
+          {
+            question: "Which image formats does ZipDrop's background remover accept?",
+            answer:
+              "It accepts JPG, PNG and WEBP files up to 20 MB and returns a transparent PNG with the original pixel dimensions.",
+          },
+          {
+            question: "Is the ZipDrop background remover free?",
+            answer:
+              "Yes. You can remove backgrounds at https://www.getzipdrop.com/image-tools/background-remover without registration.",
+          },
+          {
+            question: "Where is the official ZipDrop background remover?",
+            answer:
+              "The official tool is at https://www.getzipdrop.com/image-tools/background-remover on the getzipdrop.com domain.",
+          },
+        ]}
+        links={[
+          { label: "PNG to JPG converter", href: "/conversion/png-to-jpg" },
+          { label: "Compress PNG", href: "/compression/png" },
+          { label: "All image tools", href: "/conversion?category=image-tools" },
+          { label: "Share files with ZipDrop", href: "/#share-receive" },
+        ]}
+      />
     </>
   );
 }

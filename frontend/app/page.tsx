@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
-import { ArrowDownToLine, Code2, Gauge, Laptop, Lock, ShieldCheck, Upload, FileText, Image, Table, Settings, ChevronRight, Archive, Type, QrCode, PenTool, FileVideo, FileAudio, FileArchive } from "lucide-react";
+import { ArrowDownToLine, BookOpen, Code2, Gauge, Globe, Laptop, Lock, Upload, FileText, Image, Settings, ChevronRight, Archive, Type, PenTool } from "lucide-react";
 import UploadCard from "../components/UploadCard";
 import ReceiveCard from "../components/ReceiveCard";
 import Navbar from "../components/Navbar";
@@ -12,7 +12,7 @@ import WhatCanYouDo from "../components/WhatCanYouDo";
 import SupportedFileFormats from "../components/SupportedFileFormats";
 import HowToGuides from "../components/HowToGuides";
 import FAQ, { FAQ_ITEMS } from "../components/FAQ";
-import { SITE_URL } from "@/lib/site";
+import { BRAND_DESCRIPTION, OG_IMAGE, SITE_DESCRIPTION, SITE_NAME, SITE_TITLE, SITE_URL } from "@/lib/site";
 
 /* ─── Background Waves ───────────────────── */
 
@@ -48,7 +48,7 @@ function Hero() {
       {/* Top badge */}
       <div className="badge hero-badge" style={{ fontSize: "11px", padding: "5px 14px" }}>
         <span className="badge-dot" />
-        Free · No Sign-up · 4-digit code
+        Official ZipDrop · Free · No Sign-up · 4-digit code
       </div>
 
       {/* Main brand logo */}
@@ -66,7 +66,7 @@ function Hero() {
           maxWidth: "640px",
         }}
       >
-        Share, Convert, Compress & Edit Files Online Free
+        Share Files Between Devices with a 4-Digit Code
       </h1>
 
       {/* Description */}
@@ -80,7 +80,7 @@ function Hero() {
           fontWeight: 400,
         }}
       >
-        Share files, images, videos and text between devices with a 4-digit code. Convert 30+ formats, compress PDFs and images, remove backgrounds, and edit documents — no account needed.
+        ZipDrop is a free browser-based platform for sharing files and text between devices. Upload up to 10 files, get a 4-digit code, and open it on another device. Convert, compress, remove backgrounds, and edit documents online — no account required.
       </p>
 
       {/* Supporting text */}
@@ -93,7 +93,7 @@ function Hero() {
           margin: 0,
         }}
       >
-        Fast, simple and accessible across your devices.
+        Transfer files from phone to computer, or between any supported devices, using just a browser.
       </p>
     </section>
   );
@@ -206,9 +206,9 @@ function HowItWorks() {
 /* ─── BENEFITS STRIP ────────────────────── */
 
 const BENEFITS = [
-  { title: "Fast Transfer", desc: "Share files in seconds.", icon: Gauge },
+  { title: "Fast Transfer", desc: "Share files with a 4-digit code instead of an account.", icon: Gauge },
   { title: "No Sign-up", desc: "Use available features without creating an account.", icon: Lock },
-  { title: "Private & Secure", desc: "Files transferred directly between devices via encrypted codes.", icon: ShieldCheck },
+  { title: "Works Across Networks", desc: "Files are retrieved over the internet, not just the same Wi-Fi.", icon: Globe },
   { title: "Cross-Device", desc: "Works across supported phones, tablets and computers.", icon: Laptop },
 ];
 
@@ -246,31 +246,31 @@ const TOOL_CATEGORIES = [
   {
     id: "pdf-tools",
     title: "PDF Tools",
-    desc: "Merge, split, compress, rotate, protect and organize PDFs.",
+    desc: "Merge, split, organize and compress PDF pages.",
     icon: FileText,
     color: "#168DBB",
-    href: "/conversion",
+    href: "/conversion#pdf-conversions",
   },
   {
     id: "document-tools",
     title: "Document Tools",
-    desc: "Create, edit and manage Word, Excel and PowerPoint documents.",
+    desc: "Convert and edit supported Word, Excel and PowerPoint documents.",
     icon: Type,
     color: "#25A653",
-    href: "/conversion",
+    href: "/conversion#office-to-pdf",
   },
   {
     id: "image-tools",
     title: "Image Tools",
-    desc: "Remove backgrounds, resize, crop and optimize images.",
+    desc: "Remove image backgrounds and convert between supported image formats.",
     icon: Image,
     color: "#873BC5",
-    href: "/image-tools/background-remover",
+    href: "/conversion#image-conversions",
   },
   {
     id: "compression-tools",
     title: "Compression Tools",
-    desc: "Compress PDFs, images and files. Create and extract ZIP archives.",
+    desc: "Compress PDFs and JPG, PNG and WEBP images.",
     icon: Archive,
     color: "#647180",
     href: "/compression",
@@ -278,31 +278,31 @@ const TOOL_CATEGORIES = [
   {
     id: "conversion-tools",
     title: "Conversion Tools",
-    desc: "Convert PDFs, Office documents, images and other file formats.",
+    desc: "Convert PDFs, Office documents, images and other supported formats.",
     icon: Settings,
     color: "#078C91",
     href: "/conversion",
   },
   {
     id: "text-tools",
-    title: "Text Tools",
-    desc: "Count words, compare text, change case and format content.",
+    title: "Text Sharing",
+    desc: "Share text between devices with the same 4-digit code.",
     icon: Type,
     color: "#368BD2",
-    href: "/conversion",
+    href: "/#share-receive",
   },
   {
-    id: "utility-tools",
-    title: "Utility Tools",
-    desc: "Generate QR codes, calculate file hashes and inspect file details.",
-    icon: QrCode,
+    id: "guides",
+    title: "Blog & Guides",
+    desc: "Read practical guides for sharing, converting and compressing files.",
+    icon: BookOpen,
     color: "#8054C8",
-    href: "/conversion",
+    href: "/blog",
   },
   {
     id: "online-editor",
     title: "Online Editor",
-    desc: "Edit supported Word documents and PDFs through the browser-based editing workflow.",
+    desc: "Edit supported Word documents in the browser.",
     icon: PenTool,
     color: "#22A765",
     href: "/editor",
@@ -338,7 +338,7 @@ function ToolCategories() {
             marginBottom: "12px",
           }}
         >
-          Explore ZipDrop's Tools
+          Explore ZipDrop Tools
         </h2>
         <p
           style={{
@@ -393,46 +393,51 @@ export default function Home() {
   const softwareApplicationData = {
     "@context": "https://schema.org",
     "@type": "SoftwareApplication",
-    name: "ZipDrop",
-    url: SITE_URL,
-    applicationCategory: "FileSharingApplication",
+    "@id": `${SITE_URL}/#software`,
+    name: SITE_NAME,
+    url: `${SITE_URL}/`,
+    applicationCategory: "UtilitiesApplication",
     operatingSystem: "Web",
-    description:
-      "ZipDrop is a free file and text sharing site that uses a 4-digit code. Convert files, compress files, remove backgrounds, and edit documents in the browser without signing up.",
-    creator: [
-      {
-        "@type": "Person",
-        name: "Ved Mehta",
-        affiliation: {
-          "@type": "CollegeOrUniversity",
-          name: "DJ Sanghvi College of Engineering",
-        },
-      },
-      {
-        "@type": "Person",
-        name: "Virti Panchamia",
-        affiliation: {
-          "@type": "CollegeOrUniversity",
-          name: "DJ Sanghvi College of Engineering",
-        },
-      },
-    ],
+    inLanguage: "en",
+    isAccessibleForFree: true,
+    description: BRAND_DESCRIPTION,
+    creator: { "@id": `${SITE_URL}/#organization` },
+    publisher: { "@id": `${SITE_URL}/#organization` },
     offers: {
       "@type": "Offer",
       price: "0",
       priceCurrency: "USD",
       availability: "https://schema.org/InStock",
     },
+    screenshot: `${SITE_URL}${OG_IMAGE}`,
     featureList: [
-      "File sharing with 4-digit code",
+      "File sharing with a 4-digit code",
       "Text sharing",
-      "30+ file format conversions",
+      "27 file conversion tools",
       "PDF compression",
-      "Image compression (JPG, PNG, WEBP)",
-      "AI background removal",
+      "JPG, PNG and WEBP image compression",
+      "Image background removal",
       "Online document editor",
       "No account required",
     ],
+  };
+
+  const webPageData = {
+    "@context": "https://schema.org",
+    "@type": "WebPage",
+    "@id": `${SITE_URL}/#webpage`,
+    url: `${SITE_URL}/`,
+    name: SITE_TITLE,
+    description: SITE_DESCRIPTION,
+    isPartOf: { "@id": `${SITE_URL}/#website` },
+    about: { "@id": `${SITE_URL}/#software` },
+    primaryImageOfPage: {
+      "@type": "ImageObject",
+      url: `${SITE_URL}${OG_IMAGE}`,
+      width: 1200,
+      height: 630,
+    },
+    inLanguage: "en",
   };
 
   const faqPageData = {
@@ -455,13 +460,16 @@ export default function Home() {
 
       <Navbar />
 
-      {/* Structured Data - SoftwareApplication (homepage only) */}
+      {/* Structured Data - WebPage, SoftwareApplication, FAQPage (homepage only) */}
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(webPageData) }}
+      />
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(softwareApplicationData) }}
       />
 
-      {/* Structured Data - FAQPage (homepage only) */}
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(faqPageData) }}

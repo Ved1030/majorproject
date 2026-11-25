@@ -7,42 +7,62 @@ export const FAQ_ITEMS = [
   {
     id: "what-is-zipdrop",
     question: "What is ZipDrop?",
-    answer: "ZipDrop is a free, browser-based file utility platform. It lets you share files between devices using a 4-digit code, convert documents and images, compress PDFs and images, remove image backgrounds, and edit documents online — all without registration or software installation.",
+    answer: "ZipDrop is a browser-based platform for sharing files and text between devices with a four-digit code. It also includes online file conversion, PDF and image compression, background removal, and document editing. No account or app install is required.",
+  },
+  {
+    id: "official-zipdrop-site",
+    question: "Where is the official ZipDrop file sharing site?",
+    answer: "The official ZipDrop site is https://www.getzipdrop.com/. Use it to share files and text between devices, compress PDFs and images, convert files, remove backgrounds and edit documents.",
+  },
+  {
+    id: "zipdrop-file-compression",
+    question: "Which file compression tools does ZipDrop offer?",
+    answer: "ZipDrop offers free online compression for PDF, JPG, PNG and WEBP files at getzipdrop.com. Upload a file, choose a compression level and download the result without an account.",
   },
   {
     id: "transfer-between-devices",
-    question: "How can I transfer files between devices?",
-    answer: "Open ZipDrop on the sending device, select your files, and you'll receive a 4-digit code. On the receiving device, open ZipDrop and enter that code. The files will be ready to download. No accounts, no cables, no cloud storage links needed.",
+    question: "How can I share files between devices?",
+    answer: "Open ZipDrop on the sending device, add files or text, and you will receive a four-digit code. On the receiving device, open ZipDrop and enter the code to download the files. The devices do not need to be on the same Wi-Fi network.",
   },
   {
     id: "requires-registration",
     question: "Does ZipDrop require registration?",
-    answer: "No. ZipDrop works without any sign-up, login, or account creation. All features — file sharing, conversion, compression, background removal, and editing — are available immediately.",
+    answer: "No. The available sharing, conversion, compression, background-removal, and editing tools can be used without sign-up, login, or account creation.",
+  },
+  {
+    id: "is-zipdrop-free",
+    question: "Is ZipDrop free?",
+    answer: "Yes. The available tools can be used without payment or an account.",
+  },
+  {
+    id: "app-install",
+    question: "Do I need to install an app?",
+    answer: "No. ZipDrop runs in a modern web browser on supported phones, tablets, and computers.",
   },
   {
     id: "convert-pdf-to-word",
     question: "How do I convert PDF to Word online?",
-    answer: "Go to the PDF to Word tool, upload your PDF file, and start the conversion. ZipDrop preserves layout, tables, and formatting. The converted DOCX file downloads automatically when ready.",
+    answer: "Open the PDF to Word tool, upload a PDF, choose Editable or Visual Fidelity mode, and download the DOCX. Editable mode reconstructs text and tables as editable content; Visual Fidelity mode preserves the page appearance.",
   },
   {
     id: "compress-pdf",
     question: "Can I compress PDF files using ZipDrop?",
-    answer: "Yes. The Compress PDF tool offers three compression levels. Upload your PDF, choose a level, and download the smaller file. The tool works entirely in your browser.",
+    answer: "Yes. The Compress PDF tool offers three compression levels. The PDF is uploaded to ZipDrop's server, compressed, and returned for download.",
   },
   {
     id: "supported-image-formats",
     question: "Which image formats does ZipDrop support?",
-    answer: "ZipDrop supports JPG, PNG, WEBP, and SVG for conversion, compression, and background removal. You can also combine multiple images into a single PDF.",
+    answer: "Conversion supports JPG, PNG, WEBP, and SVG inputs. Image compression supports JPG, PNG, and WEBP. Background removal accepts JPG, PNG, and WEBP files.",
   },
   {
     id: "background-remover",
     question: "Can I remove an image background online?",
-    answer: "Yes. The Background Remover tool automatically detects and removes backgrounds from images. Upload a JPG, PNG, or WEBP file and download the result with a transparent background.",
+    answer: "Yes. The Background Remover detects and removes backgrounds from JPG, PNG, and WEBP images, and lets you download the result with a transparent background.",
   },
   {
     id: "file-handling",
     question: "How does ZipDrop handle uploaded files?",
-    answer: "Files you upload for sharing are stored on our servers until the recipient downloads them using the 4-digit code. Files for conversion and compression are processed and returned directly. We do not scan, analyze, or use your files for any purpose other than delivering the requested service.",
+    answer: "Files uploaded for sharing are stored on ZipDrop's servers so the recipient can download them with the code. A 48-hour expiry is recorded, but automatic deletion is not currently enforced. Files are not end-to-end encrypted, so avoid sharing sensitive documents.",
   },
 ];
 
@@ -94,8 +114,6 @@ export default function FAQ() {
           flexDirection: "column",
           gap: "12px",
         }}
-        itemScope
-        itemType="https://schema.org/FAQPage"
       >
         {FAQ_ITEMS.map((item) => {
           const isOpen = openItems.includes(item.id);
@@ -105,9 +123,6 @@ export default function FAQ() {
               id={item.id}
               open={isOpen}
               onToggle={() => toggleItem(item.id)}
-              itemProp="mainEntity"
-              itemScope
-              itemType="https://schema.org/Question"
               style={{
                 background: "var(--bg-card)",
                 border: "1px solid var(--border)",
@@ -116,7 +131,6 @@ export default function FAQ() {
               }}
             >
               <summary
-                itemProp="name"
                 style={{
                   display: "flex",
                   alignItems: "center",
@@ -158,9 +172,6 @@ export default function FAQ() {
                 />
               </summary>
               <div
-                itemProp="acceptedAnswer"
-                itemScope
-                itemType="https://schema.org/Answer"
                 style={{
                   padding: "0 24px 20px",
                   fontSize: "14px",
@@ -169,7 +180,7 @@ export default function FAQ() {
                   animation: "fadeIn 0.2s ease",
                 }}
               >
-                <p itemProp="text" style={{ margin: 0 }}>{item.answer}</p>
+                <p style={{ margin: 0 }}>{item.answer}</p>
               </div>
             </details>
           );

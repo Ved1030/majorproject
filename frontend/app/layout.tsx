@@ -4,21 +4,37 @@ import { Analytics } from "@vercel/analytics/next";
 import "./globals.css";
 import Script from "next/script";
 import SiteFooter from "@/components/SiteFooter";
-import { SITE_URL } from "@/lib/site";
+import {
+  AUTHORS,
+  BRAND_DESCRIPTION,
+  CONTACT_EMAIL,
+  GITHUB_URL,
+  OG_IMAGE,
+  SITE_DESCRIPTION,
+  SITE_NAME,
+  SITE_TITLE,
+  SITE_URL,
+} from "@/lib/site";
 
 export const metadata: Metadata = {
   metadataBase: new URL(SITE_URL),
 
   title: {
-    default: "ZipDrop – Share, Convert, Compress & Edit Files Online Free",
+    default: SITE_TITLE,
     template: "%s | ZipDrop",
   },
 
-  description:
-    "Share files, images, videos and text between devices with ZipDrop's 4-digit code. Convert 30+ formats, compress PDFs and images, remove backgrounds, and edit documents online — no account needed.",
+  description: SITE_DESCRIPTION,
+  applicationName: SITE_NAME,
 
   keywords: [
     "ZipDrop",
+    "ZipDrop file sharing",
+    "ZipDrop file converter",
+    "ZipDrop compression",
+    "getzipdrop",
+    "file sharing getzipdrop",
+    "file compression getzipdrop",
     "file sharing",
     "text sharing",
     "file transfer",
@@ -30,8 +46,6 @@ export const metadata: Metadata = {
     "remove background",
     "edit documents online",
     "convert PDF to Word",
-    "Ved Mehta",
-    "Virti Panchamia",
   ],
 
   authors: [
@@ -60,17 +74,16 @@ export const metadata: Metadata = {
   },
 
   openGraph: {
-    title: "ZipDrop – Share, Convert, Compress & Edit Files Online Free",
-    description:
-      "Share files, images, videos and text between devices with a 4-digit code. Convert, compress, edit documents and remove backgrounds online — no account needed.",
-    url: SITE_URL,
-    siteName: "ZipDrop",
+    title: SITE_TITLE,
+    description: SITE_DESCRIPTION,
+    url: `${SITE_URL}/`,
+    siteName: SITE_NAME,
     images: [
       {
-        url: "/og-image.png",
+        url: OG_IMAGE,
         width: 1200,
         height: 630,
-        alt: "ZipDrop – Share, Convert, Compress & Edit Files Online",
+        alt: "ZipDrop — share files and text with a four-digit code",
       },
     ],
     locale: "en_US",
@@ -79,15 +92,14 @@ export const metadata: Metadata = {
 
   twitter: {
     card: "summary_large_image",
-    title: "ZipDrop – Share, Convert, Compress & Edit Files Online Free",
-    description:
-      "Share files, images, videos and text between devices with a 4-digit code. Convert, compress, edit documents and remove backgrounds online — no account needed.",
-    images: ["/og-image.png"],
+    title: SITE_TITLE,
+    description: SITE_DESCRIPTION,
+    images: [OG_IMAGE],
   },
 
   category: "technology",
   alternates: {
-    canonical: SITE_URL,
+    canonical: `${SITE_URL}/`,
   },
 };
 
@@ -106,25 +118,29 @@ export default function RootLayout({
     "@context": "https://schema.org",
     "@type": "Organization",
     "@id": `${SITE_URL}/#organization`,
-    name: "ZipDrop",
-    url: SITE_URL,
-    logo: `${SITE_URL}/zipdrop-logo.png`,
-    sameAs: [
-      "https://github.com/Ved1030",
-      "https://www.linkedin.com/in/ved140609/",
-      "https://www.linkedin.com/in/virti-panchamia-57a6b82a7/",
-    ],
+    name: SITE_NAME,
+    url: `${SITE_URL}/`,
+    description: BRAND_DESCRIPTION,
+    logo: {
+      "@type": "ImageObject",
+      url: `${SITE_URL}/zipdrop-logo.png`,
+      width: 2172,
+      height: 724,
+    },
+    sameAs: [GITHUB_URL],
     contactPoint: {
       "@type": "ContactPoint",
-      telephone: "+91-XXXXXXXXXX",
-      contactType: "customer service",
-      email: "mehtaved12@gmail.com",
+      contactType: "customer support",
+      email: CONTACT_EMAIL,
       availableLanguage: "English",
     },
     founder: [
       {
         "@type": "Person",
-        name: "Ved Mehta",
+        "@id": `${SITE_URL}/#ved-mehta`,
+        name: AUTHORS[0].name,
+        url: AUTHORS[0].linkedin,
+        sameAs: [AUTHORS[0].linkedin],
         affiliation: {
           "@type": "CollegeOrUniversity",
           name: "DJ Sanghvi College of Engineering",
@@ -132,12 +148,24 @@ export default function RootLayout({
       },
       {
         "@type": "Person",
-        name: "Virti Panchamia",
+        "@id": `${SITE_URL}/#virti-panchamia`,
+        name: AUTHORS[1].name,
+        url: AUTHORS[1].linkedin,
+        sameAs: [AUTHORS[1].linkedin],
         affiliation: {
           "@type": "CollegeOrUniversity",
           name: "DJ Sanghvi College of Engineering",
         },
       },
+    ],
+    knowsAbout: [
+      "File sharing",
+      "Text sharing",
+      "File conversion",
+      "PDF compression",
+      "Image compression",
+      "Image background removal",
+      "Online document editing",
     ],
   };
 
@@ -145,8 +173,10 @@ export default function RootLayout({
     "@context": "https://schema.org",
     "@type": "WebSite",
     "@id": `${SITE_URL}/#website`,
-    name: "ZipDrop",
-    url: SITE_URL,
+    name: SITE_NAME,
+    url: `${SITE_URL}/`,
+    description: BRAND_DESCRIPTION,
+    inLanguage: "en",
     publisher: {
       "@id": `${SITE_URL}/#organization`,
     },
