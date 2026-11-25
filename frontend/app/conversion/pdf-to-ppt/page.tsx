@@ -5,7 +5,7 @@ import Link from "next/link";
 import { ArrowLeft, Presentation, Download, Check, X, Loader2, AlertCircle, Info } from "lucide-react";
 import Navbar from "../../../components/Navbar";
 
-const API = process.env.NEXT_PUBLIC_API_URL || "https://zipdrop.onrender.com";
+const API = process.env.NEXT_PUBLIC_API_URL || "https://api.getzipdrop.com";
 const MAX_FILE_SIZE = 50 * 1024 * 1024;
 
 type ConversionMode = "editable" | "visual-fidelity";

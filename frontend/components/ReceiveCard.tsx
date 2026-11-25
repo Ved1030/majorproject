@@ -10,7 +10,7 @@ interface ReceivedFile {
 
 const API =
   process.env.NEXT_PUBLIC_API_URL ||
-  "https://zipdrop.onrender.com";
+  "https://api.getzipdrop.com";
 
 /* ─── Icons ─────────────────────────────────── */
 

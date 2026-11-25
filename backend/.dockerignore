@@ -1,0 +1,17 @@
+node_modules
+.venv
+.git
+.env
+.env.*
+**/.env
+**/.env.*
+__pycache__
+**/__pycache__
+*.pyc
+*.log
+.cache
+test_*
+bad_*
+out_test.pdf
+api_output.pdf
+upload.html

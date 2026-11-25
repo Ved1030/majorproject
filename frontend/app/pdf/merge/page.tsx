@@ -17,7 +17,7 @@ import Navbar from "../../../components/Navbar";
 import Breadcrumbs from "../../../components/Breadcrumbs";
 import { mergePdf } from "../../../utils/api";
 
-const API = process.env.NEXT_PUBLIC_API_URL || "https://zipdrop.onrender.com";
+const API = process.env.NEXT_PUBLIC_API_URL || "https://api.getzipdrop.com";
 const MAX_FILE_SIZE = 50 * 1024 * 1024; // 50 MB (existing PDF limit)
 const MAX_FILE_COUNT = 10;
 

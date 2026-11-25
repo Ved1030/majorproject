@@ -20,7 +20,7 @@ import {
 } from "../../../components/compression/CompressionSettings";
 import { compressPdf } from "../../../utils/api";
 
-const API = process.env.NEXT_PUBLIC_API_URL || "https://zipdrop.onrender.com";
+const API = process.env.NEXT_PUBLIC_API_URL || "https://api.getzipdrop.com";
 const MAX_FILE_SIZE = 100 * 1024 * 1024; // 100MB
 
 const TOOL_NAME = "Compress PDF";

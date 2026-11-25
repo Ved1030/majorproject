@@ -84,7 +84,7 @@ function EditorPageInner() {
   const [docxBuffer, setDocxBuffer] = useState<ArrayBuffer | null>(null);
   const [loadKey, setLoadKey] = useState(0);
 
-  const API_URL = process.env.NEXT_PUBLIC_API_URL || "https://zipdrop.onrender.com";
+  const API_URL = process.env.NEXT_PUBLIC_API_URL || "https://api.getzipdrop.com";
 
   const isExternalUrl = (url: string): boolean => {
     try {

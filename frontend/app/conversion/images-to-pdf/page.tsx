@@ -5,7 +5,7 @@ import Link from "next/link";
 import { ArrowLeft, Image, Download, Check, X, Loader2, AlertCircle, Info, FileText, Plus, Trash2 } from "lucide-react";
 import Navbar from "../../../components/Navbar";
 
-const API = process.env.NEXT_PUBLIC_API_URL || "https://zipdrop.onrender.com";
+const API = process.env.NEXT_PUBLIC_API_URL || "https://api.getzipdrop.com";
 const MAX_FILE_SIZE = 25 * 1024 * 1024;
 const MAX_FILES = 20;
 const ACCEPTED_TYPES = ["image/jpeg", "image/png", "image/webp", "image/svg+xml"];

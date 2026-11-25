@@ -1812,11 +1812,11 @@ app.get("/health/compression", async (req, res) => {
   try {
     // Check PDF compressor
     const pdfCompressor = compressionRouter.getCompressor('pdf');
-    await pdfCompressor.checkPDFCompressorTooling();
+    await pdfCompressor.checkPDFCompressorToolingCached();
     
     // Check image compressor
     const jpgCompressor = compressionRouter.getCompressor('jpg');
-    await jpgCompressor.checkImageCompressorTooling();
+    await jpgCompressor.checkImageCompressorToolingCached();
 
     res.json({
       ok: true,

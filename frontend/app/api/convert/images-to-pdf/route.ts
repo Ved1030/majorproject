@@ -3,7 +3,7 @@ export const maxDuration = 180;
 
 import { NextRequest, NextResponse } from "next/server";
 
-const API = process.env.NEXT_PUBLIC_API_URL || "https://zipdrop.onrender.com";
+const API = process.env.NEXT_PUBLIC_API_URL || "https://api.getzipdrop.com";
 
 const MAX_FILE_SIZE = 25 * 1024 * 1024;
 const MAX_FILES = 20;

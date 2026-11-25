@@ -1,0 +1,46 @@
+services:
+  backend:
+    image: zipdrop-backend:v3
+    container_name: zipdrop-backend
+
+    restart: unless-stopped
+    init: true
+
+    env_file:
+      - /etc/zipdrop/backend.env
+
+    ports:
+      - "127.0.0.1:5000:5000"
+
+    volumes:
+      - /opt/zipdrop-data/rembg:/home/node/.rembg
+
+    cpus: 3.0
+    mem_limit: 5g
+    memswap_limit: 6g
+    pids_limit: 512
+
+    security_opt:
+      - no-new-privileges:true
+
+    cap_drop:
+      - ALL
+
+    healthcheck:
+      test:
+        - CMD
+        - node
+        - -e
+        - "fetch('http://127.0.0.1:5000/health').then(r=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))"
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 90s
+
+    logging:
+      driver: json-file
+      options:
+        max-size: "20m"
+        max-file: "5"
+
+    stop_grace_period: 30s
