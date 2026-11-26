@@ -38,22 +38,20 @@ export default function Navbar() {
   }, []);
 
   const handleNavClick = (e: React.MouseEvent<HTMLAnchorElement>, sectionId: string | null) => {
-    if (sectionId) {
+    setIsMobileMenuOpen(false);
+    if (!sectionId) return;
+
+    const element = document.getElementById(sectionId);
+    if (element) {
       e.preventDefault();
-      const element = document.getElementById(sectionId);
-      if (element) {
-        element.scrollIntoView({ behavior: "smooth" });
-      }
-      setIsMobileMenuOpen(false);
-    } else {
-      setIsMobileMenuOpen(false);
+      element.scrollIntoView({ behavior: "smooth" });
     }
   };
 
   const handleStartSharing = (e: React.MouseEvent<HTMLAnchorElement>) => {
-    e.preventDefault();
     const element = document.getElementById("share-receive");
     if (element) {
+      e.preventDefault();
       element.scrollIntoView({ behavior: "smooth" });
     }
     setIsMobileMenuOpen(false);
@@ -226,7 +224,7 @@ export default function Navbar() {
           </Link>
 
           <Link
-            href="/"
+            href="/#share-receive"
             onClick={handleStartSharing}
             style={{
               padding: "10px 20px",
@@ -420,12 +418,12 @@ export default function Navbar() {
               <div style={{ display: "flex", flexDirection: "column", gap: "4px" }}>
                 {[
                   { label: "Conversion Tools", href: "/conversion" },
-                  { label: "PDF Tools", href: "/conversion?category=pdf-tools" },
-                  { label: "Document Tools", href: "/conversion?category=document-tools" },
-                  { label: "Image Tools", href: "/conversion?category=image-tools" },
-                  { label: "Compression Tools", href: "/conversion?category=compression-tools" },
-                  { label: "Text Tools", href: "/conversion?category=text-tools" },
-                  { label: "Utility Tools", href: "/conversion?category=utility-tools" },
+                  { label: "Merge & Split PDF", href: "/pdf/merge" },
+                  { label: "Organize PDF", href: "/pdf/organize" },
+                  { label: "Compress PDF", href: "/compression" },
+                  { label: "Background Remover", href: "/image-tools/background-remover" },
+                  { label: "Text Sharing", href: "/#share-receive" },
+                  { label: "Blog & Guides", href: "/blog" },
                   { label: "Online Editor", href: "/editor" },
                 ].map((item) => (
                   <Link
@@ -541,7 +539,7 @@ export default function Navbar() {
 
           <div style={{ paddingTop: "16px", borderTop: "1px solid var(--border)", marginTop: "auto" }}>
             <Link
-              href="/"
+              href="/#share-receive"
               onClick={handleStartSharing}
               style={{
                 width: "100%",

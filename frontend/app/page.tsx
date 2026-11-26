@@ -66,7 +66,7 @@ function Hero() {
           maxWidth: "640px",
         }}
       >
-        Share Files Between Devices with a 4-Digit Code
+        Official ZipDrop: Share Files Between Devices with a 4-Digit Code
       </h1>
 
       {/* Description */}
@@ -80,7 +80,7 @@ function Hero() {
           fontWeight: 400,
         }}
       >
-        ZipDrop is a free browser-based platform for sharing files and text between devices. Upload up to 10 files, get a 4-digit code, and open it on another device. Convert, compress, remove backgrounds, and edit documents online — no account required.
+        ZipDrop is the official free browser-based tool at www.getzipdrop.com for sharing files and text between devices. Upload up to 10 files, get a 4-digit code, and open it on another device. Convert PDFs to Word, compress PDFs and images, remove backgrounds, and edit documents online — no account required.
       </p>
 
       {/* Supporting text */}
@@ -95,6 +95,40 @@ function Hero() {
       >
         Transfer files from phone to computer, or between any supported devices, using just a browser.
       </p>
+
+      {/* Quick internal links to the highest-value tools */}
+      <nav
+        aria-label="Popular ZipDrop tools"
+        style={{
+          display: "flex",
+          flexWrap: "wrap",
+          justifyContent: "center",
+          gap: "8px 18px",
+          maxWidth: "560px",
+          marginTop: "2px",
+        }}
+      >
+        {[
+          { href: "/conversion", label: "File converter" },
+          { href: "/conversion/pdf-to-word", label: "PDF to Word" },
+          { href: "/compression/pdf", label: "Compress PDF" },
+          { href: "/image-tools/background-remover", label: "Background remover" },
+        ].map((link) => (
+          <Link
+            key={link.href}
+            href={link.href}
+            style={{
+              color: "var(--primary-teal)",
+              fontSize: "13px",
+              fontWeight: 600,
+              textDecoration: "underline",
+              textUnderlineOffset: "3px",
+            }}
+          >
+            {link.label}
+          </Link>
+        ))}
+      </nav>
     </section>
   );
 }
@@ -413,7 +447,9 @@ export default function Home() {
     featureList: [
       "File sharing with a 4-digit code",
       "Text sharing",
+      "Up to 10 files per transfer",
       "27 file conversion tools",
+      "PDF to Word conversion",
       "PDF compression",
       "JPG, PNG and WEBP image compression",
       "Image background removal",

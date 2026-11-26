@@ -55,14 +55,14 @@ const FORMAT_GROUPS = [
     extensions: ["JPG", "PNG", "WEBP", "SVG"],
   },
   {
-    id: "archives",
-    title: "Archives",
-    description: "Compressed archive formats",
+    id: "compression",
+    title: "Compression",
+    description: "Compress PDFs and images",
     icon: Archive,
     iconColor: "#647180",
     iconBg: "var(--gray-light)",
     href: "/compression",
-    extensions: ["ZIP"],
+    extensions: ["PDF", "JPG", "PNG", "WEBP"],
   },
 ];
 
@@ -103,11 +103,12 @@ export default function SupportedFileFormats() {
             lineHeight: 1.7,
           }}
         >
-          Explore the file formats supported by ZipDrop's online tools.
+          Explore the file formats supported by ZipDrop online tools.
         </p>
       </div>
 
       <div
+        className="formats-grid"
         style={{
           display: "grid",
           gridTemplateColumns: "repeat(3, minmax(0, 1fr))",

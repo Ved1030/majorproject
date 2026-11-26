@@ -17,6 +17,7 @@ import {
   X,
 } from "lucide-react";
 import Navbar from "../../components/Navbar";
+import ToolSeoSection from "../../components/ToolSeoSection";
 
 const CONVERSION_CATEGORIES = [
   {
@@ -77,6 +78,8 @@ const CONVERSION_CATEGORIES = [
       { id: "jpg-to-webp", name: "JPG to WEBP", description: "Convert JPG to modern WEBP format", from: "JPG", to: "WEBP" },
       { id: "png-to-webp", name: "PNG to WEBP", description: "Convert PNG to WEBP with transparency", from: "PNG", to: "WEBP" },
       { id: "svg-to-png", name: "SVG to PNG", description: "Rasterize vector SVG to PNG", from: "SVG", to: "PNG" },
+      { id: "jpg-to-pdf", name: "JPG to PDF", description: "Convert JPG images to PDF documents", from: "JPG", to: "PDF" },
+      { id: "png-to-pdf", name: "PNG to PDF", description: "Convert PNG images to PDF documents", from: "PNG", to: "PDF" },
       { id: "images-to-pdf", name: "Images to PDF", description: "Combine multiple images into a single PDF", from: "Images", to: "PDF" },
     ],
   },
@@ -91,7 +94,7 @@ const CONVERSION_CATEGORIES = [
       { id: "txt-to-pdf", name: "Text to PDF", description: "Convert plain text files to PDF", from: "TXT", to: "PDF" },
       { id: "html-to-pdf", name: "HTML to PDF", description: "Convert HTML pages to PDF documents", from: "HTML", to: "PDF" },
       { id: "csv-to-excel", name: "CSV to Excel", description: "Convert CSV data to XLSX spreadsheets", from: "CSV", to: "XLSX" },
-      { id: "rtf-to-docx", name: "RTF to Word", description: "Convert Rich Text Format to DOCX", from: "RTF", to: "DOCX" },
+      { id: "rtf-to-word", name: "RTF to Word", description: "Convert Rich Text Format to DOCX", from: "RTF", to: "DOCX" },
     ],
   },
 ];
@@ -125,42 +128,28 @@ interface ConversionTool {
   comingSoon?: boolean;
 }
  
-function ToolCard({ tool, categoryColor, onClick }: { 
+function ToolCard({ tool, categoryColor }: {
   tool: ConversionTool;
   categoryColor: string;
-  onClick: () => void;
 }) {
   const isComingSoon = tool.comingSoon;
-  
-  return (
-    <button
-      onClick={onClick}
-      disabled={isComingSoon}
-      style={{
-        width: "100%",
-        padding: "20px",
-        borderRadius: "16px",
-        border: `1px solid ${isComingSoon ? "var(--border)" : "var(--border)"}`,
-        background: isComingSoon ? "var(--bg-card)" : "var(--bg-card)",
-        cursor: isComingSoon ? "not-allowed" : "pointer",
-        textAlign: "left",
-        transition: "all 0.2s ease",
-        display: "flex",
-        flexDirection: "column",
-        gap: "12px",
-        opacity: isComingSoon ? 0.5 : 1,
-      }}
-      onMouseEnter={(e) => {
-        if (!isComingSoon) {
-          e.currentTarget.style.borderColor = categoryColor;
-          e.currentTarget.style.boxShadow = `0 4px 16px ${categoryColor}20`;
-        }
-      }}
-      onMouseLeave={(e) => {
-        e.currentTarget.style.borderColor = "var(--border)";
-        e.currentTarget.style.boxShadow = "none";
-      }}
-    >
+  const cardStyle: React.CSSProperties = {
+    width: "100%",
+    padding: "20px",
+    borderRadius: "16px",
+    border: "1px solid var(--border)",
+    background: "var(--bg-card)",
+    cursor: isComingSoon ? "not-allowed" : "pointer",
+    textAlign: "left",
+    transition: "all 0.2s ease",
+    display: "flex",
+    flexDirection: "column",
+    gap: "12px",
+    opacity: isComingSoon ? 0.5 : 1,
+  };
+
+  const content = (
+    <>
       <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: "12px" }}>
         <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
           <div style={{
@@ -218,7 +207,28 @@ function ToolCard({ tool, categoryColor, onClick }: {
           ))}
         </div>
       )}
-    </button>
+    </>
+  );
+
+  if (isComingSoon) {
+    return <div style={cardStyle} aria-disabled="true">{content}</div>;
+  }
+
+  return (
+    <Link
+      href={`/conversion/${tool.id}`}
+      style={{ ...cardStyle, color: "inherit", textDecoration: "none" }}
+      onMouseEnter={(e) => {
+        e.currentTarget.style.borderColor = categoryColor;
+        e.currentTarget.style.boxShadow = `0 4px 16px ${categoryColor}20`;
+      }}
+      onMouseLeave={(e) => {
+        e.currentTarget.style.borderColor = "var(--border)";
+        e.currentTarget.style.boxShadow = "none";
+      }}
+    >
+      {content}
+    </Link>
   );
 }
 
@@ -253,7 +263,7 @@ export default function ConversionToolsPage() {
             display: "inline-flex",
           }}>
             <span className="badge-dot" />
-            Conversion Tools — Phase 1 Live
+            Official ZipDrop · 27 Tools · No Sign-up
           </div>
           <h1 style={{
             fontSize: "clamp(36px, 5vw, 52px)",
@@ -263,16 +273,43 @@ export default function ConversionToolsPage() {
             color: "var(--text-primary)",
             marginBottom: "16px",
           }}>
-            Convert Files <span style={{ color: "var(--primary-teal)" }}>Professionally</span>
+            Free Online <span style={{ color: "var(--primary-teal)" }}>File Converter</span> by ZipDrop
           </h1>
           <p style={{
             fontSize: "clamp(15px, 1.6vw, 18px)",
             color: "var(--text-secondary)",
             lineHeight: 1.7,
           }}>
-            High-fidelity file conversion preserving layout, formatting, and visual appearance.
-            Powered by industry-standard libraries with editable and visual-fidelity modes.
+            Use ZipDrop&apos;s official file converter at www.getzipdrop.com/conversion to convert PDFs, Word, Excel, PowerPoint, images and text. Choose from 27 tools, including PDF to Word and PNG to JPG. No account or software install required.
           </p>
+          <nav aria-label="Popular conversion tools" style={{
+            display: "flex",
+            flexWrap: "wrap",
+            justifyContent: "center",
+            gap: "8px 18px",
+            marginTop: "12px",
+          }}>
+            {[
+              { href: "/conversion/pdf-to-word", label: "PDF to Word" },
+              { href: "/conversion/png-to-jpg", label: "PNG to JPG" },
+              { href: "/conversion/word-to-pdf", label: "Word to PDF" },
+              { href: "/compression/pdf", label: "Compress PDF" },
+            ].map((link) => (
+              <Link
+                key={link.href}
+                href={link.href}
+                style={{
+                  color: "var(--primary-teal)",
+                  fontSize: "13px",
+                  fontWeight: 600,
+                  textDecoration: "underline",
+                  textUnderlineOffset: "3px",
+                }}
+              >
+                {link.label}
+              </Link>
+            ))}
+          </nav>
         </section>
 
         {/* Categories */}
@@ -283,7 +320,7 @@ export default function ConversionToolsPage() {
             const totalTools = category.tools.length;
 
             return (
-              <div key={category.id} className="glass-card" style={{ overflow: "hidden" }}>
+              <div key={category.id} id={category.id} className="glass-card" style={{ overflow: "hidden", scrollMarginTop: "90px" }}>
                 {/* Category Header */}
                 <button
                   onClick={() => toggleCategory(category.id)}
@@ -379,11 +416,6 @@ export default function ConversionToolsPage() {
                           key={tool.id}
                           tool={tool}
                           categoryColor={category.color}
-                          onClick={() => {
-                            if (!('comingSoon' in tool && tool.comingSoon)) {
-                              window.location.href = `/conversion/${tool.id}`;
-                            }
-                          }}
                         />
                       ))}
                     </div>
@@ -450,11 +482,38 @@ export default function ConversionToolsPage() {
             </div>
           </div>
           <p style={{ fontSize: "12px", color: "var(--text-muted)", margin: 0 }}>
-            Phase 1 includes: PDF→Word/Excel/PPT/Text/HTML/PDF/A, PDF→JPG/PNG, Images→PDF, Office→PDF/Text/HTML/CSV, Text→PDF, HTML→PDF, CSV→Excel, RTF→Word, and all 7 Image Conversion tools (JPG↔PNG, JPG↔WEBP, PNG↔WEBP, WEBP→JPG, SVG→PNG).
+            Available now: PDF→Word/Excel/PPT/Text/HTML/PDF/A, PDF→JPG/PNG, Images→PDF, JPG/PNG→PDF, Office→PDF/Text/HTML/CSV, Text→PDF, HTML→PDF, CSV→Excel, RTF→Word, and all 9 image conversion and image-to-PDF tools (JPG↔PNG, JPG↔WEBP, PNG↔WEBP, WEBP→JPG, SVG→PNG).
           </p>
         </div>
       </div>
     </div>
+      <ToolSeoSection
+        title="About ZipDrop's online file converter"
+        intro="ZipDrop's official file converter at www.getzipdrop.com/conversion includes 27 tools for PDF, Word, Excel, PowerPoint, images and text. Start with PDF to Word, PNG to JPG or Word to PDF — no account or software install required."
+        faqs={[
+          {
+            question: "Is www.getzipdrop.com/conversion the official ZipDrop file converter?",
+            answer:
+              "Yes. The official ZipDrop file converter is at https://www.getzipdrop.com/conversion and links to all 27 conversion tools.",
+          },
+          {
+            question: "Which conversion tools are most popular?",
+            answer:
+              "PDF to Word, Word to PDF, PNG to JPG, JPG to PDF and Compress PDF are commonly used ZipDrop tools.",
+          },
+          {
+            question: "Do ZipDrop conversions require an account?",
+            answer:
+              "No. The available conversion tools run in your browser without sign-up, login or software installation.",
+          },
+        ]}
+        links={[
+          { label: "PDF to Word", href: "/conversion/pdf-to-word" },
+          { label: "PNG to JPG", href: "/conversion/png-to-jpg" },
+          { label: "Word to PDF", href: "/conversion/word-to-pdf" },
+          { label: "Compress PDF", href: "/compression/pdf" },
+        ]}
+      />
     </>
   );
 }

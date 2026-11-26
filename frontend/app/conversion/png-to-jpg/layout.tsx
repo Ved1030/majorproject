@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import ToolSeoSection from "@/components/ToolSeoSection";
 import { OG_IMAGE, SITE_NAME } from "@/lib/site";
 
-const TITLE = "PNG to JPG with ZipDrop — Free Online Image Conversion";
+const TITLE = "PNG to JPG — Free Online Image Conversion";
 const DESCRIPTION =
   "Convert PNG images to compressed JPG online for free at getzipdrop.com with ZipDrop. Adjustable quality, no account and no software to install.";
 

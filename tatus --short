@@ -1,0 +1,15 @@
+ frontend/app/compression/layout.tsx                |  84 [32m++++++++[m[31m-----[m
+ frontend/app/compression/pdf/layout.tsx            |  55 [32m+++++++[m[31m--[m
+ frontend/app/conversion/layout.tsx                 | 115 [32m++++++++++++[m[31m------[m
+ frontend/app/conversion/png-to-jpg/layout.tsx      |  55 [32m+++++++[m[31m--[m
+ .../app/image-tools/background-remover/layout.tsx  |  55 [32m+++++++[m[31m--[m
+ frontend/app/layout.tsx                            |  96 [32m+++++++++[m[31m------[m
+ frontend/app/page.tsx                              | 118 [32m+++++++++[m[31m---------[m
+ frontend/app/sitemap.ts                            |   2 [32m+[m[31m-[m
+ frontend/components/FAQ.tsx                        |  49 [32m+++++[m[31m---[m
+ frontend/components/PopularTools.tsx               |   9 [32m++[m
+ frontend/components/ToolSeoSection.tsx             | 132 [32m+++++++++++++++++++++[m
+ frontend/lib/site.ts                               |   7 [32m++[m
+ frontend/next.config.js                            |  23 [32m++++[m
+ frontend/vercel.json                               |  17 [32m+++[m
+ 14 files changed, 617 insertions(+), 200 deletions(-)

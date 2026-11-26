@@ -99,8 +99,8 @@ export default function sitemap(): MetadataRoute.Sitemap {
   const conversionPages: MetadataRoute.Sitemap = CONVERSION_SLUGS.map((slug) => ({
     url: `${SITE_URL}/conversion/${slug}`,
     lastModified: now,
-    changeFrequency: "monthly" as const,
-    priority: 0.7,
+    changeFrequency: slug === "pdf-to-word" ? ("weekly" as const) : ("monthly" as const),
+    priority: slug === "pdf-to-word" ? 0.8 : 0.7,
   }));
 
   const compressionPages: MetadataRoute.Sitemap = COMPRESSION_SLUGS.map((slug) => ({

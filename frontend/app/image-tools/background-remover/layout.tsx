@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import ToolSeoSection from "@/components/ToolSeoSection";
 import { OG_IMAGE, SITE_NAME } from "@/lib/site";
 
-const TITLE = "ZipDrop Background Remover — Free Online BG Removal";
+const TITLE = "Background Remover — Free Online BG Removal";
 const DESCRIPTION =
   "Remove image backgrounds for free at getzipdrop.com with ZipDrop's background remover. Upload JPG, PNG or WEBP and download a transparent PNG. No account required.";
 

@@ -1,3 +1,5 @@
+import Link from "next/link";
+
 type ToolFaq = {
   question: string;
   answer: string;
@@ -87,7 +89,7 @@ export default function ToolSeoSection({
         >
           {links.map((link) => (
             <li key={link.href}>
-              <a
+              <Link
                 href={link.href}
                 style={{
                   color: "var(--primary-teal)",
@@ -98,7 +100,7 @@ export default function ToolSeoSection({
                 }}
               >
                 {link.label}
-              </a>
+              </Link>
             </li>
           ))}
         </ul>

@@ -1,15 +1,21 @@
 import type { Metadata } from "next";
 import { OG_IMAGE, SITE_NAME, SITE_URL } from "@/lib/site";
 
+const TITLE = "Free Online File Converter — PDF, Word, Excel & Image Conversion";
+const DESCRIPTION =
+  "Use the official ZipDrop file converter at www.getzipdrop.com/conversion to convert PDF, Word, Excel, PowerPoint, images and text online. 27 tools, no account or software install.";
+
 export const metadata: Metadata = {
   title: {
-    default: "Free Online File Converter – PDF, Word, Excel & Images",
+    default: TITLE,
     template: "%s | ZipDrop",
   },
-  description: "Convert files online with ZipDrop. 27 tools for PDF, Word, Excel, PowerPoint, images, and text. No account required and no software to install.",
+  description: DESCRIPTION,
   keywords: [
-    "png to jpg getzipdrop",
+    "file converter getzipdrop",
     "file conversion getzipdrop",
+    "png to jpg getzipdrop",
+    "pdf to word getzipdrop",
     "ZipDrop file converter",
   ],
   alternates: {
@@ -17,16 +23,16 @@ export const metadata: Metadata = {
   },
   openGraph: {
     url: `${SITE_URL}/conversion`,
-    title: "Free Online File Converter – PDF, Word, Excel & Images",
-    description: "Convert files online with ZipDrop. 27 tools for PDF, Word, Excel, PowerPoint, images, and text. No account required.",
+    title: TITLE,
+    description: DESCRIPTION,
     siteName: SITE_NAME,
     type: "website",
     images: [OG_IMAGE],
   },
   twitter: {
     card: "summary_large_image",
-    title: "Free Online File Converter – PDF, Word, Excel & Images",
-    description: "Convert files online with ZipDrop. 27 tools for PDF, Word, Excel, images, and text. No account required.",
+    title: TITLE,
+    description: DESCRIPTION,
     images: [OG_IMAGE],
   },
 };
@@ -65,8 +71,8 @@ const structuredData = {
   "@context": "https://schema.org",
   "@type": "WebPage",
   "@id": `${SITE_URL}/conversion#webpage`,
-  name: "Free Online File Converter – PDF, Word, Excel & Images",
-  description: "Convert files online with ZipDrop. 27 tools for PDF, Word, Excel, PowerPoint, images, and text. No account required.",
+  name: "ZipDrop File Converter",
+  description: DESCRIPTION,
   url: `${SITE_URL}/conversion`,
   inLanguage: "en",
   isPartOf: { "@id": `${SITE_URL}/#website` },

@@ -140,34 +140,9 @@ export default function PdfToWordPage() {
     "visual-fidelity": "Preserves exact page appearance using positioned elements. Best for complex layouts where visual accuracy matters most.",
   };
 
-  const structuredData = {
-    "@context": "https://schema.org",
-    "@type": "SoftwareApplication",
-    name: "PDF to Word Converter",
-    url: "https://www.getzipdrop.com/conversion/pdf-to-word",
-    applicationCategory: "FileConverter",
-    operatingSystem: "Web",
-    description: "Free online PDF to Word converter with Editable and Visual Fidelity modes. Convert PDF to editable DOCX without an account.",
-    offers: {
-      "@type": "Offer",
-      price: "0",
-      priceCurrency: "USD",
-      availability: "https://schema.org/InStock",
-    },
-    creator: {
-      "@type": "Organization",
-      name: "ZipDrop",
-      url: "https://www.getzipdrop.com",
-    },
-  };
-
   return (
     <>
       <Navbar />
-      <script
-        type="application/ld+json"
-        dangerouslySetInnerHTML={{ __html: JSON.stringify(structuredData) }}
-      />
       <div style={{ minHeight: "100vh", background: "var(--bg-main)", padding: "clamp(24px, 4vh, 48px) 24px" }}>
         <div style={{ maxWidth: "720px", margin: "0 auto", display: "flex", flexDirection: "column", gap: "24px" }}>
           {/* Breadcrumbs */}
@@ -181,10 +156,36 @@ export default function PdfToWordPage() {
             <div>
               <span className="section-label">PDF CONVERSIONS</span>
               <h1 style={{ fontSize: "28px", fontWeight: 700, color: "var(--text-primary)", marginTop: "4px" }}>
-                PDF to Word
+                PDF to Word Converter
               </h1>
+              <p style={{ fontSize: "14px", lineHeight: 1.6, color: "var(--text-secondary)", margin: "8px 0 0", maxWidth: "560px" }}>
+                Use the official ZipDrop PDF to Word tool to convert PDFs into editable DOCX files. Choose Editable mode to revise text and tables, or Visual Fidelity mode to keep the original layout. Maximum file size: 50 MB.
+              </p>
             </div>
           </div>
+
+          {/* Related tool links */}
+          <nav aria-label="Related PDF tools" style={{ display: "flex", flexWrap: "wrap", justifyContent: "center", gap: "8px 18px" }}>
+            {[
+              { href: "/compression/pdf", label: "Compress PDF" },
+              { href: "/conversion/pdf-to-excel", label: "PDF to Excel" },
+              { href: "/conversion", label: "All conversion tools" },
+            ].map((link) => (
+              <Link
+                key={link.href}
+                href={link.href}
+                style={{
+                  color: "var(--primary-teal)",
+                  fontSize: "13px",
+                  fontWeight: 600,
+                  textDecoration: "underline",
+                  textUnderlineOffset: "3px",
+                }}
+              >
+                {link.label}
+              </Link>
+            ))}
+          </nav>
 
           {/* Main Card */}
           <div className="glass-card" style={{ padding: "clamp(24px, 3vh, 32px)" }}>

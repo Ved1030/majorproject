@@ -14,6 +14,7 @@ import {
   Archive,
 } from "lucide-react";
 import Navbar from "../../components/Navbar";
+import ToolSeoSection from "../../components/ToolSeoSection";
 
 const COMPRESSION_CATEGORIES = [
   {
@@ -108,44 +109,29 @@ interface CompressionTool {
   comingSoon?: boolean;
 }
 
-function ToolCard({ tool, categoryColor, onClick }: { 
+function ToolCard({ tool, categoryColor }: {
   tool: CompressionTool;
   categoryColor: string;
-  onClick: () => void;
 }) {
   const isAvailable = tool.available !== false;
   const isComingSoon = tool.comingSoon === true;
-  
-  return (
-    <button
-      onClick={isAvailable ? onClick : undefined}
-      style={{
-        width: "100%",
-        padding: "20px",
-        borderRadius: "16px",
-        border: "1px solid var(--border)",
-        background: isAvailable ? "var(--bg-card)" : "var(--editor-workspace)",
-        cursor: isAvailable ? "pointer" : "not-allowed",
-        textAlign: "left",
-        transition: "all 0.2s ease",
-        display: "flex",
-        flexDirection: "column",
-        gap: "12px",
-        opacity: isAvailable ? 1 : 0.5,
-      }}
-      onMouseEnter={(e) => {
-        if (isAvailable) {
-          e.currentTarget.style.borderColor = categoryColor;
-          e.currentTarget.style.boxShadow = `0 4px 16px ${categoryColor}20`;
-        }
-      }}
-      onMouseLeave={(e) => {
-        if (isAvailable) {
-          e.currentTarget.style.borderColor = "var(--border)";
-          e.currentTarget.style.boxShadow = "none";
-        }
-      }}
-    >
+  const cardStyle: React.CSSProperties = {
+    width: "100%",
+    padding: "20px",
+    borderRadius: "16px",
+    border: "1px solid var(--border)",
+    background: isAvailable ? "var(--bg-card)" : "var(--editor-workspace)",
+    cursor: isAvailable ? "pointer" : "not-allowed",
+    textAlign: "left",
+    transition: "all 0.2s ease",
+    display: "flex",
+    flexDirection: "column",
+    gap: "12px",
+    opacity: isAvailable ? 1 : 0.5,
+  };
+
+  const content = (
+    <>
       <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: "12px" }}>
         <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
           <div style={{
@@ -210,7 +196,28 @@ function ToolCard({ tool, categoryColor, onClick }: {
           Coming Soon
         </span>
       )}
-    </button>
+    </>
+  );
+
+  if (!isAvailable) {
+    return <div style={cardStyle} aria-disabled="true">{content}</div>;
+  }
+
+  return (
+    <Link
+      href={`/compression/${tool.id}`}
+      style={{ ...cardStyle, color: "inherit", textDecoration: "none" }}
+      onMouseEnter={(e) => {
+        e.currentTarget.style.borderColor = categoryColor;
+        e.currentTarget.style.boxShadow = `0 4px 16px ${categoryColor}20`;
+      }}
+      onMouseLeave={(e) => {
+        e.currentTarget.style.borderColor = "var(--border)";
+        e.currentTarget.style.boxShadow = "none";
+      }}
+    >
+      {content}
+    </Link>
   );
 }
 
@@ -245,7 +252,7 @@ export default function CompressionToolsPage() {
             display: "inline-flex",
           }}>
             <span className="badge-dot" />
-            Compression Tools — Phase 1 Live
+            Official ZipDrop · No Sign-up
           </div>
           <h1 style={{
             fontSize: "clamp(36px, 5vw, 52px)",
@@ -255,22 +262,49 @@ export default function CompressionToolsPage() {
             color: "var(--text-primary)",
             marginBottom: "16px",
           }}>
-            Compress Files <span style={{ color: "var(--primary-teal)" }}>Easily</span>
+            Free Online <span style={{ color: "var(--primary-teal)" }}>File Compression</span> by ZipDrop
           </h1>
           <p style={{
             fontSize: "clamp(15px, 1.6vw, 18px)",
             color: "var(--text-secondary)",
             lineHeight: 1.7,
           }}>
-            Reduce the size of PDFs, images and documents while keeping quality as high as possible.
+            Use ZipDrop&apos;s official file compression tools at www.getzipdrop.com/compression to reduce PDF, JPG, PNG and WEBP file sizes. Choose a quality level, compare the result, and download without an account.
           </p>
+          <nav aria-label="Popular compression tools" style={{
+            display: "flex",
+            flexWrap: "wrap",
+            justifyContent: "center",
+            gap: "8px 18px",
+            marginTop: "12px",
+          }}>
+            {[
+              { href: "/compression/pdf", label: "Compress PDF" },
+              { href: "/compression/jpg", label: "Compress JPG" },
+              { href: "/conversion/png-to-jpg", label: "PNG to JPG" },
+            ].map((link) => (
+              <Link
+                key={link.href}
+                href={link.href}
+                style={{
+                  color: "var(--primary-teal)",
+                  fontSize: "13px",
+                  fontWeight: 600,
+                  textDecoration: "underline",
+                  textUnderlineOffset: "3px",
+                }}
+              >
+                {link.label}
+              </Link>
+            ))}
+          </nav>
         </section>
 
         {/* Categories */}
         <div style={{ display: "flex", flexDirection: "column", gap: "24px" }}>
           {COMPRESSION_CATEGORIES.map((category) => {
             const isExpanded = expandedCategories.includes(category.id);
-            const activeTools = category.tools.length;
+            const activeTools = category.tools.filter((tool) => tool.available !== false).length;
 
             return (
               <div key={category.id} className="glass-card" style={{ overflow: "hidden" }}>
@@ -309,7 +343,7 @@ export default function CompressionToolsPage() {
                         color: category.color,
                         border: `1px solid ${category.color}40`,
                       }}>
-                        {activeTools} tools
+                        {activeTools > 0 ? `${activeTools} ${activeTools === 1 ? "tool" : "tools"}` : "Coming soon"}
                       </span>
                     </div>
                     <p style={{ 
@@ -328,7 +362,7 @@ export default function CompressionToolsPage() {
                       color: "var(--text-muted)",
                       fontFamily: "var(--font-mono)",
                     }}>
-                      {activeTools} available
+                      {activeTools > 0 ? `${activeTools} available` : "Coming soon"}
                     </span>
                     <div style={{
                       width: 28,
@@ -369,9 +403,6 @@ export default function CompressionToolsPage() {
                           key={tool.id}
                           tool={tool}
                           categoryColor={category.color}
-                          onClick={() => {
-                            window.location.href = `/compression/${tool.id}`;
-                          }}
                         />
                       ))}
                     </div>
@@ -449,25 +480,52 @@ export default function CompressionToolsPage() {
                 color: "var(--green-highlight)",
                 flexShrink: 0,
               }}>
-                <Download size={20} />
+                <Image size={20} />
               </div>
               <div>
                 <p style={{ fontSize: "14px", fontWeight: 600, color: "var(--text-primary)", margin: 0 }}>
-                  Bulk Processing
+                  PDF and Image Formats
                 </p>
                 <p style={{ fontSize: "12px", color: "var(--text-secondary)", margin: "2px 0 0" }}>
-                  Compress 50 images at once, download as ZIP
+                  Compress PDF documents plus JPG, PNG, and WEBP images
                 </p>
               </div>
             </div>
           </div>
           <p style={{ fontSize: "12px", color: "var(--text-muted)", margin: 0 }}>
-            Phase 1 includes: PDF Compression (3 levels), JPG Compression (quality presets), PNG Compression (lossless/optimized), 
-            WEBP Compression (lossy/lossless), and Bulk Image Compressor (mixed formats → ZIP).
+            Available now: PDF compression with 3 levels, JPG compression with quality presets and a progressive option,
+            PNG compression (lossless or optimized), and WEBP compression (lossy or lossless). Additional compression tools are marked coming soon.
           </p>
         </div>
       </div>
     </div>
+      <ToolSeoSection
+        title="ZipDrop file compression tools"
+        intro="ZipDrop's official file compression hub at www.getzipdrop.com/compression helps reduce PDF, JPG, PNG and WEBP file sizes without an account. Pick a tool below to choose a quality level and download the result."
+        faqs={[
+          {
+            question: "Where is the official ZipDrop file compression hub?",
+            answer:
+              "The official hub is at https://www.getzipdrop.com/compression. It links to the PDF, JPG, PNG and WEBP compressors.",
+          },
+          {
+            question: "Is ZipDrop file compression free?",
+            answer:
+              "Yes. The available compression tools can be used without payment or an account.",
+          },
+          {
+            question: "Which files can I compress with ZipDrop?",
+            answer:
+              "You can compress PDF documents and JPG, PNG and WEBP images. PDF compression accepts files up to 100 MB; the image compressors accept files up to 50 MB.",
+          },
+        ]}
+        links={[
+          { label: "Compress PDF", href: "/compression/pdf" },
+          { label: "Compress JPG", href: "/compression/jpg" },
+          { label: "PNG to JPG converter", href: "/conversion/png-to-jpg" },
+          { label: "All conversion tools", href: "/conversion" },
+        ]}
+      />
     </>
   );
 }

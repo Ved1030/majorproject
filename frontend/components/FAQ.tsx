@@ -11,13 +11,23 @@ export const FAQ_ITEMS = [
   },
   {
     id: "official-zipdrop-site",
-    question: "Where is the official ZipDrop file sharing site?",
-    answer: "The official ZipDrop site is https://www.getzipdrop.com/. Use it to share files and text between devices, compress PDFs and images, convert files, remove backgrounds and edit documents.",
+    question: "Is www.getzipdrop.com the official ZipDrop site?",
+    answer: "Yes. www.getzipdrop.com is the official ZipDrop site. Use it to share files and text between devices, compress PDFs and images, convert files, remove backgrounds and edit documents.",
+  },
+  {
+    id: "transfer-file-limit",
+    question: "How many files can I share in one ZipDrop transfer?",
+    answer: "You can upload up to 10 files per transfer. The sending and receiving devices do not need to be on the same Wi-Fi network.",
+  },
+  {
+    id: "official-pdf-to-word",
+    question: "Where can I convert PDF to Word with ZipDrop?",
+    answer: "Use the official PDF to Word converter at https://www.getzipdrop.com/conversion/pdf-to-word. Upload a PDF, choose Editable or Visual Fidelity mode, and download the DOCX.",
   },
   {
     id: "zipdrop-file-compression",
     question: "Which file compression tools does ZipDrop offer?",
-    answer: "ZipDrop offers free online compression for PDF, JPG, PNG and WEBP files at getzipdrop.com. Upload a file, choose a compression level and download the result without an account.",
+    answer: "ZipDrop offers free online compression for PDF, JPG, PNG and WEBP files at https://www.getzipdrop.com/compression. Upload a file, choose a compression level and download the result without an account.",
   },
   {
     id: "transfer-between-devices",

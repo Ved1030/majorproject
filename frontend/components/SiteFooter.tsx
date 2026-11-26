@@ -1,13 +1,37 @@
 "use client";
 
 import type { CSSProperties } from "react";
+import Link from "next/link";
 import { usePathname } from "next/navigation";
 import {
   AUTHORS,
+  BRAND_DESCRIPTION,
   CONTACT_EMAIL,
   GITHUB_URL,
 } from "@/lib/site";
 import ZipDropLogo from "./brand/ZipDropLogo";
+
+const TOOL_LINKS = [
+  { href: "/pdf/merge", label: "Merge & Split PDF" },
+  { href: "/pdf/organize", label: "Organize PDF" },
+  { href: "/compression/pdf", label: "Compress PDF" },
+  { href: "/conversion", label: "Convert Files" },
+  { href: "/image-tools/background-remover", label: "Background Remover" },
+  { href: "/#share-receive", label: "Text Sharing" },
+  { href: "/blog", label: "Blog & Guides" },
+  { href: "/editor", label: "Online Editor" },
+];
+
+const COMPANY_LINKS = [
+  { href: "/about", label: "About" },
+  { href: "/contact", label: "Contact" },
+  { href: "/blog", label: "Blog" },
+];
+
+const LEGAL_LINKS = [
+  { href: "/privacy", label: "Privacy Policy" },
+  { href: "/terms", label: "Terms of Use" },
+];
 
 const linkStyle: CSSProperties = {
   color: "var(--text-secondary)",
@@ -55,6 +79,7 @@ export default function SiteFooter() {
       >
         {/* Main footer grid */}
         <div
+          className="footer-grid"
           style={{
             display: "grid",
             gridTemplateColumns: "2fr repeat(3, 1fr)",
@@ -73,7 +98,7 @@ export default function SiteFooter() {
                 color: "var(--text-secondary)",
               }}
             >
-              Your all-in-one file utility platform. Share, convert, edit, compress and manage files securely.
+              {BRAND_DESCRIPTION}
             </p>
             <a
               href={`mailto:${CONTACT_EMAIL}?subject=ZipDrop%20feedback`}
@@ -86,29 +111,32 @@ export default function SiteFooter() {
           {/* Tools section */}
           <nav aria-label="Tools" style={columnStyle}>
             <p style={headingStyle}>Tools</p>
-            <a href="/conversion?category=pdf-tools" style={linkStyle}>PDF Tools</a>
-            <a href="/conversion?category=document-tools" style={linkStyle}>Document Tools</a>
-            <a href="/conversion?category=image-tools" style={linkStyle}>Image Tools</a>
-            <a href="/conversion?category=compression-tools" style={linkStyle}>Compression Tools</a>
-            <a href="/conversion" style={linkStyle}>Conversion Tools</a>
-            <a href="/conversion?category=text-tools" style={linkStyle}>Text Tools</a>
-            <a href="/conversion?category=utility-tools" style={linkStyle}>Utility Tools</a>
-            <a href="/editor" style={linkStyle}>Online Editor</a>
+            {TOOL_LINKS.map((item) => (
+              <Link key={item.href} href={item.href} style={linkStyle}>
+                {item.label}
+              </Link>
+            ))}
           </nav>
 
           {/* Company section */}
           <nav aria-label="Company" style={columnStyle}>
             <p style={headingStyle}>Company</p>
-            <a href="/about" style={linkStyle}>About</a>
-            <a href="/contact" style={linkStyle}>Contact</a>
+            {COMPANY_LINKS.map((item) => (
+              <Link key={item.href} href={item.href} style={linkStyle}>
+                {item.label}
+              </Link>
+            ))}
             <a href={`mailto:${CONTACT_EMAIL}?subject=ZipDrop%20feedback`} style={linkStyle}>Send Feedback</a>
           </nav>
 
           {/* Legal section */}
           <nav aria-label="Legal" style={columnStyle}>
             <p style={headingStyle}>Legal</p>
-            <a href="/privacy" style={linkStyle}>Privacy Policy</a>
-            <a href="/terms" style={linkStyle}>Terms of Use</a>
+            {LEGAL_LINKS.map((item) => (
+              <Link key={item.href} href={item.href} style={linkStyle}>
+                {item.label}
+              </Link>
+            ))}
           </nav>
         </div>
 
@@ -167,6 +195,19 @@ export default function SiteFooter() {
           Google, Microsoft, Snapdrop, or WeTransfer.
         </p>
       </div>
+
+      <style jsx>{`
+        @media (max-width: 900px) {
+          .footer-grid {
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+          }
+        }
+        @media (max-width: 560px) {
+          .footer-grid {
+            grid-template-columns: minmax(0, 1fr);
+          }
+        }
+      `}</style>
     </footer>
   );
 }

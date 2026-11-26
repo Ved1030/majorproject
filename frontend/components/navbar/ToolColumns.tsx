@@ -11,22 +11,20 @@ function ToolItem({ tool }: { tool: Tool }) {
   const iconColor = tool.iconColor || "var(--text-muted)";
   if (!tool.available) {
     return (
-      <Link
-        href={tool.href}
+      <div
         style={{
           display: "flex",
           alignItems: "center",
           gap: "10px",
           padding: "8px 12px",
           borderRadius: "8px",
-          textDecoration: "none",
           color: "var(--text-muted)",
           fontSize: "13px",
           fontWeight: 400,
           cursor: "not-allowed",
           opacity: 0.5,
         }}
-        onClick={(e) => e.preventDefault()}
+        aria-disabled="true"
       >
         {tool.icon && (
           <span style={{ display: "inline-flex", width: 16, height: 16, color: iconColor }}>
@@ -39,7 +37,7 @@ function ToolItem({ tool }: { tool: Tool }) {
             Coming Soon
           </span>
         )}
-      </Link>
+      </div>
     );
   }
 

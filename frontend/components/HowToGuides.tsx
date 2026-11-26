@@ -16,8 +16,8 @@ const HOW_TO_GUIDES = [
   },
   {
     id: "pdf-to-word",
-    title: "How to Convert PDF to Word Online",
-    description: "Step-by-step guide to convert PDF documents to editable Word files while preserving formatting, tables, and images.",
+    title: "Convert PDF to Word Online",
+    description: "Upload a PDF, choose Editable or Visual Fidelity mode, and download the converted DOCX file.",
     icon: FileText,
     iconColor: "#3189D5",
     iconBg: "var(--blue-light)",
@@ -26,8 +26,8 @@ const HOW_TO_GUIDES = [
   },
   {
     id: "compress-files",
-    title: "How to Compress PDF and Image Files",
-    description: "Reduce file sizes for PDFs, JPGs, PNGs, and WEBP images with adjustable quality settings for optimal balance.",
+    title: "Compress PDF, JPG, PNG and WEBP Files",
+    description: "Reduce file sizes with adjustable quality settings and download the compressed result.",
     icon: Archive,
     iconColor: "var(--orange-highlight)",
     iconBg: "var(--orange-light)",
@@ -78,6 +78,7 @@ export default function HowToGuides() {
       </div>
 
       <div
+        className="guides-grid"
         style={{
           display: "grid",
           gridTemplateColumns: "repeat(3, minmax(0, 1fr))",

@@ -79,7 +79,7 @@ export default function UploadCard() {
         </div>
         <span className="badge">
           <span className="badge-dot" />
-          Instant
+          No Login
         </span>
       </div>
 

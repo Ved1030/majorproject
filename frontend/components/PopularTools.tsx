@@ -18,7 +18,7 @@ const POPULAR_TOOLS = [
   {
     id: "pdf-to-word",
     name: "PDF to Word",
-    description: "Convert PDF to editable DOCX with layout preservation",
+    description: "Convert PDF to editable DOCX with Editable or Visual Fidelity mode",
     href: "/conversion/pdf-to-word",
     icon: FileText,
     iconColor: "#3189D5",
@@ -36,7 +36,7 @@ const POPULAR_TOOLS = [
   {
     id: "compress-pdf",
     name: "Compress PDF",
-    description: "Reduce PDF file size with adjustable quality levels",
+    description: "Reduce PDF size with Low, Recommended or High compression",
     href: "/compression/pdf",
     icon: Archive,
     iconColor: "#E45B55",
@@ -90,7 +90,7 @@ const POPULAR_TOOLS = [
   {
     id: "remove-background",
     name: "Background Remover",
-    description: "Remove image backgrounds automatically",
+    description: "Remove JPG, PNG or WEBP backgrounds to a transparent PNG",
     href: "/image-tools/background-remover",
     icon: Eye,
     iconColor: "#9152D4",
@@ -135,7 +135,7 @@ export default function PopularTools() {
             lineHeight: 1.7,
           }}
         >
-          Quickly access the tools you need to convert, compress, share and manage your files.
+          Use the official ZipDrop tools at www.getzipdrop.com to convert files, compress PDFs and images, share files, and remove backgrounds — no account required.
         </p>
       </div>
 

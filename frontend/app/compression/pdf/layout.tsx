@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import ToolSeoSection from "@/components/ToolSeoSection";
 import { OG_IMAGE, SITE_NAME } from "@/lib/site";
 
-const TITLE = "Compress PDF with ZipDrop — Free Online PDF Compression";
+const TITLE = "Compress PDF — Free Online PDF Compression";
 const DESCRIPTION =
   "Compress PDF files online for free at getzipdrop.com with ZipDrop. Choose Low, Recommended or High compression to reduce file size while preserving text, images and layout. No account required, max 100MB.";
 
