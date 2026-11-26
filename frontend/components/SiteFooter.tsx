@@ -15,6 +15,9 @@ const TOOL_LINKS = [
   { href: "/pdf/merge", label: "Merge & Split PDF" },
   { href: "/pdf/organize", label: "Organize PDF" },
   { href: "/compression/pdf", label: "Compress PDF" },
+  { href: "/compress-pdf-under-100kb", label: "Compress PDF Under 100KB" },
+  { href: "/compression/compress-image", label: "Compress Image" },
+  { href: "/conversion/pdf-to-word", label: "PDF to Word" },
   { href: "/conversion", label: "Convert Files" },
   { href: "/image-tools/background-remover", label: "Background Remover" },
   { href: "/#share-receive", label: "Text Sharing" },
@@ -29,7 +32,7 @@ const COMPANY_LINKS = [
 ];
 
 const LEGAL_LINKS = [
-  { href: "/privacy", label: "Privacy Policy" },
+  { href: "/privacy-policy", label: "Privacy Policy" },
   { href: "/terms", label: "Terms of Use" },
 ];
 

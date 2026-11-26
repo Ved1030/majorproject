@@ -6,12 +6,13 @@ import { ArrowLeft, Image, Download, Loader2, AlertCircle, Check, X, RotateCcw, 
 import Navbar from "@/components/Navbar";
 import Breadcrumbs from "@/components/Breadcrumbs";
 import { removeBackground, checkBackgroundRemoverHealth, BackgroundRemovalResult } from "@/utils/api";
+import { ShareProcessedFileButton } from "@/components/seo/ProcessedFileShareCta";
 
 const MAX_FILE_SIZE = 20 * 1024 * 1024; // 20MB
 const ACCEPTED_TYPES = ["image/jpeg", "image/png", "image/webp"];
 const ACCEPT_EXT = ".jpg,.jpeg,.png,.webp";
 
-const TOOL_NAME = "AI Background Remover";
+const TOOL_NAME = "Free AI Image Background Remover Online – Transparent PNG";
 const TOOL_DESCRIPTION = "Remove image backgrounds automatically and download clean transparent PNG images.";
 const CATEGORY = "IMAGE TOOLS";
 
@@ -724,6 +725,12 @@ export default function BackgroundRemoverPage() {
                       Replace Image
                     </button>
                   </div>
+
+                  <ShareProcessedFileButton
+                    file={new File([result.blob], result.filename, {
+                      type: result.blob.type || "image/png",
+                    })}
+                  />
                 </div>
               </>
             )}

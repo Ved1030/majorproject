@@ -5,6 +5,7 @@ import Link from "next/link";
 import { ArrowLeft, FileText, Download, Check, X, Loader2, AlertCircle, Info, HelpCircle } from "lucide-react";
 import Navbar from "../../../components/Navbar";
 import Breadcrumbs from "../../../components/Breadcrumbs";
+import { ShareProcessedFileButton } from "@/components/seo/ProcessedFileShareCta";
 
 const API = process.env.NEXT_PUBLIC_API_URL || "https://api.getzipdrop.com";
 const MAX_FILE_SIZE = 50 * 1024 * 1024; // 50MB
@@ -156,7 +157,7 @@ export default function PdfToWordPage() {
             <div>
               <span className="section-label">PDF CONVERSIONS</span>
               <h1 style={{ fontSize: "28px", fontWeight: 700, color: "var(--text-primary)", marginTop: "4px" }}>
-                PDF to Word Converter
+                Convert PDF to Word (DOCX) Online Free – Editable &amp; Layout Preserved
               </h1>
               <p style={{ fontSize: "14px", lineHeight: 1.6, color: "var(--text-secondary)", margin: "8px 0 0", maxWidth: "560px" }}>
                 Use the official ZipDrop PDF to Word tool to convert PDFs into editable DOCX files. Choose Editable mode to revise text and tables, or Visual Fidelity mode to keep the original layout. Maximum file size: 50 MB.
@@ -344,6 +345,11 @@ export default function PdfToWordPage() {
                     Download DOCX
                   </button>
                 </div>
+                <ShareProcessedFileButton
+                  file={new File([result.blob], result.filename, {
+                    type: result.blob.type || "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+                  })}
+                />
                 <button
                   onClick={reset}
                   className="btn-ghost"

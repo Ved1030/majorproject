@@ -1,5 +1,7 @@
-import { MetadataRoute } from "next";
+import type { MetadataRoute } from "next";
 import { SITE_URL } from "@/lib/site";
+
+const LAST_MODIFIED = new Date("2026-11-26T00:00:00.000Z");
 
 const BLOG_SLUGS = [
   "airdrop-alternative",
@@ -70,58 +72,53 @@ const CONVERSION_SLUGS = [
   "word-to-txt",
 ];
 
-const COMPRESSION_SLUGS = ["jpg", "pdf", "png", "webp"];
+const GENERIC_TOOL_PATHS = [
+  "/compression/jpg",
+  "/compression/pdf",
+  "/compression/png",
+  "/compression/webp",
+  "/pdf/merge",
+  "/pdf/organize",
+  "/pdf/split",
+];
 
-const TRUST_PAGES = ["/about", "/contact", "/privacy", "/terms"];
+function entry(
+  path: string,
+  priority: number,
+  changeFrequency: MetadataRoute.Sitemap[number]["changeFrequency"] = "monthly"
+): MetadataRoute.Sitemap[number] {
+  return {
+    url: `${SITE_URL}${path}`,
+    lastModified: LAST_MODIFIED,
+    changeFrequency,
+    priority,
+  };
+}
 
 export default function sitemap(): MetadataRoute.Sitemap {
-  const now = new Date();
-
-  const primaryPages: MetadataRoute.Sitemap = [
-    { url: `${SITE_URL}/`, lastModified: now, changeFrequency: "weekly", priority: 1 },
-    { url: `${SITE_URL}/blog`, lastModified: now, changeFrequency: "weekly", priority: 0.9 },
-    { url: `${SITE_URL}/editor`, lastModified: now, changeFrequency: "monthly", priority: 0.8 },
-    { url: `${SITE_URL}/conversion`, lastModified: now, changeFrequency: "monthly", priority: 0.8 },
-    { url: `${SITE_URL}/compression`, lastModified: now, changeFrequency: "monthly", priority: 0.8 },
-    { url: `${SITE_URL}/image-tools/background-remover`, lastModified: now, changeFrequency: "monthly", priority: 0.7 },
-    { url: `${SITE_URL}/pdf/merge`, lastModified: now, changeFrequency: "monthly", priority: 0.7 },
-    { url: `${SITE_URL}/pdf/split`, lastModified: now, changeFrequency: "monthly", priority: 0.7 },
-    { url: `${SITE_URL}/pdf/organize`, lastModified: now, changeFrequency: "monthly", priority: 0.7 },
-  ];
-
-  const blogPages: MetadataRoute.Sitemap = BLOG_SLUGS.map((slug) => ({
-    url: `${SITE_URL}/blog/${slug}`,
-    lastModified: now,
-    changeFrequency: "weekly" as const,
-    priority: 0.8,
-  }));
-
-  const conversionPages: MetadataRoute.Sitemap = CONVERSION_SLUGS.map((slug) => ({
-    url: `${SITE_URL}/conversion/${slug}`,
-    lastModified: now,
-    changeFrequency: slug === "pdf-to-word" ? ("weekly" as const) : ("monthly" as const),
-    priority: slug === "pdf-to-word" ? 0.8 : 0.7,
-  }));
-
-  const compressionPages: MetadataRoute.Sitemap = COMPRESSION_SLUGS.map((slug) => ({
-    url: `${SITE_URL}/compression/${slug}`,
-    lastModified: now,
-    changeFrequency: "monthly" as const,
-    priority: 0.7,
-  }));
-
-  const trustPages: MetadataRoute.Sitemap = TRUST_PAGES.map((path) => ({
-    url: `${SITE_URL}${path}`,
-    lastModified: now,
-    changeFrequency: "yearly" as const,
-    priority: 0.4,
-  }));
-
   return [
-    ...primaryPages,
-    ...blogPages,
-    ...conversionPages,
-    ...compressionPages,
-    ...trustPages,
+    entry("/", 1, "weekly"),
+    entry("/blog", 0.8, "weekly"),
+    entry("/conversion", 0.8, "weekly"),
+    entry("/compression", 0.8, "weekly"),
+    entry("/editor", 0.7, "monthly"),
+
+    entry("/compress-pdf-under-100kb", 0.9, "weekly"),
+    entry("/compression/compress-pdf", 0.9, "weekly"),
+    entry("/compression/compress-image", 0.9, "weekly"),
+    entry("/conversion/pdf-to-word", 0.9, "weekly"),
+    entry("/image-tools/background-remover", 0.9, "weekly"),
+
+    ...CONVERSION_SLUGS.map((slug) =>
+      entry(`/conversion/${slug}`, slug === "pdf-to-word" ? 0.9 : 0.7)
+    ),
+    ...GENERIC_TOOL_PATHS.map((path) => entry(path, 0.7)),
+
+    ...BLOG_SLUGS.map((slug) => entry(`/blog/${slug}`, 0.6, "monthly")),
+
+    entry("/about", 0.4, "yearly"),
+    entry("/contact", 0.4, "yearly"),
+    entry("/privacy-policy", 0.3, "yearly"),
+    entry("/terms", 0.3, "yearly"),
   ];
 }

@@ -1,5 +1,4 @@
 import type { Metadata } from "next";
-import ToolSeoSection from "@/components/ToolSeoSection";
 import { OG_IMAGE, SITE_NAME } from "@/lib/site";
 
 const TITLE = "PNG to JPG — Free Online Image Conversion";
@@ -75,33 +74,6 @@ export default function PngToJpgLayout({
         dangerouslySetInnerHTML={{ __html: JSON.stringify(structuredData) }}
       />
       {children}
-      <ToolSeoSection
-        title="Why convert PNG to JPG with ZipDrop?"
-        intro="ZipDrop's PNG to JPG converter turns PNG images into compressed JPG files with adjustable quality. It runs in your browser and does not require an account or an installed app."
-        faqs={[
-          {
-            question: "How do I convert PNG to JPG with ZipDrop?",
-            answer:
-              "Open the PNG to JPG tool at https://www.getzipdrop.com/conversion/png-to-jpg, upload a PNG, choose the quality you want and download the JPG.",
-          },
-          {
-            question: "Can I adjust the JPG quality?",
-            answer:
-              "Yes. The converter includes an adjustable quality setting so you can balance file size against image detail.",
-          },
-          {
-            question: "Do I need an account to convert PNG to JPG?",
-            answer:
-              "No. ZipDrop's conversion tools are free to use without sign-up or login.",
-          },
-        ]}
-        links={[
-          { label: "JPG to PNG converter", href: "/conversion/jpg-to-png" },
-          { label: "Compress JPG", href: "/compression/jpg" },
-          { label: "Background Remover", href: "/image-tools/background-remover" },
-          { label: "All conversion tools", href: "/conversion" },
-        ]}
-      />
     </>
   );
 }

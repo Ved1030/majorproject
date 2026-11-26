@@ -1,0 +1,267 @@
+{
+  "project": {
+    "name": "ZipDrop",
+    "tagline": "Share. Convert. Compress. Simplify.",
+    "primaryDomain": "https://getzipdrop.com",
+    "previousDomain": "https://zip-drop.vercel.app",
+    "registrar": "Spaceship",
+    "monetization": "Google AdSense",
+    "repoPath": "D:\\Projects\\ZipDrop",
+    "gitBranch": "main",
+    "gitCommit": "c4c854f064fde9739945534ae5c45f393a89862a",
+    "auditDate": "2026-11-25"
+  },
+  "plannedHosting": {
+    "provider": "BigRock",
+    "plan": "NVMe 8 VPS",
+    "vCpu": 4,
+    "ramGb": 8,
+    "storageGb": 200,
+    "storageType": "NVMe SSD",
+    "os": "AlmaLinux 9",
+    "deploymentModel": "Frontend + backend on same VPS",
+    "source": "owner-provided (unverified)"
+  },
+  "backend": {
+    "runtime": "Node.js",
+    "framework": "Express.js",
+    "frameworkVersion": "v5",
+    "entryPoint": "backend/server.js",
+    "entryPointLines": 2080,
+    "architecture": "Monolithic Express app with inline route handlers",
+    "packageManager": "npm",
+    "keyDependencies": {
+      "express": "v5",
+      "mongoose": "unspecified",
+      "multer": "unspecified",
+      "@supabase/supabase-js": "unspecified",
+      "@aws-sdk/client-s3": "unspecified",
+      "archiver": "unspecified",
+      "node-cron": "unspecified",
+      "cors": "unspecified",
+      "dotenv": "unspecified"
+    },
+    "multerStorage": "memoryStorage (files held in RAM)",
+    "concurrencyLimiter": "backend/utils/concurrencyLimiter.js",
+    "models": {
+      "FileModel": "backend/models/FileModel.js (Mongoose schema for file share records)"
+    },
+    "config": {
+      "supabase": "backend/config/supabase.js",
+      "r2": "backend/config/r2.js"
+    },
+    "conversionRouter": "backend/converters/index.js (.convert(), .convertMultiple())",
+    "compressionRouter": "backend/compression/index.js (getCompressionRouter())",
+    "pythonWorkers": [
+      "backend/pdf_converter.py",
+      "backend/pdf_merger.py",
+      "backend/pdf_splitter.py",
+      "backend/pdf_organizer.py",
+      "backend/compression/pdf_compressor.py",
+      "backend/compression/image_compressor.py",
+      "backend/background_remover.py",
+      "backend/background_remover_worker.py",
+      "backend/libreoffice_worker.py"
+    ],
+    "setupScripts": [
+      "backend/scripts/setup-python.mjs",
+      "backend/scripts/setup-libreoffice.mjs"
+    ],
+    "testFiles": [
+      "backend/compression/BaseCompressor.test.js",
+      "backend/pdf_organizer_test.js"
+    ],
+    "devConfig": "backend/nodemon.json"
+  },
+  "frontend": {
+    "framework": "Next.js",
+    "frameworkVersion": "14.2.5",
+    "reactVersion": "unspecified",
+    "router": "App Router",
+    "entryPoint": "frontend/next.config.js",
+    "styling": "Inline styles + CSS variables (Tailwind config not confirmed)",
+    "keyDependencies": {
+      "next": "14.2.5",
+      "react": "unspecified",
+      "react-dom": "unspecified",
+      "@tiptap/*": "unspecified",
+      "mammoth": "unspecified",
+      "pdf-lib": "unspecified",
+      "jspdf": "unspecified",
+      "lucide-react": "unspecified",
+      "clsx": "unspecified",
+      "tailwind-merge": "unspecified"
+    },
+    "apiBaseUrl": {
+      "utilsApiTsDefault": "https://zipdrop.onrender.com",
+      "sendRouteTsDefault": "http://localhost:5000",
+      "statsRouteTsDefault": "http://localhost:5000",
+      "frontendEnv": "http://localhost:5000 (reported, not exposed)"
+    },
+    "keyClient": "frontend/utils/api.ts",
+    "keyPages": [
+      "app/page.tsx",
+      "app/conversion/page.tsx",
+      "app/compression/page.tsx",
+      "app/pdf/merge/",
+      "app/pdf/organize/",
+      "app/pdf/split/",
+      "app/image-tools/background-remover/",
+      "app/editor/",
+      "app/about/",
+      "app/contact/",
+      "app/privacy/",
+      "app/terms/",
+      "app/blog/"
+    ],
+    "keyComponents": ["Navbar", "UploadCard", "ReceiveCard", "FileUpload"],
+    "publicAssets": ["robots.txt", "BingSiteAuth.xml"],
+    "sitemap": "frontend/app/sitemap.ts"
+  },
+  "python": {
+    "packageManager": "pip",
+    "requirementsFile": "backend/requirements.txt",
+    "keyPackages": [
+      "pypdf",
+      "pdf2docx",
+      "rembg",
+      "onnxruntime",
+      "pikepdf",
+      "PyMuPDF (fitz)",
+      "pillow",
+      "reportlab",
+      "playwright"
+    ],
+    "workerInvocation": "child_process (spawned by Express backend)",
+    "concurrencyLimit": "backend/utils/concurrencyLimiter.js"
+  },
+  "storage": {
+    "primary": {
+      "provider": "Supabase",
+      "config": "backend/config/supabase.js",
+      "purpose": "Primary file storage (URLs)"
+    },
+    "secondary": {
+      "provider": "Cloudflare R2",
+      "config": "backend/config/r2.js",
+      "purpose": "S3-compatible secondary object storage"
+    },
+    "metadata": {
+      "provider": "MongoDB",
+      "odm": "Mongoose",
+      "schema": "backend/models/FileModel.js",
+      "fields": ["file_id", "file_name", "file_url", "files", "download_count"]
+    },
+    "tempDir": "backend/temp/"
+  },
+  "deploymentHistory": {
+    "nixpacksToml": {
+      "builder": "Nixpacks",
+      "target": "Render",
+      "startCommand": "node backend/server.js"
+    },
+    "railwayJson": {
+      "builder": "Nixpacks builder",
+      "target": "Railway"
+    },
+    "dockerfile": "absent",
+    "dockerCompose": "absent",
+    "ciCd": "absent (no .github/workflows/ found)"
+  },
+  "features": {
+    "fileSharing": {
+      "endpoints": ["POST /upload", "POST /share-text", "POST /resend", "GET /receive/:code"],
+      "maxFilesPerTransfer": 10,
+      "authentication": "code-based (public-by-code), no auth confirmed"
+    },
+    "conversion": {
+      "backendEndpoints": 27,
+      "examples": ["/convert/pdf-to-word", "/convert/word-to-pdf", "/convert/pdf-to-jpg", "/convert/images-to-pdf"],
+      "multiFileLimit": 20
+    },
+    "compression": {
+      "endpoints": ["/compress/pdf", "/compress/jpg", "/compress/png", "/compress/webp", "/compress/images/bulk"],
+      "bulkLimit": 50,
+      "healthCheck": "/health/compression",
+      "compressors": ["PDFCompressor", "JPGCompressor", "PNGCompressor", "WEBPCompressor", "BulkImageCompressor"]
+    },
+    "pdfTools": ["/pdf/merge", "/pdf/split", "/pdf/organize"],
+    "backgroundRemoval": {
+      "endpoint": "/image-tools/remove-background",
+      "tech": "rembg + onnxruntime",
+      "healthCheck": "/health/background-remover"
+    },
+    "documentEditor": {
+      "tech": "Tiptap (rich text editor)",
+      "htmlToDocx": "frontend/lib/editor/html-to-docx.ts",
+      "docxToHtml": "mammoth (frontend/app/api/convert-to-html/route.ts)"
+    },
+    "blog": {
+      "postCount": 38,
+      "route": "frontend/app/blog/"
+    }
+  },
+  "apiRoutes": {
+    "backend": "backend/server.js (all routes inline)",
+    "frontend": "frontend/app/api/ (9 route directories)",
+    "frontendRoutes": [
+      "send/route.ts",
+      "share-edited/route.ts",
+      "stats/route.ts",
+      "proxy-file/route.ts",
+      "convert-pdf-to-docx/route.ts",
+      "convert-to-docx/route.ts",
+      "convert-to-html/route.ts",
+      "convert-to-pdf/ (empty directory)",
+      "convert/<7 subdirs, no route.ts>"
+    ]
+  },
+  "security": {
+    "secretsInEnv": true,
+    "envExample": false,
+    "cors": "origin allowlist with credentials",
+    "pdfSignatureValidation": true,
+    "docxMagicByteCheck": true,
+    "proxyAllowlist": ["supabase.co", "supabase.in"],
+    "rateLimiting": "unverified",
+    "authentication": "unverified",
+    "securityHeaders": "unverified"
+  },
+  "gaps": {
+    "critical": [
+      "No .env.example; secrets in .env",
+      "Minimal test coverage (2 test files)",
+      "Memory-based file uploads (multer.memoryStorage)",
+      "No rate limiting confirmed",
+      "No authentication confirmed"
+    ],
+    "high": [
+      "No CI/CD pipeline",
+      "No Dockerfile / docker-compose.yml",
+      "No process manager (PM2/systemd)",
+      "No reverse proxy / TLS config",
+      "Frontend API base URL inconsistency",
+      "No structured logging / monitoring"
+    ],
+    "medium": [
+      "Dead placeholder API routes (convert-to-pdf/, convert/ subdirs)",
+      "Inline Python workers block request cycle",
+      "rembg cold-start model download",
+      "No file expiration policy",
+      "No async job queue"
+    ]
+  },
+  "reportFiles": [
+    "docs/technical-audit/ZIPDROP_COMPLETE_TECHNICAL_REPORT.md",
+    "docs/technical-audit/ZIPDROP_AI_CONTEXT.md",
+    "docs/technical-audit/ZIPDROP_SYSTEM_ARCHITECTURE.md",
+    "docs/technical-audit/ZIPDROP_API_REFERENCE.md",
+    "docs/technical-audit/ZIPDROP_PRODUCTION_READINESS.md",
+    "docs/technical-audit/ZIPDROP_TECH_STACK.json"
+  ],
+  "notes": {
+    "versionsUnspecified": "Many dependency versions were not directly read from package.json/requirements.txt and are marked unspecified.",
+    "secretsNotExposed": "backend/.env and frontend/.env values were not exposed; only their existence and key names are documented.",
+    "ownerProvidedUnverified": "Hosting specs, domain, registrar, monetization, and MAX_FILES_PER_TRANSFER are owner-provided and not verifiable from repository contents."
+  }
+}

@@ -4,6 +4,8 @@ import { Analytics } from "@vercel/analytics/next";
 import "./globals.css";
 import Script from "next/script";
 import SiteFooter from "@/components/SiteFooter";
+import SiteSeoAutoContent from "@/components/seo/SiteSeoAutoContent";
+import AutoProcessedFileShareCta from "@/components/seo/ProcessedFileShareCta";
 import {
   AUTHORS,
   BRAND_DESCRIPTION,
@@ -20,7 +22,7 @@ export const metadata: Metadata = {
   metadataBase: new URL(SITE_URL),
 
   title: {
-    default: SITE_TITLE,
+    default: "Share Files Between Phone & PC with a 4-Digit Code (No Login) | ZipDrop",
     template: "%s | ZipDrop",
   },
 
@@ -114,6 +116,8 @@ export default function RootLayout({
 }: {
   children: React.ReactNode;
 }) {
+  const adsenseClient = process.env.NEXT_PUBLIC_ADSENSE_CLIENT;
+
   const organizationData = {
     "@context": "https://schema.org",
     "@type": "Organization",
@@ -203,9 +207,7 @@ export default function RootLayout({
         window.dataLayer = window.dataLayer || [];
         function gtag(){dataLayer.push(arguments);}
         gtag('js', new Date());
-        gtag('config', 'G-N4017QP0HN', {
-      debug_mode: true,
-    });
+        gtag('config', 'G-N4017QP0HN');
       `}
         </Script>
 
@@ -227,7 +229,17 @@ export default function RootLayout({
       </head>
 
       <body>
+        {adsenseClient && (
+          <Script
+            id="google-adsense"
+            strategy="afterInteractive"
+            src={`https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=${adsenseClient}`}
+            crossOrigin="anonymous"
+          />
+        )}
         {children}
+        <SiteSeoAutoContent />
+        <AutoProcessedFileShareCta />
         <SiteFooter />
         <SpeedInsights />
         <Analytics />

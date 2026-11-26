@@ -77,7 +77,14 @@ export interface CompressionResult {
     compressedSize: number;
     bytesSaved: number;
     reductionPercent: number;
-    [key: string]: any;
+    method?: string;
+    warning?: string;
+    fallbackUsed?: boolean;
+    targetAchieved?: boolean;
+    pageCount?: number;
+    width?: number;
+    height?: number;
+    progressive?: boolean;
   };
 }
 
@@ -202,6 +209,131 @@ export const compressWebp = async (
     quality: options.quality?.toString() || "balanced",
     allowAnimated: options.allowAnimated?.toString() || "false",
   });
+};
+
+export interface TargetCompressionResult extends CompressionResult {
+  stats: CompressionResult["stats"] & {
+    targetBytes: number;
+    targetAchieved: boolean;
+  };
+}
+
+function selectTargetResult(
+  candidates: CompressionResult[],
+  targetBytes: number
+): TargetCompressionResult {
+  const original = candidates.find((candidate) => candidate.stats.bytesSaved <= 0);
+  const usable = candidates
+    .filter((candidate) => candidate.stats.compressedSize > 0)
+    .sort((a, b) => a.stats.compressedSize - b.stats.compressedSize);
+
+  const best = usable[0] ?? original;
+  if (!best) {
+    throw new Error("No compression result was produced");
+  }
+
+  const withinTarget = best.stats.compressedSize <= targetBytes;
+  const chosen = withinTarget
+    ? best
+    : (original ?? best);
+
+  return {
+    ...chosen,
+    stats: {
+      ...chosen.stats,
+      targetBytes,
+      targetAchieved: chosen.stats.compressedSize <= targetBytes,
+    },
+  };
+}
+
+function targetBytesFromKb(targetKb: number): number {
+  if (!Number.isFinite(targetKb) || targetKb <= 0) {
+    throw new Error("Enter a valid target size in KB");
+  }
+  return Math.round(targetKb * 1024);
+}
+
+export const compressPdfToTarget = async (
+  file: File,
+  targetKb: number
+): Promise<TargetCompressionResult> => {
+  const targetBytes = targetBytesFromKb(targetKb);
+  if (file.size <= targetBytes) {
+    return {
+      blob: file,
+      filename: file.name,
+      stats: {
+        originalSize: file.size,
+        compressedSize: file.size,
+        bytesSaved: 0,
+        reductionPercent: 0,
+        targetBytes,
+        targetAchieved: true,
+      },
+    };
+  }
+
+  const candidates: CompressionResult[] = [];
+  for (const level of ["high", "medium", "low"] as const) {
+    try {
+      candidates.push(await compressPdf(file, { level }));
+    } catch {
+      // Try the next level so one failed strategy does not abort the request.
+    }
+  }
+  return selectTargetResult(candidates, targetBytes);
+};
+
+export const compressImageToTarget = async (
+  file: File,
+  targetKb: number,
+  format: "jpg" | "png" | "webp"
+): Promise<TargetCompressionResult> => {
+  const targetBytes = targetBytesFromKb(targetKb);
+  if (file.size <= targetBytes) {
+    return {
+      blob: file,
+      filename: file.name,
+      stats: {
+        originalSize: file.size,
+        compressedSize: file.size,
+        bytesSaved: 0,
+        reductionPercent: 0,
+        targetBytes,
+        targetAchieved: true,
+      },
+    };
+  }
+
+  const candidates: CompressionResult[] = [];
+  if (format === "jpg") {
+    for (const quality of [25, 40, 55, 70, 85]) {
+      try {
+        candidates.push(await compressJpg(file, { quality, progressive: true }));
+      } catch {
+        // Continue with the next quality setting.
+      }
+    }
+  } else if (format === "webp") {
+    for (const quality of [25, 40, 55, 70, 85]) {
+      try {
+        candidates.push(await compressWebp(file, { mode: "lossy", quality }));
+      } catch {
+        // Continue with the next quality setting.
+      }
+    }
+  } else {
+    for (const mode of ["optimized", "lossless"] as const) {
+      try {
+        candidates.push(await compressPng(file, { mode, useOxipng: true }));
+      } catch {
+        // Continue with the next mode.
+      }
+    }
+  }
+
+  return selectTargetResult(candidates, targetBytes);
 };
 
 export const compressBulkImages = async (

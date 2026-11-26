@@ -66,7 +66,7 @@ function Hero() {
           maxWidth: "640px",
         }}
       >
-        Official ZipDrop: Share Files Between Devices with a 4-Digit Code
+        Share Files Between Phone &amp; PC with a 4-Digit Code (No Login)
       </h1>
 
       {/* Description */}

@@ -1,21 +1,22 @@
 # ZipDrop robots.txt
+# Canonical host: https://www.getzipdrop.com
+
 User-agent: *
 Allow: /
 
-# Sitemap
-Sitemap: https://www.getzipdrop.com/sitemap.xml
-
-# Disallow admin/api paths
+# Private / generated routes and backend proxies
 Disallow: /api/
 Disallow: /_next/
 Disallow: /_vercel/
+Disallow: /s/
+Disallow: /share/
+Disallow: /r/
+Disallow: /temp/
 
-# Allow all public tools and content
-# /editor/ - public document editor
-# /conversion/ - file conversion tools
-# /compression/ - file compression tools
-# /image-tools/ - image tools
-# /blog/ - blog articles
-# /share, /receive - file sharing
+# Private share views carry their state in query parameters
+Disallow: /*?code=
+Disallow: /*?fileUrl=
+Disallow: /*&code=
+Disallow: /*&fileUrl=
 
-# Crawl-delay for polite crawling (removed - let search engines decide)
+Sitemap: https://www.getzipdrop.com/sitemap.xml

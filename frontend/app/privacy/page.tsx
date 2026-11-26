@@ -7,12 +7,16 @@ export const metadata: Metadata = {
   description:
     "How ZipDrop handles your files and data: where files are stored, which third-party services are used, what is logged, and how retention currently works. Transparent privacy policy for our free file utility platform.",
   alternates: {
-    canonical: `${SITE_URL}/privacy`,
+    canonical: `${SITE_URL}/privacy-policy`,
+  },
+  robots: {
+    index: false,
+    follow: true,
   },
   openGraph: {
     title: "Privacy Policy – ZipDrop File Sharing & Tools",
     description: "How ZipDrop handles your files and data. Transparent privacy policy for our free file utility platform.",
-    url: `${SITE_URL}/privacy`,
+    url: `${SITE_URL}/privacy-policy`,
     siteName: "ZipDrop",
     type: "website",
     images: ["/og-image.png"],
@@ -30,7 +34,7 @@ const structuredData = {
   "@type": "WebPage",
   name: "Privacy Policy",
   description: "How ZipDrop handles your files and data: storage, third-party services, logging, and retention.",
-  url: `${SITE_URL}/privacy`,
+  url: `${SITE_URL}/privacy-policy`,
   publisher: {
     "@type": "Organization",
     name: "ZipDrop",
@@ -41,7 +45,7 @@ const structuredData = {
     "@type": "BreadcrumbList",
     itemListElement: [
       { "@type": "ListItem", position: 1, name: "Home", item: SITE_URL },
-      { "@type": "ListItem", position: 2, name: "Privacy Policy", item: `${SITE_URL}/privacy` },
+      { "@type": "ListItem", position: 2, name: "Privacy Policy", item: `${SITE_URL}/privacy-policy` },
     ],
   },
 };
