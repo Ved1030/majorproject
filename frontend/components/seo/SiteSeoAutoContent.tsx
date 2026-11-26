@@ -6,7 +6,7 @@ import { getToolSeoContent } from "@/data/toolSeoContent";
 
 export default function SiteSeoAutoContent() {
   const pathname = usePathname() || "/";
-  const excluded = ["/editor", "/blog", "/about", "/contact", "/privacy", "/privacy-policy", "/terms"];
+  const excluded = ["/", "/editor", "/blog", "/about", "/contact", "/privacy", "/privacy-policy", "/terms"];
 
   if (excluded.some((path) => pathname === path || pathname.startsWith(`${path}/`))) {
     return null;

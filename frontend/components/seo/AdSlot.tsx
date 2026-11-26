@@ -57,6 +57,8 @@ export default function AdSlot({
     };
   }, [enabled, format, publisherId, slotId]);
 
+  if (!enabled) return null;
+
   return (
     <aside
       ref={containerRef}
@@ -76,19 +78,6 @@ export default function AdSlot({
         background: "var(--bg-card)",
         overflow: "hidden",
       }}
-    >
-      {!enabled && (
-        <span
-          style={{
-            fontSize: "11px",
-            letterSpacing: "0.08em",
-            textTransform: "uppercase",
-            color: "var(--text-muted)",
-          }}
-        >
-          {label} · reserved space
-        </span>
-      )}
-    </aside>
+    />
   );
 }
