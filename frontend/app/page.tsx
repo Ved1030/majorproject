@@ -11,6 +11,7 @@ import PopularTools from "../components/PopularTools";
 import WhatCanYouDo from "../components/WhatCanYouDo";
 import SupportedFileFormats from "../components/SupportedFileFormats";
 import HowToGuides from "../components/HowToGuides";
+import FAQ from "../components/FAQ";
 import { BRAND_DESCRIPTION, OG_IMAGE, SITE_DESCRIPTION, SITE_NAME, SITE_TITLE, SITE_URL } from "@/lib/site";
 
 /* ─── Background Waves ───────────────────── */
@@ -533,6 +534,9 @@ export default function Home() {
 
         {/* ── HOW-TO GUIDES ── */}
         <HowToGuides />
+
+        {/* ── FAQ ── */}
+        <FAQ />
       </main>
     </>
   );

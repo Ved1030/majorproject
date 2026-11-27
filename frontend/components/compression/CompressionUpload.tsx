@@ -2,6 +2,7 @@
 
 import { useCallback, useRef, useState } from "react";
 import { FileText, Image, X, Loader2, AlertCircle, Check, Info } from "lucide-react";
+import PostProcessingActions from "@/components/tool/PostProcessingActions";
 
 interface CompressionFile {
   file: File;
@@ -431,6 +432,7 @@ interface SuccessDisplayProps {
   reductionPercent: number;
   format: string;
   fileName: string;
+  resultFile?: Blob | File;
   onDownload: () => void;
   onReset: () => void;
   downloadLabel: string;
@@ -450,6 +452,7 @@ export function SuccessDisplay({
   reductionPercent,
   format,
   fileName,
+  resultFile,
   onDownload,
   onReset,
   downloadLabel,
@@ -473,9 +476,9 @@ export function SuccessDisplay({
       return "Best possible compression achieved";
     }
     if (targetAchieved === true) {
-      return "Compression complete";
+      return "Processing complete";
     }
-    return "Compression complete";
+    return "Processing complete";
   };
 
   const getStatusColor = () => {
@@ -635,17 +638,26 @@ export function SuccessDisplay({
           </p>
         </div>
       </div>
-      <button
-        onClick={onReset}
-        className="btn-ghost"
-        style={{ width: "100%", justifyContent: "center" }}
-      >
-        <svg width={16} height={16} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round">
-          <line x1={19} y1={12} x2={5} y2={12}></line>
-          <polyline points="12 19 5 12 12 5"></polyline>
-        </svg>
-        Compress another file
-      </button>
+      {resultFile ? (
+        <PostProcessingActions
+          file={resultFile}
+          filename={fileName}
+          onReset={onReset}
+          resetLabel="Process Another File"
+        />
+      ) : (
+        <button
+          onClick={onReset}
+          className="btn-ghost"
+          style={{ width: "100%", justifyContent: "center" }}
+        >
+          <svg width={16} height={16} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round">
+            <line x1={19} y1={12} x2={5} y2={12}></line>
+            <polyline points="12 19 5 12 12 5"></polyline>
+          </svg>
+          Compress another file
+        </button>
+      )}
     </div>
   );
 }

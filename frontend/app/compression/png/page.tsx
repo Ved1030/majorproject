@@ -310,6 +310,7 @@ export default function CompressPngPage() {
       reductionPercent={result.stats.reductionPercent}
       format="PNG"
       fileName={result.filename}
+      resultFile={result.blob}
       onDownload={downloadResult}
       onReset={reset}
       downloadLabel="Download PNG"
@@ -337,6 +338,7 @@ export default function CompressPngPage() {
     <>
       <Navbar />
       <UnifiedToolPage
+        toolId="compress-png"
         header={header}
         upload={upload}
         controls={controls}

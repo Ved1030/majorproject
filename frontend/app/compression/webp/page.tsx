@@ -401,6 +401,7 @@ export default function CompressWebpPage() {
       reductionPercent={result.stats.reductionPercent}
       format="WEBP"
       fileName={result.filename}
+      resultFile={result.blob}
       onDownload={downloadResult}
       onReset={reset}
       downloadLabel="Download WEBP"
@@ -428,6 +429,7 @@ export default function CompressWebpPage() {
     <>
       <Navbar />
       <UnifiedToolPage
+        toolId="compress-webp"
         header={header}
         upload={upload}
         controls={controls}

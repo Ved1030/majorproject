@@ -2,6 +2,7 @@
 
 import { ReactNode } from "react";
 import { Lock } from "lucide-react";
+import RecommendedTools from "@/components/recommendations/RecommendedTools";
 
 interface UnifiedToolPageProps {
   header: ReactNode;
@@ -13,6 +14,7 @@ interface UnifiedToolPageProps {
   result?: ReactNode;
   footer?: ReactNode;
   showFooterMessage?: boolean;
+  toolId?: string;
 }
 
 export default function UnifiedToolPage({
@@ -25,6 +27,7 @@ export default function UnifiedToolPage({
   result,
   footer,
   showFooterMessage = true,
+  toolId,
 }: UnifiedToolPageProps) {
   return (
     <main className="zd-tool-shell">
@@ -57,6 +60,7 @@ export default function UnifiedToolPage({
           </div>
         )}
         {footer}
+        {toolId && <RecommendedTools toolId={toolId} />}
       </div>
     </main>
   );

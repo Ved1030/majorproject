@@ -14,7 +14,6 @@ import {
   ErrorDisplay,
   SuccessDisplay,
 } from "@/components/compression/CompressionUpload";
-import { ShareProcessedFileButton } from "@/components/seo/ProcessedFileShareCta";
 import {
   compressPdf,
   compressPdfToTarget,
@@ -44,8 +43,10 @@ function formatBytes(bytes: number) {
 
 export default function CompressPdfTool({
   defaultTargetKb = null,
+  toolId = "compress-pdf",
 }: {
   defaultTargetKb?: number | null;
+  toolId?: string;
 }) {
   const [level, setLevel] = useState<"low" | "medium" | "high">("medium");
   const [targetKb, setTargetKb] = useState<number | null>(defaultTargetKb);
@@ -335,6 +336,7 @@ export default function CompressPdfTool({
         reductionPercent={result.stats.reductionPercent}
         format="PDF"
         fileName={result.filename}
+        resultFile={result.blob}
         onDownload={downloadResult}
         onReset={reset}
         downloadLabel="Download PDF"
@@ -352,9 +354,6 @@ export default function CompressPdfTool({
           ) : undefined
         }
       />
-      <ShareProcessedFileButton
-        file={new File([result.blob], result.filename, { type: result.blob.type || "application/pdf" })}
-      />
     </>
   );
 
@@ -368,6 +367,7 @@ export default function CompressPdfTool({
     <>
       <Navbar />
       <UnifiedToolPage
+        toolId={toolId}
         header={header}
         upload={upload}
         controls={controls}

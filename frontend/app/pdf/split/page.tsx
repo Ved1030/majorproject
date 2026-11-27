@@ -2,8 +2,8 @@
 
 import { useState, useCallback, useRef, useMemo } from "react";
 import {
-  ArrowLeft,
   FileText,
+  FilePenLine,
   Download,
   Check,
   X,
@@ -20,6 +20,11 @@ import Navbar from "../../../components/Navbar";
 import UnifiedToolPage from "../../../components/tool/UnifiedToolPage";
 import UnifiedToolHeader from "../../../components/tool/UnifiedToolHeader";
 import ToolActionButton from "../../../components/tool/ToolActionButton";
+import PostProcessingActions from "@/components/tool/PostProcessingActions";
+import {
+  describeTransferError,
+  openGeneratedFileInEditor,
+} from "@/utils/editorHandoff";
 import { splitPdf } from "../../../utils/api";
 import JSZip from "jszip";
 import { PDFDocument } from "pdf-lib";
@@ -87,6 +92,9 @@ export default function SplitPdfPage() {
   const [error, setError] = useState<string | null>(null);
   const [result, setResult] = useState<SplitResult | null>(null);
   const [dragActive, setDragActive] = useState(false);
+  const [editingOutput, setEditingOutput] = useState<string | null>(null);
+  const [outputEditError, setOutputEditError] = useState<string | null>(null);
+  const editingOutputRef = useRef<string | null>(null);
   const inputRef = useRef<HTMLInputElement>(null);
 
 const formatBytes = (bytes: number) => {
@@ -317,20 +325,57 @@ const getErrorMessage = (err: unknown): string => {
     downloadBlob(result.blob, result.filename);
   };
 
-  const downloadIndividual = async (output: { filename: string; pages: string; pageCount: number }) => {
+  const getIndividualPdf = async (output: {
+    filename: string;
+    pages: string;
+    pageCount: number;
+  }): Promise<Blob | null> => {
+    if (!result) return null;
+    const zip = await JSZip.loadAsync(result.blob);
+    const entry = zip.file(output.filename);
+    if (!entry) {
+      setError(`Could not find ${output.filename} in the archive.`);
+      return null;
+    }
+    const data = await entry.async("arraybuffer");
+    return new Blob([data], { type: "application/pdf" });
+  };
+
+  const downloadIndividual = async (output: {
+    filename: string;
+    pages: string;
+    pageCount: number;
+  }) => {
     if (!result) return;
     try {
-      const zip = await JSZip.loadAsync(result.blob);
-      const entry = zip.file(output.filename);
-      if (!entry) {
-        setError(`Could not find ${output.filename} in the archive.`);
-        return;
-      }
-      const data = await entry.async("arraybuffer");
-      const blob = new Blob([data], { type: "application/pdf" });
-      downloadBlob(blob, output.filename);
+      const blob = await getIndividualPdf(output);
+      if (blob) downloadBlob(blob, output.filename);
     } catch (err) {
       setError(getErrorMessage(err) || `Failed to extract ${output.filename}`);
+    }
+  };
+
+  const editIndividual = async (output: {
+    filename: string;
+    pages: string;
+    pageCount: number;
+  }) => {
+    if (editingOutputRef.current) return;
+    editingOutputRef.current = output.filename;
+    setEditingOutput(output.filename);
+    setOutputEditError(null);
+    try {
+      const blob = await getIndividualPdf(output);
+      if (!blob) return;
+      await openGeneratedFileInEditor(
+        { blob, filename: output.filename },
+        "pdf-split"
+      );
+    } catch (err) {
+      setOutputEditError(describeTransferError(err));
+    } finally {
+      editingOutputRef.current = null;
+      setEditingOutput(null);
     }
   };
 
@@ -341,6 +386,7 @@ const getErrorMessage = (err: unknown): string => {
     setRanges([{ start: 1, end: 5 }]);
     setEveryN(5);
     setError(null);
+    setOutputEditError(null);
     setResult(null);
     setSplitting(false);
     if (inputRef.current) inputRef.current.value = "";
@@ -368,7 +414,7 @@ const getErrorMessage = (err: unknown): string => {
   };
 
   const uploadDisabled = splitting;
-  const disabled = splitting || !file || !!modeInvalid;
+  const controlsDisabled = splitting || !file;
 
   const header = (
     <UnifiedToolHeader
@@ -495,15 +541,15 @@ const getErrorMessage = (err: unknown): string => {
                 color: active ? "white" : "var(--text-secondary)",
                 fontSize: "13px",
                 fontWeight: 600,
-                cursor: disabled ? "not-allowed" : "pointer",
-                opacity: disabled ? 0.5 : 1,
+                cursor: controlsDisabled ? "not-allowed" : "pointer",
+                opacity: controlsDisabled ? 0.5 : 1,
                 display: "flex",
                 alignItems: "center",
                 justifyContent: "center",
                 gap: "6px",
                 transition: "all 0.15s ease",
               }}
-              disabled={disabled}
+              disabled={controlsDisabled}
             >
               <Icon size={14} strokeWidth={2} />
               <span style={{ display: "none" }}>{m.label}</span>
@@ -535,8 +581,8 @@ const getErrorMessage = (err: unknown): string => {
               <button
                 onClick={addRange}
                 className="btn-ghost"
-                disabled={disabled}
-                style={{ padding: "4px 10px", fontSize: "12px", opacity: disabled ? 0.5 : 1, cursor: disabled ? "not-allowed" : "pointer" }}
+                disabled={controlsDisabled}
+                style={{ padding: "4px 10px", fontSize: "12px", opacity: controlsDisabled ? 0.5 : 1, cursor: controlsDisabled ? "not-allowed" : "pointer" }}
               >
                 <Plus size={12} style={{ marginRight: "6px" }} /> Add range
               </button>
@@ -567,7 +613,7 @@ const getErrorMessage = (err: unknown): string => {
                     updateRange(index, "start", clamp(v, 1, pageCount));
                   }}
                   style={{ width: "60px", padding: "6px 8px", fontSize: "12.5px", borderRadius: "6px", border: "1px solid var(--border)", background: "var(--bg-main)" }}
-                  disabled={disabled}
+                  disabled={controlsDisabled}
                 />
                 <span style={{ fontSize: "12.5px", color: "var(--text-muted)", flexShrink: 0 }}>to</span>
                 <input
@@ -579,7 +625,7 @@ const getErrorMessage = (err: unknown): string => {
                     updateRange(index, "end", clamp(v, 1, pageCount));
                   }}
                   style={{ width: "60px", padding: "6px 8px", fontSize: "12.5px", borderRadius: "6px", border: "1px solid var(--border)", background: "var(--bg-main)" }}
-                  disabled={disabled}
+                  disabled={controlsDisabled}
                 />
                 <span style={{ fontSize: "12.5px", fontWeight: 600, color: "var(--primary-teal)", flexShrink: 0 }}>
                   ({range.end - range.start + 1} pages)
@@ -612,7 +658,7 @@ const getErrorMessage = (err: unknown): string => {
               value={everyN}
               onChange={(e) => setEveryN(Math.max(1, parseInt(e.target.value, 10) || 1))}
               style={{ width: "80px", padding: "6px 10px", fontSize: "13px", borderRadius: "6px", border: "1px solid var(--border)", background: "var(--bg-main)" }}
-              disabled={disabled}
+              disabled={controlsDisabled}
             />
             <span style={{ fontSize: "12.5px", color: "var(--text-secondary)" }}>
               Produces {expectedOutputs} PDF{expectedOutputs !== 1 ? "s" : ""}
@@ -658,7 +704,7 @@ const getErrorMessage = (err: unknown): string => {
   const action = file && pageCount !== null && (
     <ToolActionButton
       onClick={split}
-      disabled={disabled}
+      disabled={splitting || !file || !!modeInvalid}
       loading={splitting}
       loadingText="Splitting your PDF…"
       icon={<Scissors size={20} />}
@@ -678,7 +724,7 @@ const getErrorMessage = (err: unknown): string => {
           </div>
           <div>
             <p style={{ fontSize: "14px", fontWeight: 600, color: "var(--text-primary)", margin: 0 }}>
-              PDF split successfully
+              Processing complete
             </p>
             <p style={{ fontSize: "12px", color: "var(--text-secondary)", margin: 0 }}>
               {result.stats.outputFiles} PDF{result.stats.outputFiles !== 1 ? "s" : ""} created • {result.stats.inputPages} page{result.stats.inputPages !== 1 ? "s" : ""} total
@@ -733,6 +779,11 @@ const getErrorMessage = (err: unknown): string => {
 
       <div style={{ marginTop: "10px" }}>
         <p className="section-label" style={{ margin: "0 0 8px 0", fontSize: "13px" }}>Download individual PDFs</p>
+        {outputEditError && (
+          <p style={{ fontSize: "12px", color: "var(--danger)", margin: "0 0 8px 0" }}>
+            {outputEditError}
+          </p>
+        )}
         <div style={{ display: "flex", flexDirection: "column", gap: "6px" }}>
           {result.outputs.map((output) => (
             <div
@@ -752,28 +803,41 @@ const getErrorMessage = (err: unknown): string => {
                   </p>
                 </div>
               </div>
-              <button
-                onClick={() => downloadIndividual(output)}
-                disabled={splitting}
-                className="btn-ghost"
-                style={{ padding: "6px 12px", fontSize: "12px", opacity: splitting ? 0.5 : 1, cursor: splitting ? "not-allowed" : "pointer" }}
-              >
-                <Download size={14} style={{ marginRight: "6px" }} />
-                Download
-              </button>
+              <div style={{ display: "flex", gap: "6px", flexShrink: 0 }}>
+                <button
+                  onClick={() => editIndividual(output)}
+                  disabled={splitting || editingOutput !== null}
+                  className="btn-ghost"
+                  style={{ padding: "6px 12px", fontSize: "12px", opacity: splitting || editingOutput !== null ? 0.5 : 1 }}
+                >
+                  {editingOutput === output.filename ? (
+                    <Loader2 size={14} className="zd-spin" style={{ marginRight: "6px" }} />
+                  ) : (
+                    <FilePenLine size={14} style={{ marginRight: "6px" }} />
+                  )}
+                  Edit
+                </button>
+                <button
+                  onClick={() => downloadIndividual(output)}
+                  disabled={splitting}
+                  className="btn-ghost"
+                  style={{ padding: "6px 12px", fontSize: "12px", opacity: splitting ? 0.5 : 1, cursor: splitting ? "not-allowed" : "pointer" }}
+                >
+                  <Download size={14} style={{ marginRight: "6px" }} />
+                  Download
+                </button>
+              </div>
             </div>
           ))}
         </div>
       </div>
 
-      <button
-        onClick={reset}
-        className="btn-ghost"
-        style={{ width: "100%", justifyContent: "center", marginTop: "8px" }}
-      >
-        <ArrowLeft size={16} />
-        Split another PDF
-      </button>
+      <PostProcessingActions
+        file={result.blob}
+        filename={result.filename}
+        onReset={reset}
+        resetLabel="Process Another PDF"
+      />
     </div>
   );
 
@@ -791,6 +855,7 @@ const getErrorMessage = (err: unknown): string => {
         dangerouslySetInnerHTML={{ __html: JSON.stringify(structuredData) }}
       />
       <UnifiedToolPage
+        toolId="split-pdf"
         header={header}
         upload={upload}
         controls={controls}

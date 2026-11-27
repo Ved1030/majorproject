@@ -3,7 +3,6 @@
 import { useState, useCallback, useRef } from "react";
 import { FileText, Loader2, AlertCircle } from "lucide-react";
 import Navbar from "@/components/Navbar";
-import { ShareProcessedFileButton } from "@/components/seo/ProcessedFileShareCta";
 import UnifiedToolPage from "@/components/tool/UnifiedToolPage";
 import UnifiedToolHeader from "@/components/tool/UnifiedToolHeader";
 import ToolInfoBlock from "@/components/tool/ToolInfoBlock";
@@ -265,18 +264,13 @@ export default function PdfToWordPage() {
 
   const resultPanel = result && (
     <ToolResultPanel
+      file={result.blob}
       filename={result.filename}
+      format="DOCX"
       mode={mode === "editable" ? "Editable" : "Visual Fidelity"}
       onDownload={downloadResult}
       onReset={reset}
       formatBytes={formatBytes}
-      shareButton={
-        <ShareProcessedFileButton
-          file={new File([result.blob], result.filename, {
-            type: result.blob.type || "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
-          })}
-        />
-      }
     />
   );
 
@@ -284,6 +278,7 @@ export default function PdfToWordPage() {
     <>
       <Navbar />
       <UnifiedToolPage
+        toolId="pdf-to-word"
         header={header}
         upload={upload}
         controls={controls}

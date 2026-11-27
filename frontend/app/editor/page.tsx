@@ -7,10 +7,11 @@ type EditorSearchParams = {
   code?: string | string[];
   fileUrl?: string | string[];
   filename?: string | string[];
+  transfer?: string | string[];
 };
 
 function isPrivateShareView(searchParams: EditorSearchParams): boolean {
-  return Boolean(searchParams.code || searchParams.fileUrl);
+  return Boolean(searchParams.code || searchParams.fileUrl || searchParams.transfer);
 }
 
 export function generateMetadata({

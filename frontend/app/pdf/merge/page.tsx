@@ -2,7 +2,6 @@
 
 import { useState, useCallback, useRef } from "react";
 import {
-  ArrowLeft,
   FileText,
   Download,
   Check,
@@ -16,6 +15,7 @@ import Navbar from "../../../components/Navbar";
 import UnifiedToolPage from "../../../components/tool/UnifiedToolPage";
 import UnifiedToolHeader from "../../../components/tool/UnifiedToolHeader";
 import ToolActionButton from "../../../components/tool/ToolActionButton";
+import PostProcessingActions from "@/components/tool/PostProcessingActions";
 import { mergePdf } from "../../../utils/api";
 
 const API = process.env.NEXT_PUBLIC_API_URL || "https://api.getzipdrop.com";
@@ -385,7 +385,7 @@ export default function MergePdfPage() {
           </div>
           <div>
             <p style={{ fontSize: "14px", fontWeight: 600, color: "var(--text-primary)", margin: 0 }}>
-              PDFs merged successfully
+              Processing complete
             </p>
             <p style={{ fontSize: "12px", color: "var(--text-secondary)", margin: 0 }}>
               {result.stats.inputFiles} file{result.stats.inputFiles !== 1 ? "s" : ""} merged • {result.stats.pageCount} page{result.stats.pageCount !== 1 ? "s" : ""}
@@ -437,14 +437,12 @@ export default function MergePdfPage() {
         </div>
       </div>
 
-      <button
-        onClick={reset}
-        className="btn-ghost"
-        style={{ width: "100%", justifyContent: "center" }}
-      >
-        <ArrowLeft size={16} />
-        Merge another set
-      </button>
+      <PostProcessingActions
+        file={result.blob}
+        filename={result.filename}
+        onReset={reset}
+        resetLabel="Process Another PDF Set"
+      />
     </div>
   );
 
@@ -462,6 +460,7 @@ export default function MergePdfPage() {
         dangerouslySetInnerHTML={{ __html: JSON.stringify(structuredData) }}
       />
       <UnifiedToolPage
+        toolId="merge-pdf"
         header={header}
         upload={upload}
         action={action}

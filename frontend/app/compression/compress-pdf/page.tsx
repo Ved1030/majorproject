@@ -3,5 +3,5 @@
 import CompressPdfTool from "@/components/compression/CompressPdfTool";
 
 export default function CompressPdfAliasPage() {
-  return <CompressPdfTool />;
+  return <CompressPdfTool toolId="compress-pdf" />;
 }

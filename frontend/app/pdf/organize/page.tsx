@@ -22,6 +22,7 @@ import Navbar from "../../../components/Navbar";
 import UnifiedToolPage from "../../../components/tool/UnifiedToolPage";
 import UnifiedToolHeader from "../../../components/tool/UnifiedToolHeader";
 import ToolActionButton from "../../../components/tool/ToolActionButton";
+import PostProcessingActions from "@/components/tool/PostProcessingActions";
 import { organizePdf } from "../../../utils/api";
 import type { OrganizeResult } from "../../../utils/api";
 import styles from "./organize.module.css";
@@ -1201,39 +1202,42 @@ export default function OrganizePdfPage() {
   );
 
   const resultPanel = result && (
-    <div className={styles.success} role="status">
-      <div className={styles.successIcon}>
-        <Check size={20} />
-      </div>
-      <div className={styles.successText}>
-        <div className={styles.successTitle}>
-          Organized PDF is ready
+    <div className={styles.success} role="status" style={{ display: "block" }}>
+      <div className="zd-result-head">
+        <div className="zd-result-summary">
+          <span className={styles.successIcon}>
+            <Check size={20} />
+          </span>
+          <div className="zd-result-copy">
+            <p className="zd-result-title">Processing complete</p>
+            <div className="zd-result-meta">
+              <span className="zd-result-filename" title={result.filename}>
+                {result.filename}
+              </span>
+              <span>PDF</span>
+              <span>{formatBytes(result.stats.outputSize)}</span>
+              <span>
+                {result.stats.pageCount} page{result.stats.pageCount !== 1 ? "s" : ""}
+              </span>
+            </div>
+          </div>
         </div>
-        <div className={styles.successMeta}>
-          {result.filename} • {result.stats.pageCount} page
-          {result.stats.pageCount !== 1 ? "s" : ""} •{" "}
-          {formatBytes(result.stats.outputSize)}
-        </div>
+        <button
+          type="button"
+          className="btn-cyan zd-result-download"
+          onClick={() => downloadBlob(result.blob, result.filename)}
+        >
+          <Download size={17} />
+          Download PDF
+        </button>
       </div>
-      <button
-        type="button"
-        className="btn-cyan"
-        style={{ padding: "10px 16px", fontSize: "12.5px" }}
-        onClick={() =>
-          downloadBlob(result.blob, result.filename)
-        }
-      >
-        <Download size={16} style={{ marginRight: "6px" }} />
-        Download again
-      </button>
-      <button
-        type="button"
-        className="btn-ghost"
-        style={{ padding: "10px 14px", fontSize: "12.5px" }}
-        onClick={removeFile}
-      >
-        Organize another PDF
-      </button>
+      <div className="zd-result-divider" />
+      <PostProcessingActions
+        file={result.blob}
+        filename={result.filename}
+        onReset={removeFile}
+        resetLabel="Process Another PDF"
+      />
     </div>
   );
 
@@ -1251,6 +1255,7 @@ export default function OrganizePdfPage() {
         dangerouslySetInnerHTML={{ __html: JSON.stringify(structuredData) }}
       />
       <UnifiedToolPage
+        toolId="organize-pdf"
         header={header}
         upload={upload}
         action={action}

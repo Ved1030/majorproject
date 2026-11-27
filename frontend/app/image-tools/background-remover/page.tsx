@@ -1,16 +1,16 @@
 "use client";
 
 import { useState, useCallback, useRef } from "react";
-import { ArrowLeft, Image, Download, Loader2, AlertCircle, Check, X, RotateCcw, Eye, Maximize2, Minimize2 } from "lucide-react";
+import { Image, Download, Loader2, AlertCircle, Check, X, RotateCcw, Eye, Maximize2, Minimize2 } from "lucide-react";
 import Navbar from "@/components/Navbar";
 import { removeBackground, BackgroundRemovalResult } from "@/utils/api";
-import { ShareProcessedFileButton } from "@/components/seo/ProcessedFileShareCta";
 import UnifiedToolPage from "@/components/tool/UnifiedToolPage";
 import UnifiedToolHeader from "@/components/tool/UnifiedToolHeader";
 import ToolInfoBlock from "@/components/tool/ToolInfoBlock";
 import ToolUploadArea from "@/components/tool/ToolUploadArea";
 import ToolFilePreview from "@/components/tool/ToolFilePreview";
 import ToolActionButton from "@/components/tool/ToolActionButton";
+import PostProcessingActions from "@/components/tool/PostProcessingActions";
 
 const MAX_FILE_SIZE = 20 * 1024 * 1024;
 const ACCEPTED_TYPES = ["image/jpeg", "image/png", "image/webp"];
@@ -247,8 +247,26 @@ export default function BackgroundRemoverPage() {
       </div>
       <div style={{ display: "flex", flexDirection: "column", gap: "12px", paddingTop: "8px" }}>
         <button onClick={downloadResult} className="btn-cyan" style={{ width: "100%", padding: "14px 24px", fontSize: "15px", fontWeight: 700, display: "inline-flex", alignItems: "center", justifyContent: "center", gap: "8px" }}><Download size={20} /> Download PNG</button>
-        <ShareProcessedFileButton file={new File([result.blob], result.filename, { type: result.blob.type || "image/png" })} />
-        <button onClick={removeFile} className="btn-ghost" style={{ width: "100%", padding: "14px 24px", fontSize: "15px", fontWeight: 600, display: "inline-flex", alignItems: "center", justifyContent: "center", gap: "8px" }}><RotateCcw size={18} /> New Image</button>
+        <div className="zd-result-head">
+          <div className="zd-result-summary">
+            <span className="zd-result-check"><Check size={22} /></span>
+            <div className="zd-result-copy">
+              <p className="zd-result-title">Processing complete</p>
+              <div className="zd-result-meta">
+                <span className="zd-result-filename" title={result.filename}>{result.filename}</span>
+                <span>PNG</span>
+                <span>{formatBytes(result.blob.size)}</span>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div className="zd-result-divider" />
+        <PostProcessingActions
+          file={result.blob}
+          filename={result.filename}
+          onReset={removeFile}
+          resetLabel="Process Another Image"
+        />
       </div>
     </div>
   );
@@ -259,6 +277,7 @@ export default function BackgroundRemoverPage() {
     <>
       <Navbar />
       <UnifiedToolPage
+        toolId="remove-background"
         header={header}
         upload={upload}
         controls={controls}

@@ -1,13 +1,14 @@
 "use client";
 
 import { useState, useCallback, useRef } from "react";
-import { ArrowLeft, FileText, Download, Check, X, Loader2, AlertCircle, Settings } from "lucide-react";
+import { FileText, Download, Check, X, Loader2, AlertCircle, Settings } from "lucide-react";
 import Navbar from "../../../components/Navbar";
 import UnifiedToolPage from "@/components/tool/UnifiedToolPage";
 import UnifiedToolHeader from "@/components/tool/UnifiedToolHeader";
 import ToolInfoBlock from "@/components/tool/ToolInfoBlock";
 import ToolUploadArea from "@/components/tool/ToolUploadArea";
 import ToolActionButton from "@/components/tool/ToolActionButton";
+import PostProcessingActions from "@/components/tool/PostProcessingActions";
 
 const API = process.env.NEXT_PUBLIC_API_URL || "https://api.getzipdrop.com";
 const MAX_FILE_SIZE = 10 * 1024 * 1024; // 10MB
@@ -351,7 +352,7 @@ export default function TextToPdfPage() {
           </div>
           <div>
             <p style={{ fontSize: "14px", fontWeight: 600, color: "var(--text-primary)", margin: 0 }}>
-              Conversion complete
+              Processing complete
             </p>
             <p style={{ fontSize: "12px", color: "var(--text-secondary)", margin: 0 }}>
               {result.filename}
@@ -367,14 +368,11 @@ export default function TextToPdfPage() {
           Download PDF
         </button>
       </div>
-      <button
-        onClick={reset}
-        className="btn-ghost"
-        style={{ width: "100%", justifyContent: "center" }}
-      >
-        <ArrowLeft size={16} />
-        Convert another file
-      </button>
+      <PostProcessingActions
+        file={result.blob}
+        filename={result.filename}
+        onReset={reset}
+      />
     </div>
   );
 
@@ -382,6 +380,7 @@ export default function TextToPdfPage() {
     <>
       <Navbar />
       <UnifiedToolPage
+        toolId="txt-to-pdf"
         header={header}
         upload={upload}
         controls={controls}

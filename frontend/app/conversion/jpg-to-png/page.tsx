@@ -10,7 +10,6 @@ import ToolUploadArea from "@/components/tool/ToolUploadArea";
 import ToolFilePreview from "@/components/tool/ToolFilePreview";
 import ToolActionButton from "@/components/tool/ToolActionButton";
 import ToolResultPanel from "@/components/tool/ToolResultPanel";
-import { ShareProcessedFileButton } from "@/components/seo/ProcessedFileShareCta";
 
 const API = process.env.NEXT_PUBLIC_API_URL || "https://api.getzipdrop.com";
 const MAX_FILE_SIZE = 25 * 1024 * 1024;
@@ -245,18 +244,12 @@ export default function JpgToPngPage() {
 
   const resultPanel = result && (
     <ToolResultPanel
+      file={result.blob}
       filename={result.filename}
       format="PNG"
       onDownload={downloadResult}
       onReset={reset}
       formatBytes={formatBytes}
-      shareButton={
-        <ShareProcessedFileButton
-          file={new File([result.blob], result.filename, {
-            type: result.blob.type || "image/png",
-          })}
-        />
-      }
     />
   );
 
@@ -270,6 +263,7 @@ export default function JpgToPngPage() {
     <>
       <Navbar />
       <UnifiedToolPage
+        toolId="jpg-to-png"
         header={header}
         upload={upload}
         action={action}

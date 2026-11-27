@@ -340,6 +340,7 @@ export default function CompressJpgPage() {
       reductionPercent={result.stats.reductionPercent}
       format="JPG"
       fileName={result.filename}
+      resultFile={result.blob}
       onDownload={downloadResult}
       onReset={reset}
       downloadLabel="Download JPG"
@@ -367,6 +368,7 @@ export default function CompressJpgPage() {
     <>
       <Navbar />
       <UnifiedToolPage
+        toolId="compress-jpg"
         header={header}
         upload={upload}
         controls={controls}

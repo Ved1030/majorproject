@@ -223,6 +223,7 @@ export default function PdfToExcelPage() {
 
   const resultPanel = result && (
     <ToolResultPanel
+      file={result.blob}
       filename={result.filename}
       format="XLSX"
       onDownload={downloadResult}
@@ -236,6 +237,7 @@ export default function PdfToExcelPage() {
     <>
       <Navbar />
       <UnifiedToolPage
+        toolId="pdf-to-excel"
         header={header}
         upload={upload}
         action={action}

@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import { ArrowRight, Check, Copy, Loader2, X } from "lucide-react";
+import { ArrowRight, Check, Copy, Loader2, Smartphone, X } from "lucide-react";
 
 interface CtaProps {
   file: File;
@@ -46,31 +46,17 @@ export function ShareProcessedFileButton({ file, onDone, compact = false }: CtaP
 
   if (code) {
     return (
-      <div
-        style={{
-          display: "flex",
-          alignItems: "center",
-          gap: "10px",
-          flexWrap: "wrap",
-          padding: "14px 16px",
-          background: "var(--teal-light)",
-          border: "1px solid rgba(7,140,145,0.24)",
-          borderRadius: "12px",
-          marginTop: "24px",
-        }}
-      >
-        <span style={{ fontSize: "13px", color: "var(--text-primary)" }}>
+      <div className="zd-share-code">
+        <span className="zd-share-code-label">
           Your 4-digit code:{" "}
-          <strong style={{ fontFamily: "var(--font-mono)", fontSize: "18px", letterSpacing: "0.12em" }}>
-            {code}
-          </strong>
+          <strong className="zd-share-code-value">{code}</strong>
         </span>
-        <button onClick={copyCode} className="btn-ghost" style={{ padding: "8px 12px" }}>
+        <button type="button" onClick={copyCode} className="btn-ghost zd-share-code-button">
           {copied ? <Check size={15} /> : <Copy size={15} />}
           {copied ? "Copied" : "Copy code"}
         </button>
         {onDone && (
-          <button onClick={onDone} className="btn-ghost" style={{ padding: "8px 12px" }}>
+          <button type="button" onClick={onDone} className="btn-ghost zd-share-code-button">
             Done
           </button>
         )}
@@ -79,25 +65,27 @@ export function ShareProcessedFileButton({ file, onDone, compact = false }: CtaP
   }
 
   return (
-    <div style={{ marginTop: "24px" }}>
+    <div className={compact ? "zd-share-compact" : "zd-action-wrapper"}>
       <button
+        type="button"
         onClick={send}
         disabled={busy}
-        className="btn-ghost"
-        style={{
-          width: compact ? "auto" : "100%",
-          justifyContent: "center",
-          padding: "12px 18px",
-          gap: "8px",
-          opacity: busy ? 0.6 : 1,
-        }}
+        className={compact ? "zd-share-compact-button" : "zd-action-card zd-action-card--share"}
       >
-        {busy ? <Loader2 size={16} style={{ animation: "spin 1s linear infinite" }} /> : <ArrowRight size={16} />}
-        Send this file to another device with a 4-digit code →
+        <span className="zd-action-icon">
+          {busy ? (
+            <Loader2 size={20} className="zd-spin" />
+          ) : (
+            <Smartphone size={20} />
+          )}
+        </span>
+        <span className="zd-action-copy">
+          <span className="zd-action-title">Send to Another Device</span>
+          <span className="zd-action-subtitle">Share instantly using a 4-digit code</span>
+        </span>
+        <ArrowRight size={18} className="zd-action-arrow" />
       </button>
-      {error && (
-        <p style={{ fontSize: "12px", color: "var(--danger)", marginTop: "8px" }}>{error}</p>
-      )}
+      {error && <p className="zd-action-error">{error}</p>}
     </div>
   );
 }

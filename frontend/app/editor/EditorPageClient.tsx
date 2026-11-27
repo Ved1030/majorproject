@@ -2,7 +2,14 @@
 
 import { useState, useEffect, useCallback, Suspense } from "react";
 import { useSearchParams } from "next/navigation";
+import Link from "next/link";
 import dynamic from "next/dynamic";
+import RecommendedTools from "@/components/recommendations/RecommendedTools";
+import {
+  cleanupExpiredTransfers,
+  describeTransferError,
+  getGeneratedFileTransfer,
+} from "@/utils/editorHandoff";
 
 const EditorShell = dynamic(
   () => import("@/components/editor/EditorShell"),
@@ -66,8 +73,9 @@ function EditorPageInner() {
   const fileUrl = searchParams.get("fileUrl") || "";
   const filename = searchParams.get("filename") || "";
   const recipientCode = searchParams.get("code") || "";
+  const transferId = searchParams.get("transfer") || "";
 
-  const hasFileUrl = !!fileUrl;
+  const hasFileUrl = !!fileUrl || !!transferId;
 
   const [loading, setLoading] = useState(true);
   const [loadingLabel, setLoadingLabel] = useState("Opening document...");
@@ -78,10 +86,12 @@ function EditorPageInner() {
   const [content, setContent] = useState("");
   const [docxBuffer, setDocxBuffer] = useState<ArrayBuffer | null>(null);
   const [loadKey, setLoadKey] = useState(0);
+  const [retryCount, setRetryCount] = useState(0);
 
   const API_URL = process.env.NEXT_PUBLIC_API_URL || "https://api.getzipdrop.com";
 
   const isExternalUrl = (url: string): boolean => {
+    if (url.startsWith("blob:") || url.startsWith("data:")) return false;
     try {
       const parsed = new URL(url);
       return parsed.hostname !== window.location.hostname;
@@ -185,21 +195,66 @@ function EditorPageInner() {
         setContent(text.split("\n").map((l) => `<p>${l || "&nbsp;"}</p>`).join(""));
       }
       setLoadKey((k) => k + 1);
-    } catch (err: any) {
-      console.error("[editor] Error:", err.message);
-      setError(err.message || "Failed to load file");
+    } catch (err) {
+      const message = err instanceof Error ? err.message : "Failed to load file";
+      console.error("[editor] Error:", message);
+      setError(message);
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [API_URL]);
 
   useEffect(() => {
     if (fileUrl && filename) {
       processFile(fileUrl, filename);
-    } else if (!fileUrl) {
+    } else if (!fileUrl && !transferId) {
       setLoading(false);
     }
-  }, [fileUrl, filename, processFile]);
+  }, [fileUrl, filename, transferId, processFile]);
+
+  useEffect(() => {
+    if (!transferId) return;
+
+    let cancelled = false;
+    let objectUrl: string | null = null;
+
+    const loadGeneratedFile = async () => {
+      try {
+        setLoading(true);
+        setError(null);
+        setLoadingLabel("Opening document...");
+
+        void cleanupExpiredTransfers().catch(() => undefined);
+        const transfer = await getGeneratedFileTransfer(transferId);
+        if (cancelled) return;
+
+        setLoadingLabel("Preparing document...");
+        setFileName(transfer.filename);
+        setFileType(transfer.extension);
+        setFileSize(formatFileSize(transfer.size));
+
+        const generatedFile = new File([transfer.blob], transfer.filename, {
+          type: transfer.mimeType,
+        });
+        objectUrl = URL.createObjectURL(generatedFile);
+        await processFile(objectUrl, generatedFile.name);
+      } catch (err) {
+        if (!cancelled) {
+          setError(describeTransferError(err));
+        }
+      } finally {
+        if (objectUrl) URL.revokeObjectURL(objectUrl);
+        if (!cancelled) setLoading(false);
+      }
+    };
+
+    void loadGeneratedFile();
+
+    return () => {
+      cancelled = true;
+      if (objectUrl) URL.revokeObjectURL(objectUrl);
+    };
+  }, [transferId, processFile, retryCount]);
 
   if (error) {
     return (
@@ -219,7 +274,21 @@ function EditorPageInner() {
         </div>
         <p style={{ color: "var(--danger)", fontSize: 15, fontWeight: 600 }}>Unable to open this document</p>
         <p style={{ color: "var(--text-secondary)", fontSize: 13, maxWidth: 400, textAlign: "center" }}>{error}</p>
-        <a href="/" style={{ color: "#078C91", fontSize: 13, marginTop: 8 }}>Go to ZipDrop</a>
+        {transferId && (
+          <button
+            type="button"
+            onClick={() => {
+              setError(null);
+              setLoading(true);
+              setRetryCount((count) => count + 1);
+            }}
+            className="btn-cyan"
+            style={{ padding: "10px 18px", marginTop: 4 }}
+          >
+            Retry
+          </button>
+        )}
+        <Link href="/" style={{ color: "#078C91", fontSize: 13, marginTop: 8 }}>Go to ZipDrop</Link>
       </div>
     </div>
   );
@@ -263,9 +332,14 @@ function EditorPageInner() {
         onBack={() => (window.history.length > 1 ? window.history.back() : (window.location.href = "/"))}
         onFileSelect={(file) => {
           const url = URL.createObjectURL(file);
-          processFile(url, file.name);
+          void processFile(url, file.name).finally(() => URL.revokeObjectURL(url));
         }}
       />
+      {!recipientCode && !hasFileUrl && (
+        <div className="zd-tool-container">
+          <RecommendedTools toolId="word-editor" />
+        </div>
+      )}
     </div>
   );
 }

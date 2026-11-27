@@ -16,7 +16,6 @@ import ToolUploadArea from "@/components/tool/ToolUploadArea";
 import ToolFilePreview from "@/components/tool/ToolFilePreview";
 import ToolActionButton from "@/components/tool/ToolActionButton";
 import ToolResultPanel from "@/components/tool/ToolResultPanel";
-import { ShareProcessedFileButton } from "@/components/seo/ProcessedFileShareCta";
 
 const API = process.env.NEXT_PUBLIC_API_URL || "https://api.getzipdrop.com";
 const MAX_FILE_SIZE = 50 * 1024 * 1024;
@@ -311,18 +310,12 @@ export default function PdfToJpgPage() {
 
   const resultPanel = resultState && (
     <ToolResultPanel
+      file={resultState.blob}
       filename={resultState.filename}
       format={resultState.isZip ? "ZIP" : "JPG"}
       onDownload={downloadResult}
       onReset={reset}
       formatBytes={formatBytes}
-      shareButton={
-        <ShareProcessedFileButton
-          file={new File([resultState.blob], resultState.filename, {
-            type: resultState.isZip ? "application/zip" : "image/jpeg",
-          })}
-        />
-      }
       extraInfo={
         <p style={{ fontSize: "11px", color: "var(--text-muted)", margin: 0 }}>
           {resultState.isZip ? `${resultState.pageCount} pages` : `${dpi} DPI • Quality: ${quality}%`}
@@ -335,6 +328,7 @@ export default function PdfToJpgPage() {
     <>
       <Navbar />
       <UnifiedToolPage
+        toolId="pdf-to-jpg"
         header={header}
         upload={upload}
         controls={controls}

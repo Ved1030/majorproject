@@ -14,7 +14,6 @@ import {
   ErrorDisplay,
   SuccessDisplay,
 } from "@/components/compression/CompressionUpload";
-import { ShareProcessedFileButton } from "@/components/seo/ProcessedFileShareCta";
 import {
   compressImageToTarget,
   compressJpg,
@@ -350,6 +349,7 @@ export default function CompressImagePage() {
         reductionPercent={result.stats.reductionPercent}
         format={file ? imageFormat(file.file.name).toUpperCase() : "IMAGE"}
         fileName={result.filename}
+        resultFile={result.blob}
         onDownload={downloadResult}
         onReset={reset}
         downloadLabel="Download Image"
@@ -359,9 +359,6 @@ export default function CompressImagePage() {
         fallbackUsed={result.stats.fallbackUsed}
         targetAchieved={result.stats.targetAchieved}
         level={targetKb ? `Target ${targetKb} KB` : quality}
-      />
-      <ShareProcessedFileButton
-        file={new File([result.blob], result.filename, { type: result.blob.type || "image/png" })}
       />
     </>
   );
@@ -376,6 +373,7 @@ export default function CompressImagePage() {
     <>
       <Navbar />
       <UnifiedToolPage
+        toolId="compress-image"
         header={header}
         upload={upload}
         controls={controls}

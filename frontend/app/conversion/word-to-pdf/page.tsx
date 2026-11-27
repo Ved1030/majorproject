@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useCallback, useRef } from "react";
-import { ArrowLeft, FileText, Download, Check, X, Loader2, AlertCircle } from "lucide-react";
+import { FileText, Loader2, AlertCircle } from "lucide-react";
 import Navbar from "@/components/Navbar";
 import UnifiedToolPage from "@/components/tool/UnifiedToolPage";
 import UnifiedToolHeader from "@/components/tool/UnifiedToolHeader";
@@ -233,6 +233,7 @@ export default function WordToPdfPage() {
 
   const resultPanel = result && (
     <ToolResultPanel
+      file={result.blob}
       filename={result.filename}
       format="PDF"
       onDownload={downloadResult}
@@ -251,6 +252,7 @@ export default function WordToPdfPage() {
     <>
       <Navbar />
       <UnifiedToolPage
+        toolId="word-to-pdf"
         header={header}
         upload={upload}
         action={action}
