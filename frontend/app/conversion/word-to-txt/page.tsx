@@ -1,9 +1,14 @@
 "use client";
 
 import { useState, useCallback, useRef } from "react";
-import Link from "next/link";
-import { ArrowLeft, FileText, Download, Check, X, Loader2, AlertCircle, Info } from "lucide-react";
+import { ArrowLeft, FileText, Download, Check, Loader2, AlertCircle } from "lucide-react";
 import Navbar from "../../../components/Navbar";
+import UnifiedToolPage from "@/components/tool/UnifiedToolPage";
+import UnifiedToolHeader from "@/components/tool/UnifiedToolHeader";
+import ToolInfoBlock from "@/components/tool/ToolInfoBlock";
+import ToolUploadArea from "@/components/tool/ToolUploadArea";
+import ToolFilePreview from "@/components/tool/ToolFilePreview";
+import ToolActionButton from "@/components/tool/ToolActionButton";
 
 const API = process.env.NEXT_PUBLIC_API_URL || "https://api.getzipdrop.com";
 const MAX_FILE_SIZE = 50 * 1024 * 1024; // 50MB
@@ -127,190 +132,145 @@ export default function WordToTextPage() {
     if (inputRef.current) inputRef.current.value = "";
   };
 
+  const header = (
+    <UnifiedToolHeader
+      backHref="/conversion"
+      backLabel="Back to conversion tools"
+      icon={<FileText size={26} strokeWidth={2} />}
+      title="Word to Text"
+    />
+  );
+
+  const upload = (
+    <>
+      <input
+        ref={inputRef}
+        type="file"
+        accept=".docx,.doc"
+        hidden
+        onChange={(e) => handleFileSelect((e.target as HTMLInputElement).files?.[0] ?? null)}
+        disabled={converting}
+      />
+      <div className="zd-tool-drop-wrap">
+        <ToolUploadArea
+          label="Drag & drop a Word file"
+          subLabel="or click to browse (max 50 MB)"
+          icon={<FileText size={48} style={{ color: dragActive ? "var(--primary-teal)" : "var(--text-muted)", transition: "color 0.2s ease" }} />}
+          accept=".docx,.doc"
+          onFileSelect={(files) => handleFileSelect(files?.[0] ?? null)}
+          disabled={converting}
+          dragActive={dragActive}
+          setDragActive={setDragActive}
+        />
+      </div>
+
+      {file && (
+        <ToolFilePreview
+          file={file}
+          onRemove={reset}
+          onReplace={() => inputRef.current?.click()}
+          compressing={converting}
+          formatBytes={formatBytes}
+          icon={<FileText size={24} style={{ color: "var(--primary-teal)" }} />}
+        />
+      )}
+
+      {error && (
+        <div style={{ display: "flex", alignItems: "flex-start", gap: "10px", padding: "12px 16px", background: "var(--danger-light)", border: "1px solid rgba(214,69,69,0.20)", borderRadius: "10px" }}>
+          <AlertCircle size={20} style={{ color: "var(--danger)", flexShrink: 0, marginTop: "1px" }} />
+          <p style={{ fontSize: "13px", color: "var(--danger)", margin: 0 }}>{error}</p>
+        </div>
+      )}
+    </>
+  );
+
+  const action = (
+    <ToolActionButton
+      onClick={convert}
+      disabled={converting || !file}
+      loading={converting}
+      loadingText={`Converting... ${progress}%`}
+      icon={<FileText size={20} />}
+      loadingIcon={<Loader2 size={20} style={{ animation: "spin 1s linear infinite" }} />}
+    >
+      Convert to Text
+    </ToolActionButton>
+  );
+
+  const instructions = (
+    <>
+      <ToolInfoBlock
+        title="What gets extracted"
+        items={[
+          "Paragraphs and headings with structure preserved",
+          "Numbered and bulleted lists",
+          "Table content (tab-separated rows)",
+          "Headers and footers",
+          "Unicode text including Indian languages",
+        ]}
+        variant="notes"
+      />
+      <ToolInfoBlock
+        title="Limitations"
+        items={[
+          "Images, charts, and shapes are not included in text output",
+          "Font styling (bold, italic, colors) is not preserved in plain text",
+          "Page layout and exact positioning are not maintained",
+          "DOC (legacy) format support is limited; DOCX recommended",
+          "Password-protected documents cannot be converted",
+        ]}
+        variant="notes"
+      />
+    </>
+  );
+
+  const resultPanel = result && (
+    <div className="animate-scaleIn" style={{ display: "flex", flexDirection: "column", gap: "16px", paddingTop: "8px" }}>
+      <div className="divider" />
+      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+        <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
+          <div style={{ width: 40, height: 40, borderRadius: "10px", background: "var(--teal-light)", border: "1px solid rgba(7,140,145,0.24)", display: "flex", alignItems: "center", justifyContent: "center", color: "var(--primary-teal)" }}>
+            <Check size={20} />
+          </div>
+          <div>
+            <p style={{ fontSize: "14px", fontWeight: 600, color: "var(--text-primary)", margin: 0 }}>
+              Conversion complete
+            </p>
+            <p style={{ fontSize: "12px", color: "var(--text-secondary)", margin: 0 }}>
+              {result.filename} • Plain text extracted
+            </p>
+          </div>
+        </div>
+        <button
+          onClick={downloadResult}
+          className="btn-cyan"
+          style={{ padding: "12px 20px" }}
+        >
+          <Download size={18} />
+          Download TXT
+        </button>
+      </div>
+      <button
+        onClick={reset}
+        className="btn-ghost"
+        style={{ width: "100%", justifyContent: "center" }}
+      >
+        <ArrowLeft size={16} />
+        Convert another file
+      </button>
+    </div>
+  );
+
   return (
     <>
       <Navbar />
-      <div style={{ minHeight: "100vh", background: "var(--bg-main)", padding: "clamp(24px, 4vh, 48px) 24px" }}>
-        <div style={{ maxWidth: "720px", margin: "0 auto", display: "flex", flexDirection: "column", gap: "24px" }}>
-          {/* Header */}
-          <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
-            <Link href="/conversion" style={{ textDecoration: "none", color: "var(--text-secondary)", padding: "8px" }}>
-              <ArrowLeft size={20} />
-            </Link>
-            <div>
-              <span className="section-label">OFFICE DOCUMENT CONVERSIONS</span>
-              <h1 style={{ fontSize: "28px", fontWeight: 700, color: "var(--text-primary)", marginTop: "4px" }}>
-                Word to Text
-              </h1>
-            </div>
-          </div>
-
-          {/* Main Card */}
-          <div className="glass-card" style={{ padding: "clamp(24px, 3vh, 32px)" }}>
-            {/* Upload Zone */}
-            <div
-              className={`drag-zone ${dragActive ? "dragging" : ""}`}
-              onDragOver={handleDragOver}
-              onDragLeave={handleDragLeave}
-              onDrop={handleDrop}
-              onClick={() => !converting && inputRef.current?.click()}
-              style={{ cursor: converting ? "not-allowed" : "pointer", opacity: converting ? 0.6 : 1 }}
-            >
-              <input
-                ref={inputRef}
-                type="file"
-                accept=".docx,.doc"
-                style={{ display: "none" }}
-                onChange={(e) => handleFileSelect((e.target as HTMLInputElement).files?.[0] ?? null)}
-                disabled={converting}
-              />
-              <FileText size={48} style={{ color: dragActive ? "var(--primary-teal)" : "var(--text-muted)", transition: "color 0.2s ease" }} />
-              <p style={{ fontSize: "16px", fontWeight: 500, color: dragActive ? "var(--primary-teal)" : "var(--text-secondary)", transition: "color 0.2s ease" }}>
-                {dragActive ? "Release to upload Word document" : "Drag & drop a Word file"}
-              </p>
-              <p style={{ fontSize: "13px", color: "var(--text-muted)" }}>or click to browse (max 50 MB)</p>
-            </div>
-
-            {/* Selected File */}
-            {file && (
-              <div className="animate-slideUp" style={{ display: "flex", alignItems: "center", gap: "12px", padding: "16px", background: "var(--teal-light)", border: "1px solid rgba(7,140,145,0.24)", borderRadius: "12px" }}>
-                <FileText size={24} style={{ color: "var(--primary-teal)" }} />
-                <div style={{ flex: 1, minWidth: 0 }}>
-                  <p style={{ fontSize: "14px", fontWeight: 500, color: "var(--text-primary)", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>
-                    {file.name}
-                  </p>
-                  <p style={{ fontSize: "12px", color: "var(--text-secondary)", marginTop: "2px" }}>
-                    {formatBytes(file.size)} • Word document
-                  </p>
-                </div>
-                <button
-                  onClick={(e) => { e.stopPropagation(); reset(); }}
-                  style={{ padding: "8px", borderRadius: "8px", background: "transparent", border: "1px solid var(--border)", color: "var(--text-secondary)", cursor: "pointer" }}
-                >
-                  <X size={16} />
-                </button>
-              </div>
-            )}
-
-            {/* Error */}
-            {error && (
-              <div style={{ display: "flex", alignItems: "flex-start", gap: "10px", padding: "12px 16px", background: "var(--danger-light)", border: "1px solid rgba(214,69,69,0.20)", borderRadius: "10px" }}>
-                <AlertCircle size={20} style={{ color: "var(--danger)", flexShrink: 0, marginTop: "1px" }} />
-                <p style={{ fontSize: "13px", color: "var(--danger)", margin: 0 }}>{error}</p>
-              </div>
-            )}
-
-            {/* Convert Button */}
-            <button
-              onClick={convert}
-              disabled={converting || !file}
-              className="btn-cyan"
-              style={{
-                width: "100%",
-                padding: "16px 24px",
-                fontSize: "15px",
-                fontWeight: 700,
-                opacity: converting || !file ? 0.5 : 1,
-                cursor: converting || !file ? "not-allowed" : "pointer",
-              }}
-            >
-              <span className="shimmer" />
-              {converting ? (
-                <>
-                  <Loader2 size={20} style={{ animation: "spin 1s linear infinite" }} />
-                  Converting... {progress}%
-                </>
-              ) : (
-                <>
-                  <FileText size={20} />
-                  Convert to Text
-                </>
-              )}
-            </button>
-
-            {/* Result */}
-            {result && (
-              <div className="animate-scaleIn" style={{ display: "flex", flexDirection: "column", gap: "16px", paddingTop: "8px" }}>
-                <div className="divider" />
-                <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
-                  <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
-                    <div style={{ width: 40, height: 40, borderRadius: "10px", background: "var(--teal-light)", border: "1px solid rgba(7,140,145,0.24)", display: "flex", alignItems: "center", justifyContent: "center", color: "var(--primary-teal)" }}>
-                      <Check size={20} />
-                    </div>
-                    <div>
-                      <p style={{ fontSize: "14px", fontWeight: 600, color: "var(--text-primary)", margin: 0 }}>
-                        Conversion complete
-                      </p>
-                      <p style={{ fontSize: "12px", color: "var(--text-secondary)", margin: 0 }}>
-                        {result.filename} • Plain text extracted
-                      </p>
-                    </div>
-                  </div>
-                  <button
-                    onClick={downloadResult}
-                    className="btn-cyan"
-                    style={{ padding: "12px 20px" }}
-                  >
-                    <Download size={18} />
-                    Download TXT
-                  </button>
-                </div>
-                <button
-                  onClick={reset}
-                  className="btn-ghost"
-                  style={{ width: "100%", justifyContent: "center" }}
-                >
-                  <ArrowLeft size={16} />
-                  Convert another file
-                </button>
-              </div>
-            )}
-
-            {/* Info */}
-            <div style={{ marginTop: "24px", padding: "16px", background: "var(--editor-workspace)", border: "1px solid var(--border)", borderRadius: "12px" }}>
-              <div style={{ display: "flex", alignItems: "flex-start", gap: "10px" }}>
-                <Info size={18} style={{ color: "var(--primary-teal)", flexShrink: 0, marginTop: "1px" }} />
-                <div style={{ flex: 1 }}>
-                  <p style={{ fontSize: "13px", fontWeight: 600, color: "var(--text-primary)", margin: "0 0 8px" }}>
-                    What gets extracted
-                  </p>
-                  <ul style={{ fontSize: "12.5px", color: "var(--text-secondary)", margin: 0, paddingLeft: "20px", lineHeight: 1.8 }}>
-                    <li>Paragraphs and headings with structure preserved</li>
-                    <li>Numbered and bulleted lists</li>
-                    <li>Table content (tab-separated rows)</li>
-                    <li>Headers and footers</li>
-                    <li>Unicode text including Indian languages</li>
-                  </ul>
-                </div>
-              </div>
-            </div>
-
-            {/* Limitations */}
-            <div style={{ marginTop: "16px", padding: "16px", background: "var(--warning-light)", border: "1px solid rgba(217,147,8,0.20)", borderRadius: "12px" }}>
-              <div style={{ display: "flex", alignItems: "flex-start", gap: "10px" }}>
-                <AlertCircle size={18} style={{ color: "var(--warning)", flexShrink: 0, marginTop: "1px" }} />
-                <div style={{ flex: 1 }}>
-                  <p style={{ fontSize: "13px", fontWeight: 600, color: "var(--text-primary)", margin: "0 0 8px" }}>
-                    Limitations
-                  </p>
-                  <ul style={{ fontSize: "12.5px", color: "var(--text-secondary)", margin: 0, paddingLeft: "20px", lineHeight: 1.8 }}>
-                    <li>Images, charts, and shapes are not included in text output</li>
-                    <li>Font styling (bold, italic, colors) is not preserved in plain text</li>
-                    <li>Page layout and exact positioning are not maintained</li>
-                    <li>DOC (legacy) format support is limited; DOCX recommended</li>
-                    <li>Password-protected documents cannot be converted</li>
-                  </ul>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          {/* Footer */}
-          <p style={{ textAlign: "center", fontSize: "12px", color: "var(--text-muted)" }}>
-            Files are processed securely and deleted after conversion. No permanent storage.
-          </p>
-        </div>
-      </div>
+      <UnifiedToolPage
+        header={header}
+        upload={upload}
+        action={action}
+        instructions={instructions}
+        result={resultPanel}
+      />
     </>
   );
 }

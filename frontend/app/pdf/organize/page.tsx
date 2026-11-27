@@ -1,11 +1,9 @@
 "use client";
 
 import { useCallback, useEffect, useRef, useState } from "react";
-import Link from "next/link";
 import type { PDFDocumentProxy } from "pdfjs-dist";
 import {
   AlertCircle,
-  ArrowLeft,
   Check,
   ChevronLeft,
   ChevronRight,
@@ -21,7 +19,9 @@ import {
   X,
 } from "lucide-react";
 import Navbar from "../../../components/Navbar";
-import Breadcrumbs from "../../../components/Breadcrumbs";
+import UnifiedToolPage from "../../../components/tool/UnifiedToolPage";
+import UnifiedToolHeader from "../../../components/tool/UnifiedToolHeader";
+import ToolActionButton from "../../../components/tool/ToolActionButton";
 import { organizePdf } from "../../../utils/api";
 import type { OrganizeResult } from "../../../utils/api";
 import styles from "./organize.module.css";
@@ -650,6 +650,599 @@ export default function OrganizePdfPage() {
     },
   };
 
+  const header = (
+    <UnifiedToolHeader
+      breadcrumbs={breadcrumbItems}
+      backHref="/"
+      backLabel="Back to home"
+      icon={<FileText size={26} strokeWidth={2} />}
+      title="Organize PDF Pages"
+      description="Upload a PDF, then drag pages into the right order. Rotate pages, remove unwanted pages and download a new PDF that matches the arrangement shown here."
+    />
+  );
+
+  const upload = (
+    <>
+      <input
+        ref={inputRef}
+        type="file"
+        accept=".pdf"
+        className={styles.visuallyHidden}
+        disabled={busy}
+        onChange={handleFileSelect}
+      />
+
+      {!file && (
+        <div className="zd-tool-drop-wrap">
+          <div
+            className={`drag-zone ${dragActive ? "dragging" : ""} ${
+              styles.uploadZone
+            }`}
+            onDragOver={(event) => {
+              event.preventDefault();
+              setDragActive(true);
+            }}
+            onDragLeave={() => setDragActive(false)}
+            onDrop={handleZoneDrop}
+            onClick={() => !busy && inputRef.current?.click()}
+          >
+            <FileText
+              size={48}
+              style={{
+                color: dragActive
+                  ? "var(--primary-teal)"
+                  : "var(--text-muted)",
+                transition: "color 0.2s ease",
+              }}
+            />
+            <p
+              style={{
+                fontSize: "16px",
+                fontWeight: 500,
+                color: dragActive
+                  ? "var(--primary-teal)"
+                  : "var(--text-secondary)",
+                transition: "color 0.2s ease",
+              }}
+            >
+              {dragActive ? "Release to drop PDF" : "Drag & drop a PDF"}
+            </p>
+            <p style={{ fontSize: "13px", color: "var(--text-muted)" }}>
+              or click to browse • PDF only • max {formatBytes(MAX_FILE_SIZE)}
+            </p>
+          </div>
+        </div>
+      )}
+
+      {error && (
+        <div
+          style={{
+            display: "flex",
+            alignItems: "flex-start",
+            gap: "10px",
+            padding: "12px 16px",
+            background: "var(--danger-light)",
+            border: "1px solid rgba(214,69,69,0.20)",
+            borderRadius: "10px",
+            marginTop: file ? "16px" : "16px",
+          }}
+          role="alert"
+        >
+          <AlertCircle
+            size={20}
+            style={{
+              color: "var(--danger)",
+              flexShrink: 0,
+              marginTop: "1px",
+            }}
+          />
+          <p
+            style={{
+              fontSize: "13px",
+              color: "var(--danger)",
+              margin: 0,
+            }}
+          >
+            {error}
+          </p>
+        </div>
+      )}
+
+      {file && (
+        <div className={styles.fileSummary}>
+          <div
+            style={{
+              color: "var(--primary-teal)",
+              flexShrink: 0,
+              display: "flex",
+            }}
+          >
+            <FileText size={22} />
+          </div>
+          <div className={styles.fileInfo}>
+            <p className={styles.fileName}>{file.name}</p>
+            <div className={styles.fileMeta}>
+              <span>{formatBytes(file.size)}</span>
+              {pageCount !== null && (
+                <>
+                  <span style={{ color: "var(--text-muted)" }}>•</span>
+                  <span>
+                    {pageCount} page{pageCount !== 1 ? "s" : ""}
+                  </span>
+                </>
+              )}
+              {pdfLoading && (
+                <>
+                  <span style={{ color: "var(--text-muted)" }}>•</span>
+                  <span
+                    style={{
+                      color: "var(--text-muted)",
+                      fontStyle: "italic",
+                    }}
+                  >
+                    reading PDF…
+                  </span>
+                </>
+              )}
+            </div>
+          </div>
+
+          <button
+            type="button"
+            className="btn-ghost"
+            disabled={busy}
+            onClick={() => inputRef.current?.click()}
+            style={{
+              padding: "6px 12px",
+              fontSize: "12px",
+              opacity: busy ? 0.5 : 1,
+              cursor: busy ? "not-allowed" : "pointer",
+            }}
+          >
+            <Plus size={14} style={{ marginRight: "6px" }} />
+            Replace PDF
+          </button>
+          <button
+            type="button"
+            className="btn-ghost"
+            disabled={busy}
+            onClick={removeFile}
+            aria-label="Remove uploaded PDF"
+            style={{
+              padding: "6px",
+              borderRadius: "8px",
+              opacity: busy ? 0.5 : 1,
+              cursor: busy ? "not-allowed" : "pointer",
+            }}
+          >
+            <X size={16} />
+          </button>
+        </div>
+      )}
+
+      {pdfLoading && (
+        <div className={styles.loadingStrip}>
+          <Loader2
+            size={16}
+            style={{ animation: "spin 1s linear infinite" }}
+          />
+          <span>Reading PDF and preparing page workspace…</span>
+        </div>
+      )}
+
+      {pdf && pageCount !== null && (
+        <div className={styles.loadingStrip}>
+          {currentReady < pages.length ? (
+            <Loader2
+              size={16}
+              style={{ animation: "spin 1s linear infinite" }}
+            />
+          ) : (
+            <Check size={16} style={{ color: "var(--green-highlight)" }} />
+          )}
+          <span>
+            {currentReady} of {pages.length} page previews ready
+          </span>
+          <div className={styles.progressTrack}>
+            <div
+              className={styles.progressBar}
+              style={{
+                width: `${
+                  pages.length > 0
+                    ? Math.round((currentReady / pages.length) * 100)
+                    : 0
+                }%`,
+              }}
+            />
+          </div>
+        </div>
+      )}
+
+      {pdf && pages.length > 0 && (
+        <>
+          <div className={styles.workspaceHeader}>
+            <div>
+              <p className="section-label" style={{ margin: 0 }}>
+                PAGE WORKSPACE
+              </p>
+              <h2 className={styles.workspaceTitle} style={{ marginTop: "4px" }}>
+                Arrange pages
+              </h2>
+              <p className={styles.workspaceSub}>
+                Drag a card or use the arrow controls on mobile. Page
+                numbers reflect the current order.
+              </p>
+            </div>
+            <div
+              style={{
+                display: "flex",
+                gap: "8px",
+                flexWrap: "wrap",
+                justifyContent: "flex-end",
+              }}
+            >
+              <span className={styles.toolbarCount}>
+                {pages.length} page{pages.length !== 1 ? "s" : ""}
+              </span>
+              {deletedCount > 0 && (
+                <span className={styles.toolbarCount}>
+                  {deletedCount} removed
+                </span>
+              )}
+              {rotatedCount > 0 && (
+                <span className={styles.toolbarCount}>
+                  {rotatedCount} rotated
+                </span>
+              )}
+            </div>
+          </div>
+
+          <div className={styles.toolbar} role="toolbar" aria-label="Page controls">
+            <div className={styles.toolbarGroup}>
+              <button
+                type="button"
+                className={`btn-ghost ${styles.toolbarButton}`}
+                onClick={selectAll}
+                disabled={busy || allSelected}
+                style={{ opacity: busy || allSelected ? 0.5 : 1 }}
+              >
+                <Check size={13} style={{ marginRight: "6px" }} />
+                Select all
+              </button>
+              <button
+                type="button"
+                className={`btn-ghost ${styles.toolbarButton}`}
+                onClick={clearSelection}
+                disabled={busy || selectedCount === 0}
+                style={{ opacity: busy || selectedCount === 0 ? 0.5 : 1 }}
+              >
+                Clear selection
+              </button>
+              <span className={styles.toolbarCount}>
+                {selectedCount} selected
+              </span>
+            </div>
+
+            <span className={styles.toolbarDivider} />
+
+            <div className={styles.toolbarGroup}>
+              <button
+                type="button"
+                className={`btn-ghost ${styles.toolbarButton} ${styles.toolbarButtonDanger}`}
+                onClick={() => requestDelete(Array.from(selected))}
+                disabled={busy || selectedCount === 0}
+                style={{ opacity: busy || selectedCount === 0 ? 0.5 : 1 }}
+              >
+                <Trash2 size={13} style={{ marginRight: "6px" }} />
+                Delete selected
+              </button>
+              <button
+                type="button"
+                className={`btn-ghost ${styles.toolbarButton}`}
+                onClick={() => rotatePages(Array.from(selected), -90)}
+                disabled={busy || selectedCount === 0}
+                style={{ opacity: busy || selectedCount === 0 ? 0.5 : 1 }}
+              >
+                <RotateCcw size={13} style={{ marginRight: "6px" }} />
+                Rotate left
+              </button>
+              <button
+                type="button"
+                className={`btn-ghost ${styles.toolbarButton}`}
+                onClick={() => rotatePages(Array.from(selected), 90)}
+                disabled={busy || selectedCount === 0}
+                style={{ opacity: busy || selectedCount === 0 ? 0.5 : 1 }}
+              >
+                <RotateCw size={13} style={{ marginRight: "6px" }} />
+                Rotate right
+              </button>
+            </div>
+
+            <span className={styles.toolbarSpacer} />
+
+            <div className={styles.toolbarGroup}>
+              <button
+                type="button"
+                className={`btn-ghost ${styles.toolbarButton}`}
+                onClick={resetChanges}
+                disabled={busy || !hasChanges}
+                style={{ opacity: busy || !hasChanges ? 0.5 : 1 }}
+              >
+                <RefreshCw size={13} style={{ marginRight: "6px" }} />
+                Reset Changes
+              </button>
+            </div>
+          </div>
+
+          {pages.length === 0 ? (
+            <div className={styles.emptyState}>
+              No pages left. Reset changes or upload another PDF.
+            </div>
+          ) : (
+            <div className={styles.workspace}>
+              {pages.map((page, index) => {
+                const isSelected = selected.has(page.id);
+                const isDragging = draggedId === page.id;
+                const isDropTarget = dropTargetId === page.id;
+                return (
+                  <div
+                    key={page.id}
+                    data-page-id={page.id}
+                    data-position={index + 1}
+                    className={[
+                      styles.pageCard,
+                      isSelected ? styles.pageCardSelected : "",
+                      isDragging ? styles.pageCardDragging : "",
+                      isDropTarget ? styles.pageCardDropTarget : "",
+                    ]
+                      .filter(Boolean)
+                      .join(" ")}
+                    draggable={!busy}
+                    onDragStart={(event) => handleDragStart(event, page.id)}
+                    onDragOver={(event) => {
+                      event.preventDefault();
+                      event.dataTransfer.dropEffect = "move";
+                      setDropTargetId(page.id);
+                    }}
+                    onDragLeave={() => setDropTargetId(null)}
+                    onDrop={(event) => handleDrop(event, page.id)}
+                    onDragEnd={() => {
+                      setDraggedId(null);
+                      setDropTargetId(null);
+                    }}
+                  >
+                    <div className={styles.cardTop}>
+                      <span
+                        className={styles.dragHandle}
+                        title="Drag to reorder"
+                        aria-hidden="true"
+                      >
+                        <GripVertical size={14} />
+                      </span>
+                      <span className={styles.pageNumber}>
+                        Page {index + 1}
+                      </span>
+                      <label
+                        className={styles.checkboxLabel}
+                        title={
+                          isSelected ? "Deselect page" : "Select page"
+                        }
+                      >
+                        <input
+                          type="checkbox"
+                          className={styles.checkbox}
+                          checked={isSelected}
+                          disabled={busy}
+                          onChange={() => toggleSelected(page.id)}
+                          aria-label={`Select page ${index + 1}`}
+                        />
+                      </label>
+                    </div>
+
+                    <PdfThumbnail
+                      pdf={pdf}
+                      pageNumber={page.id + 1}
+                      rotation={page.rotation}
+                      onReady={handleThumbReady}
+                    />
+
+                    {page.rotation !== 0 && (
+                      <span className={styles.rotationBadge}>
+                        {page.rotation}°
+                      </span>
+                    )}
+
+                    <div className={styles.cardFooter}>
+                      <span className={styles.originalLabel}>
+                        Original p.{page.id + 1}
+                      </span>
+                      <div className={styles.cardControls}>
+                        <button
+                          type="button"
+                          className="btn-ghost iconButton"
+                          onClick={() => movePage(page.id, -1)}
+                          disabled={busy || index === 0}
+                          aria-label={`Move page ${index + 1} left`}
+                          title="Move left"
+                        >
+                          <ChevronLeft size={14} />
+                        </button>
+                        <button
+                          type="button"
+                          className="btn-ghost iconButton"
+                          onClick={() => movePage(page.id, 1)}
+                          disabled={busy || index === pages.length - 1}
+                          aria-label={`Move page ${index + 1} right`}
+                          title="Move right"
+                        >
+                          <ChevronRight size={14} />
+                        </button>
+                        <button
+                          type="button"
+                          className="btn-ghost iconButton"
+                          onClick={() => rotatePage(page.id, -90)}
+                          disabled={busy}
+                          aria-label={`Rotate page ${index + 1} left`}
+                          title="Rotate anticlockwise"
+                        >
+                          <RotateCcw size={14} />
+                        </button>
+                        <button
+                          type="button"
+                          className="btn-ghost iconButton"
+                          onClick={() => rotatePage(page.id, 90)}
+                          disabled={busy}
+                          aria-label={`Rotate page ${index + 1} right`}
+                          title="Rotate clockwise"
+                        >
+                          <RotateCw size={14} />
+                        </button>
+                        <button
+                          type="button"
+                          className={`btn-ghost iconButton ${styles.iconButtonDanger}`}
+                          onClick={() => requestDelete([page.id])}
+                          disabled={busy}
+                          aria-label={`Delete page ${index + 1}`}
+                          title="Delete page"
+                        >
+                          <Trash2 size={14} />
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          )}
+
+          <div className={styles.actions}>
+            <button
+              type="button"
+              className="btn-ghost"
+              onClick={resetChanges}
+              disabled={busy || !hasChanges}
+              style={{
+                padding: "14px 18px",
+                opacity: busy || !hasChanges ? 0.5 : 1,
+                cursor: busy || !hasChanges ? "not-allowed" : "pointer",
+              }}
+            >
+              <RefreshCw size={17} style={{ marginRight: "7px" }} />
+              Reset Changes
+            </button>
+          </div>
+        </>
+      )}
+
+      {deleteIds && (
+        <div
+          className={styles.modalOverlay}
+          onMouseDown={() => setDeleteIds(null)}
+        >
+          <div
+            className={styles.modal}
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="organize-delete-title"
+            onMouseDown={(event) => event.stopPropagation()}
+          >
+            <div className={styles.modalIcon}>
+              <Trash2 size={22} />
+            </div>
+            <h2 className={styles.modalTitle} id="organize-delete-title">
+              Delete {deleteIds.length} page
+              {deleteIds.length !== 1 ? "s" : ""}?
+            </h2>
+            <p className={styles.modalText}>
+              {deleteIds.length === 1
+                ? "This page will be removed from the organized PDF."
+                : "These pages will be removed from the organized PDF."}{" "}
+              You can use Reset Changes before downloading to restore them.
+            </p>
+            <div className={styles.modalActions}>
+              <button
+                type="button"
+                className="btn-ghost"
+                onClick={() => setDeleteIds(null)}
+                autoFocus
+              >
+                Cancel
+              </button>
+              <button
+                type="button"
+                className="btn-cyan"
+                onClick={confirmDelete}
+                style={{
+                  background: "var(--danger)",
+                  borderColor: "var(--danger)",
+                }}
+              >
+                <Trash2 size={15} style={{ marginRight: "6px" }} />
+                Delete page{deleteIds.length !== 1 ? "s" : ""}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+    </>
+  );
+
+  const action = pdf && pages.length > 0 && (
+    <ToolActionButton
+      onClick={organize}
+      disabled={!canDownload}
+      loading={organizing}
+      loadingText="Organizing your PDF…"
+      icon={<Download size={20} />}
+      loadingIcon={<Loader2 size={20} style={{ animation: "spin 1s linear infinite" }} />}
+    >
+      Download Organized PDF
+    </ToolActionButton>
+  );
+
+  const resultPanel = result && (
+    <div className={styles.success} role="status">
+      <div className={styles.successIcon}>
+        <Check size={20} />
+      </div>
+      <div className={styles.successText}>
+        <div className={styles.successTitle}>
+          Organized PDF is ready
+        </div>
+        <div className={styles.successMeta}>
+          {result.filename} • {result.stats.pageCount} page
+          {result.stats.pageCount !== 1 ? "s" : ""} •{" "}
+          {formatBytes(result.stats.outputSize)}
+        </div>
+      </div>
+      <button
+        type="button"
+        className="btn-cyan"
+        style={{ padding: "10px 16px", fontSize: "12.5px" }}
+        onClick={() =>
+          downloadBlob(result.blob, result.filename)
+        }
+      >
+        <Download size={16} style={{ marginRight: "6px" }} />
+        Download again
+      </button>
+      <button
+        type="button"
+        className="btn-ghost"
+        style={{ padding: "10px 14px", fontSize: "12.5px" }}
+        onClick={removeFile}
+      >
+        Organize another PDF
+      </button>
+    </div>
+  );
+
+  const footer = (
+    <p className={styles.footerNote}>
+      Files are processed securely and deleted after organizing. No permanent storage.
+    </p>
+  );
+
   return (
     <>
       <Navbar />
@@ -657,625 +1250,14 @@ export default function OrganizePdfPage() {
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(structuredData) }}
       />
-
-      <div className={styles.pageShell}>
-        <div className={styles.container}>
-          <Breadcrumbs items={breadcrumbItems} />
-
-          <div className={styles.headerRow}>
-            <Link
-              href="/"
-              style={{
-                textDecoration: "none",
-                color: "var(--text-secondary)",
-                padding: "8px",
-              }}
-              aria-label="Back to home"
-            >
-              <ArrowLeft size={20} />
-            </Link>
-            <div className={styles.heading}>
-              <span className="section-label">PDF TOOLS</span>
-              <h1>Organize PDF Pages</h1>
-            </div>
-          </div>
-
-          <p className={styles.description}>
-            Upload a PDF, then drag pages into the right order. Rotate pages,
-            remove unwanted pages and download a new PDF that matches the
-            arrangement shown here.
-          </p>
-
-          <div className={`glass-card ${styles.card}`}>
-            <input
-              ref={inputRef}
-              type="file"
-              accept=".pdf"
-              className={styles.visuallyHidden}
-              disabled={busy}
-              onChange={handleFileSelect}
-            />
-
-            {!file && (
-              <div
-                className={`drag-zone ${dragActive ? "dragging" : ""} ${
-                  styles.uploadZone
-                }`}
-                onDragOver={(event) => {
-                  event.preventDefault();
-                  setDragActive(true);
-                }}
-                onDragLeave={() => setDragActive(false)}
-                onDrop={handleZoneDrop}
-                onClick={() => !busy && inputRef.current?.click()}
-              >
-                <FileText
-                  size={48}
-                  style={{
-                    color: dragActive
-                      ? "var(--primary-teal)"
-                      : "var(--text-muted)",
-                    transition: "color 0.2s ease",
-                  }}
-                />
-                <p
-                  style={{
-                    fontSize: "16px",
-                    fontWeight: 500,
-                    color: dragActive
-                      ? "var(--primary-teal)"
-                      : "var(--text-secondary)",
-                    transition: "color 0.2s ease",
-                  }}
-                >
-                  {dragActive ? "Release to drop PDF" : "Drag & drop a PDF"}
-                </p>
-                <p style={{ fontSize: "13px", color: "var(--text-muted)" }}>
-                  or click to browse • PDF only • max {formatBytes(MAX_FILE_SIZE)}
-                </p>
-              </div>
-            )}
-
-            {error && (
-              <div
-                style={{
-                  display: "flex",
-                  alignItems: "flex-start",
-                  gap: "10px",
-                  padding: "12px 16px",
-                  background: "var(--danger-light)",
-                  border: "1px solid rgba(214,69,69,0.20)",
-                  borderRadius: "10px",
-                  marginTop: file ? "16px" : "16px",
-                }}
-                role="alert"
-              >
-                <AlertCircle
-                  size={20}
-                  style={{
-                    color: "var(--danger)",
-                    flexShrink: 0,
-                    marginTop: "1px",
-                  }}
-                />
-                <p
-                  style={{
-                    fontSize: "13px",
-                    color: "var(--danger)",
-                    margin: 0,
-                  }}
-                >
-                  {error}
-                </p>
-              </div>
-            )}
-
-            {file && (
-              <div className={styles.fileSummary}>
-                <div
-                  style={{
-                    color: "var(--primary-teal)",
-                    flexShrink: 0,
-                    display: "flex",
-                  }}
-                >
-                  <FileText size={22} />
-                </div>
-                <div className={styles.fileInfo}>
-                  <p className={styles.fileName}>{file.name}</p>
-                  <div className={styles.fileMeta}>
-                    <span>{formatBytes(file.size)}</span>
-                    {pageCount !== null && (
-                      <>
-                        <span style={{ color: "var(--text-muted)" }}>•</span>
-                        <span>
-                          {pageCount} page{pageCount !== 1 ? "s" : ""}
-                        </span>
-                      </>
-                    )}
-                    {pdfLoading && (
-                      <>
-                        <span style={{ color: "var(--text-muted)" }}>•</span>
-                        <span
-                          style={{
-                            color: "var(--text-muted)",
-                            fontStyle: "italic",
-                          }}
-                        >
-                          reading PDF…
-                        </span>
-                      </>
-                    )}
-                  </div>
-                </div>
-
-                <button
-                  type="button"
-                  className="btn-ghost"
-                  disabled={busy}
-                  onClick={() => inputRef.current?.click()}
-                  style={{
-                    padding: "6px 12px",
-                    fontSize: "12px",
-                    opacity: busy ? 0.5 : 1,
-                    cursor: busy ? "not-allowed" : "pointer",
-                  }}
-                >
-                  <Plus size={14} style={{ marginRight: "6px" }} />
-                  Replace PDF
-                </button>
-                <button
-                  type="button"
-                  className="btn-ghost"
-                  disabled={busy}
-                  onClick={removeFile}
-                  aria-label="Remove uploaded PDF"
-                  style={{
-                    padding: "6px",
-                    borderRadius: "8px",
-                    opacity: busy ? 0.5 : 1,
-                    cursor: busy ? "not-allowed" : "pointer",
-                  }}
-                >
-                  <X size={16} />
-                </button>
-              </div>
-            )}
-
-            {pdfLoading && (
-              <div className={styles.loadingStrip}>
-                <Loader2
-                  size={16}
-                  style={{ animation: "spin 1s linear infinite" }}
-                />
-                <span>Reading PDF and preparing page workspace…</span>
-              </div>
-            )}
-
-            {pdf && pageCount !== null && (
-              <div className={styles.loadingStrip}>
-                {currentReady < pages.length ? (
-                  <Loader2
-                    size={16}
-                    style={{ animation: "spin 1s linear infinite" }}
-                  />
-                ) : (
-                  <Check size={16} style={{ color: "var(--green-highlight)" }} />
-                )}
-                <span>
-                  {currentReady} of {pages.length} page previews ready
-                </span>
-                <div className={styles.progressTrack}>
-                  <div
-                    className={styles.progressBar}
-                    style={{
-                      width: `${
-                        pages.length > 0
-                          ? Math.round((currentReady / pages.length) * 100)
-                          : 0
-                      }%`,
-                    }}
-                  />
-                </div>
-              </div>
-            )}
-
-            <p className={styles.footerNote}>
-              Files are processed securely and deleted after organizing. No
-              permanent storage.
-            </p>
-          </div>
-
-          {pdf && pages.length > 0 && (
-            <div className={`glass-card ${styles.workspaceCard}`}>
-              <div className={styles.workspaceHeader}>
-                <div>
-                  <p className="section-label" style={{ margin: 0 }}>
-                    PAGE WORKSPACE
-                  </p>
-                  <h2 className={styles.workspaceTitle} style={{ marginTop: "4px" }}>
-                    Arrange pages
-                  </h2>
-                  <p className={styles.workspaceSub}>
-                    Drag a card or use the arrow controls on mobile. Page
-                    numbers reflect the current order.
-                  </p>
-                </div>
-                <div
-                  style={{
-                    display: "flex",
-                    gap: "8px",
-                    flexWrap: "wrap",
-                    justifyContent: "flex-end",
-                  }}
-                >
-                  <span className={styles.toolbarCount}>
-                    {pages.length} page{pages.length !== 1 ? "s" : ""}
-                  </span>
-                  {deletedCount > 0 && (
-                    <span className={styles.toolbarCount}>
-                      {deletedCount} removed
-                    </span>
-                  )}
-                  {rotatedCount > 0 && (
-                    <span className={styles.toolbarCount}>
-                      {rotatedCount} rotated
-                    </span>
-                  )}
-                </div>
-              </div>
-
-              <div className={styles.toolbar} role="toolbar" aria-label="Page controls">
-                <div className={styles.toolbarGroup}>
-                  <button
-                    type="button"
-                    className={`btn-ghost ${styles.toolbarButton}`}
-                    onClick={selectAll}
-                    disabled={busy || allSelected}
-                    style={{ opacity: busy || allSelected ? 0.5 : 1 }}
-                  >
-                    <Check size={13} style={{ marginRight: "6px" }} />
-                    Select all
-                  </button>
-                  <button
-                    type="button"
-                    className={`btn-ghost ${styles.toolbarButton}`}
-                    onClick={clearSelection}
-                    disabled={busy || selectedCount === 0}
-                    style={{ opacity: busy || selectedCount === 0 ? 0.5 : 1 }}
-                  >
-                    Clear selection
-                  </button>
-                  <span className={styles.toolbarCount}>
-                    {selectedCount} selected
-                  </span>
-                </div>
-
-                <span className={styles.toolbarDivider} />
-
-                <div className={styles.toolbarGroup}>
-                  <button
-                    type="button"
-                    className={`btn-ghost ${styles.toolbarButton} ${styles.toolbarButtonDanger}`}
-                    onClick={() => requestDelete(Array.from(selected))}
-                    disabled={busy || selectedCount === 0}
-                    style={{ opacity: busy || selectedCount === 0 ? 0.5 : 1 }}
-                  >
-                    <Trash2 size={13} style={{ marginRight: "6px" }} />
-                    Delete selected
-                  </button>
-                  <button
-                    type="button"
-                    className={`btn-ghost ${styles.toolbarButton}`}
-                    onClick={() => rotatePages(Array.from(selected), -90)}
-                    disabled={busy || selectedCount === 0}
-                    style={{ opacity: busy || selectedCount === 0 ? 0.5 : 1 }}
-                  >
-                    <RotateCcw size={13} style={{ marginRight: "6px" }} />
-                    Rotate left
-                  </button>
-                  <button
-                    type="button"
-                    className={`btn-ghost ${styles.toolbarButton}`}
-                    onClick={() => rotatePages(Array.from(selected), 90)}
-                    disabled={busy || selectedCount === 0}
-                    style={{ opacity: busy || selectedCount === 0 ? 0.5 : 1 }}
-                  >
-                    <RotateCw size={13} style={{ marginRight: "6px" }} />
-                    Rotate right
-                  </button>
-                </div>
-
-                <span className={styles.toolbarSpacer} />
-
-                <div className={styles.toolbarGroup}>
-                  <button
-                    type="button"
-                    className={`btn-ghost ${styles.toolbarButton}`}
-                    onClick={resetChanges}
-                    disabled={busy || !hasChanges}
-                    style={{ opacity: busy || !hasChanges ? 0.5 : 1 }}
-                  >
-                    <RefreshCw size={13} style={{ marginRight: "6px" }} />
-                    Reset Changes
-                  </button>
-                </div>
-              </div>
-
-              {pages.length === 0 ? (
-                <div className={styles.emptyState}>
-                  No pages left. Reset changes or upload another PDF.
-                </div>
-              ) : (
-                <div className={styles.workspace}>
-                  {pages.map((page, index) => {
-                    const isSelected = selected.has(page.id);
-                    const isDragging = draggedId === page.id;
-                    const isDropTarget = dropTargetId === page.id;
-                    return (
-                      <div
-                        key={page.id}
-                        data-page-id={page.id}
-                        data-position={index + 1}
-                        className={[
-                          styles.pageCard,
-                          isSelected ? styles.pageCardSelected : "",
-                          isDragging ? styles.pageCardDragging : "",
-                          isDropTarget ? styles.pageCardDropTarget : "",
-                        ]
-                          .filter(Boolean)
-                          .join(" ")}
-                        draggable={!busy}
-                        onDragStart={(event) => handleDragStart(event, page.id)}
-                        onDragOver={(event) => {
-                          event.preventDefault();
-                          event.dataTransfer.dropEffect = "move";
-                          setDropTargetId(page.id);
-                        }}
-                        onDragLeave={() => setDropTargetId(null)}
-                        onDrop={(event) => handleDrop(event, page.id)}
-                        onDragEnd={() => {
-                          setDraggedId(null);
-                          setDropTargetId(null);
-                        }}
-                      >
-                        <div className={styles.cardTop}>
-                          <span
-                            className={styles.dragHandle}
-                            title="Drag to reorder"
-                            aria-hidden="true"
-                          >
-                            <GripVertical size={14} />
-                          </span>
-                          <span className={styles.pageNumber}>
-                            Page {index + 1}
-                          </span>
-                          <label
-                            className={styles.checkboxLabel}
-                            title={
-                              isSelected ? "Deselect page" : "Select page"
-                            }
-                          >
-                            <input
-                              type="checkbox"
-                              className={styles.checkbox}
-                              checked={isSelected}
-                              disabled={busy}
-                              onChange={() => toggleSelected(page.id)}
-                              aria-label={`Select page ${index + 1}`}
-                            />
-                          </label>
-                        </div>
-
-                        <PdfThumbnail
-                          pdf={pdf}
-                          pageNumber={page.id + 1}
-                          rotation={page.rotation}
-                          onReady={handleThumbReady}
-                        />
-
-                        {page.rotation !== 0 && (
-                          <span className={styles.rotationBadge}>
-                            {page.rotation}°
-                          </span>
-                        )}
-
-                        <div className={styles.cardFooter}>
-                          <span className={styles.originalLabel}>
-                            Original p.{page.id + 1}
-                          </span>
-                          <div className={styles.cardControls}>
-                            <button
-                              type="button"
-                              className="btn-ghost iconButton"
-                              onClick={() => movePage(page.id, -1)}
-                              disabled={busy || index === 0}
-                              aria-label={`Move page ${index + 1} left`}
-                              title="Move left"
-                            >
-                              <ChevronLeft size={14} />
-                            </button>
-                            <button
-                              type="button"
-                              className="btn-ghost iconButton"
-                              onClick={() => movePage(page.id, 1)}
-                              disabled={busy || index === pages.length - 1}
-                              aria-label={`Move page ${index + 1} right`}
-                              title="Move right"
-                            >
-                              <ChevronRight size={14} />
-                            </button>
-                            <button
-                              type="button"
-                              className="btn-ghost iconButton"
-                              onClick={() => rotatePage(page.id, -90)}
-                              disabled={busy}
-                              aria-label={`Rotate page ${index + 1} left`}
-                              title="Rotate anticlockwise"
-                            >
-                              <RotateCcw size={14} />
-                            </button>
-                            <button
-                              type="button"
-                              className="btn-ghost iconButton"
-                              onClick={() => rotatePage(page.id, 90)}
-                              disabled={busy}
-                              aria-label={`Rotate page ${index + 1} right`}
-                              title="Rotate clockwise"
-                            >
-                              <RotateCw size={14} />
-                            </button>
-                            <button
-                              type="button"
-                              className={`btn-ghost iconButton ${styles.iconButtonDanger}`}
-                              onClick={() => requestDelete([page.id])}
-                              disabled={busy}
-                              aria-label={`Delete page ${index + 1}`}
-                              title="Delete page"
-                            >
-                              <Trash2 size={14} />
-                            </button>
-                          </div>
-                        </div>
-                      </div>
-                    );
-                  })}
-                </div>
-              )}
-
-              <div className={styles.actions}>
-                <button
-                  type="button"
-                  className={`btn-cyan ${styles.downloadButton}`}
-                  onClick={organize}
-                  disabled={!canDownload}
-                  style={{
-                    opacity: canDownload ? 1 : 0.5,
-                    cursor: canDownload ? "pointer" : "not-allowed",
-                  }}
-                >
-                  {organizing ? (
-                    <>
-                      <Loader2
-                        size={20}
-                        style={{ animation: "spin 1s linear infinite" }}
-                      />
-                      Organizing your PDF…
-                    </>
-                  ) : (
-                    <>
-                      <Download size={20} />
-                      Download Organized PDF
-                    </>
-                  )}
-                </button>
-                <button
-                  type="button"
-                  className="btn-ghost"
-                  onClick={resetChanges}
-                  disabled={busy || !hasChanges}
-                  style={{
-                    padding: "14px 18px",
-                    opacity: busy || !hasChanges ? 0.5 : 1,
-                    cursor: busy || !hasChanges ? "not-allowed" : "pointer",
-                  }}
-                >
-                  <RefreshCw size={17} style={{ marginRight: "7px" }} />
-                  Reset Changes
-                </button>
-              </div>
-
-              {result && (
-                <div className={styles.success} role="status">
-                  <div className={styles.successIcon}>
-                    <Check size={20} />
-                  </div>
-                  <div className={styles.successText}>
-                    <div className={styles.successTitle}>
-                      Organized PDF is ready
-                    </div>
-                    <div className={styles.successMeta}>
-                      {result.filename} • {result.stats.pageCount} page
-                      {result.stats.pageCount !== 1 ? "s" : ""} •{" "}
-                      {formatBytes(result.stats.outputSize)}
-                    </div>
-                  </div>
-                  <button
-                    type="button"
-                    className="btn-cyan"
-                    style={{ padding: "10px 16px", fontSize: "12.5px" }}
-                    onClick={() =>
-                      downloadBlob(result.blob, result.filename)
-                    }
-                  >
-                    <Download size={16} style={{ marginRight: "6px" }} />
-                    Download again
-                  </button>
-                  <button
-                    type="button"
-                    className="btn-ghost"
-                    style={{ padding: "10px 14px", fontSize: "12.5px" }}
-                    onClick={removeFile}
-                  >
-                    Organize another PDF
-                  </button>
-                </div>
-              )}
-            </div>
-          )}
-
-          {deleteIds && (
-            <div
-              className={styles.modalOverlay}
-              onMouseDown={() => setDeleteIds(null)}
-            >
-              <div
-                className={styles.modal}
-                role="dialog"
-                aria-modal="true"
-                aria-labelledby="organize-delete-title"
-                onMouseDown={(event) => event.stopPropagation()}
-              >
-                <div className={styles.modalIcon}>
-                  <Trash2 size={22} />
-                </div>
-                <h2 className={styles.modalTitle} id="organize-delete-title">
-                  Delete {deleteIds.length} page
-                  {deleteIds.length !== 1 ? "s" : ""}?
-                </h2>
-                <p className={styles.modalText}>
-                  {deleteIds.length === 1
-                    ? "This page will be removed from the organized PDF."
-                    : "These pages will be removed from the organized PDF."}{" "}
-                  You can use Reset Changes before downloading to restore them.
-                </p>
-                <div className={styles.modalActions}>
-                  <button
-                    type="button"
-                    className="btn-ghost"
-                    onClick={() => setDeleteIds(null)}
-                    autoFocus
-                  >
-                    Cancel
-                  </button>
-                  <button
-                    type="button"
-                    className="btn-cyan"
-                    onClick={confirmDelete}
-                    style={{
-                      background: "var(--danger)",
-                      borderColor: "var(--danger)",
-                    }}
-                  >
-                    <Trash2 size={15} style={{ marginRight: "6px" }} />
-                    Delete page{deleteIds.length !== 1 ? "s" : ""}
-                  </button>
-                </div>
-              </div>
-            </div>
-          )}
-        </div>
-      </div>
+      <UnifiedToolPage
+        header={header}
+        upload={upload}
+        action={action}
+        result={resultPanel}
+        footer={footer}
+        showFooterMessage={false}
+      />
     </>
   );
 }

@@ -1,11 +1,17 @@
 "use client";
 
 import { useState, useCallback, useRef } from "react";
-import Link from "next/link";
-import { ArrowLeft, FileText, Download, Check, X, Loader2, AlertCircle, Info, HelpCircle } from "lucide-react";
-import Navbar from "../../../components/Navbar";
-import Breadcrumbs from "../../../components/Breadcrumbs";
+import { FileText, Loader2, AlertCircle } from "lucide-react";
+import Navbar from "@/components/Navbar";
 import { ShareProcessedFileButton } from "@/components/seo/ProcessedFileShareCta";
+import UnifiedToolPage from "@/components/tool/UnifiedToolPage";
+import UnifiedToolHeader from "@/components/tool/UnifiedToolHeader";
+import ToolInfoBlock from "@/components/tool/ToolInfoBlock";
+import ToolUploadArea from "@/components/tool/ToolUploadArea";
+import ToolFilePreview from "@/components/tool/ToolFilePreview";
+import ToolActionButton from "@/components/tool/ToolActionButton";
+import ToolResultPanel from "@/components/tool/ToolResultPanel";
+import ToolModeSelection from "@/components/tool/ToolModeSelection";
 
 const API = process.env.NEXT_PUBLIC_API_URL || "https://api.getzipdrop.com";
 const MAX_FILE_SIZE = 50 * 1024 * 1024; // 50MB
@@ -15,11 +21,36 @@ const breadcrumbItems = [
   { name: "PDF to Word", href: "/conversion/pdf-to-word" },
 ];
 
+const relatedLinks = [
+  { href: "/compression/pdf", label: "Compress PDF" },
+  { href: "/conversion/pdf-to-excel", label: "PDF to Excel" },
+  { href: "/conversion", label: "All conversion tools" },
+];
+
 type ConversionMode = "editable" | "visual-fidelity";
 
 interface ConversionResult {
   blob: Blob;
   filename: string;
+}
+
+const modeOptions = [
+  {
+    value: "editable",
+    label: "Editable Word",
+    description: "Reconstructs text, tables, and images as editable Word elements. Best for documents you need to edit.",
+  },
+  {
+    value: "visual-fidelity",
+    label: "Visual Fidelity",
+    description: "Preserves exact page appearance using positioned elements. Best for complex layouts where visual accuracy matters most.",
+  },
+];
+
+function formatBytes(bytes: number) {
+  if (bytes < 1024) return `${bytes} B`;
+  if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)} KB`;
+  return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
 }
 
 export default function PdfToWordPage() {
@@ -31,12 +62,6 @@ export default function PdfToWordPage() {
   const [result, setResult] = useState<ConversionResult | null>(null);
   const [dragActive, setDragActive] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
-
-  const formatBytes = (bytes: number) => {
-    if (bytes < 1024) return `${bytes} B`;
-    if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)} KB`;
-    return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
-  };
 
   const validateFile = (f: File) => {
     if (f.type !== "application/pdf" && !f.name.toLowerCase().endsWith(".pdf")) {
@@ -136,256 +161,137 @@ export default function PdfToWordPage() {
     if (inputRef.current) inputRef.current.value = "";
   };
 
-  const modeDescriptions = {
-    editable: "Reconstructs text, tables, and images as editable Word elements. Best for documents you need to edit.",
-    "visual-fidelity": "Preserves exact page appearance using positioned elements. Best for complex layouts where visual accuracy matters most.",
-  };
+  const header = (
+    <UnifiedToolHeader
+      breadcrumbs={breadcrumbItems}
+      backHref="/conversion"
+      backLabel="Back to conversion tools"
+      icon={<FileText size={26} strokeWidth={2} />}
+      title="PDF to Word"
+      description="Use the official ZipDrop PDF to Word tool to convert PDFs into editable DOCX files. Choose Editable mode to revise text and tables, or Visual Fidelity mode to keep the original layout. Maximum file size: 50 MB."
+      relatedLinks={relatedLinks}
+    />
+  );
+
+  const upload = (
+    <>
+      <div className="zd-tool-drop-wrap">
+        <ToolUploadArea
+          label="Drag & drop a PDF file"
+          subLabel="or click to browse"
+          icon={<FileText size={54} strokeWidth={1.6} style={{ color: "var(--primary-teal)" }} />}
+          accept=".pdf"
+          maxFileSize={MAX_FILE_SIZE}
+          formatBytes={formatBytes}
+          onFileSelect={(files) => handleFileSelect(files?.[0] ?? null)}
+          disabled={converting}
+          dragActive={dragActive}
+          setDragActive={setDragActive}
+        />
+      </div>
+
+      {file && (
+        <ToolFilePreview
+          file={file}
+          onRemove={reset}
+          onReplace={() => inputRef.current?.click()}
+          compressing={converting}
+          formatBytes={formatBytes}
+        />
+      )}
+
+      {error && (
+        <div style={{ display: "flex", alignItems: "flex-start", gap: "10px", padding: "12px 16px", background: "var(--danger-light)", border: "1px solid rgba(214,69,69,0.20)", borderRadius: "10px" }}>
+          <AlertCircle size={20} style={{ color: "var(--danger)", flexShrink: 0, marginTop: "1px" }} />
+          <p style={{ fontSize: "13px", color: "var(--danger)", margin: 0 }}>{error}</p>
+        </div>
+      )}
+    </>
+  );
+
+  const controls = (
+    <div className="zd-tool-options-grid">
+      <div className="zd-tool-option-full">
+        <ToolModeSelection
+          title="Conversion Mode"
+          modes={modeOptions}
+          selectedMode={mode}
+          onModeChange={(m) => setMode(m as ConversionMode)}
+          disabled={converting}
+        />
+      </div>
+    </div>
+  );
+
+  const action = (
+    <ToolActionButton
+      onClick={convert}
+      disabled={converting || !file}
+      loading={converting}
+      loadingText={`Converting... ${progress}%`}
+      icon={<FileText size={20} />}
+      loadingIcon={
+        <Loader2 size={20} style={{ animation: "spin 1s linear infinite" }} />
+      }
+    >
+      Convert to Word
+    </ToolActionButton>
+  );
+
+  const instructions = (
+    <ToolInfoBlock
+      title="Tips for best results"
+      items={[
+        "Text-based PDFs convert best in <strong>Editable</strong> mode",
+        "Scanned/image PDFs work better with <strong>Visual Fidelity</strong> mode",
+        "Complex layouts (multi-column, tables) may need Visual Fidelity",
+        "Password-protected PDFs cannot be converted",
+      ]}
+      variant="notes"
+    />
+  );
+
+  const privacy = (
+    <ToolInfoBlock
+      title="Privacy & Security"
+      items={[
+        "Files are processed securely and deleted after conversion",
+        "No permanent storage of your documents",
+        "Files are not shared with third parties",
+      ]}
+      variant="privacy"
+    />
+  );
+
+  const resultPanel = result && (
+    <ToolResultPanel
+      filename={result.filename}
+      mode={mode === "editable" ? "Editable" : "Visual Fidelity"}
+      onDownload={downloadResult}
+      onReset={reset}
+      formatBytes={formatBytes}
+      shareButton={
+        <ShareProcessedFileButton
+          file={new File([result.blob], result.filename, {
+            type: result.blob.type || "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+          })}
+        />
+      }
+    />
+  );
 
   return (
     <>
       <Navbar />
-      <div style={{ minHeight: "100vh", background: "var(--bg-main)", padding: "clamp(24px, 4vh, 48px) 24px" }}>
-        <div style={{ maxWidth: "720px", margin: "0 auto", display: "flex", flexDirection: "column", gap: "24px" }}>
-          {/* Breadcrumbs */}
-          <Breadcrumbs items={breadcrumbItems} />
-
-          {/* Header */}
-          <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
-            <Link href="/conversion" style={{ textDecoration: "none", color: "var(--text-secondary)", padding: "8px" }}>
-              <ArrowLeft size={20} />
-            </Link>
-            <div>
-              <span className="section-label">PDF CONVERSIONS</span>
-              <h1 style={{ fontSize: "28px", fontWeight: 700, color: "var(--text-primary)", marginTop: "4px" }}>
-                Convert PDF to Word (DOCX) Online Free – Editable &amp; Layout Preserved
-              </h1>
-              <p style={{ fontSize: "14px", lineHeight: 1.6, color: "var(--text-secondary)", margin: "8px 0 0", maxWidth: "560px" }}>
-                Use the official ZipDrop PDF to Word tool to convert PDFs into editable DOCX files. Choose Editable mode to revise text and tables, or Visual Fidelity mode to keep the original layout. Maximum file size: 50 MB.
-              </p>
-            </div>
-          </div>
-
-          {/* Related tool links */}
-          <nav aria-label="Related PDF tools" style={{ display: "flex", flexWrap: "wrap", justifyContent: "center", gap: "8px 18px" }}>
-            {[
-              { href: "/compression/pdf", label: "Compress PDF" },
-              { href: "/conversion/pdf-to-excel", label: "PDF to Excel" },
-              { href: "/conversion", label: "All conversion tools" },
-            ].map((link) => (
-              <Link
-                key={link.href}
-                href={link.href}
-                style={{
-                  color: "var(--primary-teal)",
-                  fontSize: "13px",
-                  fontWeight: 600,
-                  textDecoration: "underline",
-                  textUnderlineOffset: "3px",
-                }}
-              >
-                {link.label}
-              </Link>
-            ))}
-          </nav>
-
-          {/* Main Card */}
-          <div className="glass-card" style={{ padding: "clamp(24px, 3vh, 32px)" }}>
-            {/* Mode Selection */}
-            <div style={{ marginBottom: "24px" }}>
-              <label style={{ display: "block", fontSize: "12px", fontWeight: 600, color: "var(--text-secondary)", marginBottom: "12px", textTransform: "uppercase", letterSpacing: "0.05em" }}>
-                Conversion Mode
-              </label>
-              <div style={{ display: "flex", gap: "12px", flexWrap: "wrap" }}>
-                {(["editable", "visual-fidelity"] as ConversionMode[]).map((m) => (
-                  <button
-                    key={m}
-                    onClick={() => setMode(m)}
-                    style={{
-                      flex: 1,
-                      minWidth: "200px",
-                      padding: "16px 20px",
-                      borderRadius: "12px",
-                      border: `2px solid ${mode === m ? "var(--primary-teal)" : "var(--border)"}`,
-                      background: mode === m ? "var(--teal-light)" : "var(--bg-card)",
-                      cursor: "pointer",
-                      textAlign: "left",
-                      transition: "all 0.2s ease",
-                    }}
-                    onMouseEnter={(e) => {
-                      if (mode !== m) e.currentTarget.style.borderColor = "var(--primary-teal)";
-                    }}
-                    onMouseLeave={(e) => {
-                      if (mode !== m) e.currentTarget.style.borderColor = "var(--border)";
-                    }}
-                  >
-                    <div style={{ display: "flex", alignItems: "center", gap: "8px", marginBottom: "6px" }}>
-                      <span style={{
-                        fontSize: "13px",
-                        fontWeight: 700,
-                        color: mode === m ? "var(--primary-teal)" : "var(--text-primary)",
-                        textTransform: "capitalize",
-                      }}>
-                        {m === "editable" ? "Editable Word" : "Visual Fidelity"}
-                      </span>
-                      {mode === m && <Check size={16} style={{ color: "var(--primary-teal)" }} />}
-                    </div>
-                    <p style={{ fontSize: "12px", color: "var(--text-secondary)", margin: 0, lineHeight: 1.5 }}>
-                      {modeDescriptions[m]}
-                    </p>
-                  </button>
-                ))}
-              </div>
-            </div>
-
-            {/* Upload Zone */}
-            <div
-              className={`drag-zone ${dragActive ? "dragging" : ""}`}
-              onDragOver={handleDragOver}
-              onDragLeave={handleDragLeave}
-              onDrop={handleDrop}
-              onClick={() => !converting && inputRef.current?.click()}
-              style={{ cursor: converting ? "not-allowed" : "pointer", opacity: converting ? 0.6 : 1 }}
-            >
-              <input
-                ref={inputRef}
-                type="file"
-                accept=".pdf"
-                style={{ display: "none" }}
-                onChange={(e) => handleFileSelect((e.target as HTMLInputElement).files?.[0] ?? null)}
-                disabled={converting}
-              />
-              <FileText size={48} style={{ color: dragActive ? "var(--primary-teal)" : "var(--text-muted)", transition: "color 0.2s ease" }} />
-              <p style={{ fontSize: "16px", fontWeight: 500, color: dragActive ? "var(--primary-teal)" : "var(--text-secondary)", transition: "color 0.2s ease" }}>
-                {dragActive ? "Release to upload PDF" : "Drag & drop a PDF file"}
-              </p>
-              <p style={{ fontSize: "13px", color: "var(--text-muted)" }}>or click to browse (max 50 MB)</p>
-            </div>
-
-            {/* Selected File */}
-            {file && (
-              <div className="animate-slideUp" style={{ display: "flex", alignItems: "center", gap: "12px", padding: "16px", background: "var(--teal-light)", border: "1px solid rgba(7,140,145,0.24)", borderRadius: "12px" }}>
-                <FileText size={24} style={{ color: "var(--primary-teal)" }} />
-                <div style={{ flex: 1, minWidth: 0 }}>
-                  <p style={{ fontSize: "14px", fontWeight: 500, color: "var(--text-primary)", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>
-                    {file.name}
-                  </p>
-                  <p style={{ fontSize: "12px", color: "var(--text-secondary)", marginTop: "2px" }}>
-                    {formatBytes(file.size)} • PDF document
-                  </p>
-                </div>
-                <button
-                  onClick={(e) => { e.stopPropagation(); reset(); }}
-                  style={{ padding: "8px", borderRadius: "8px", background: "transparent", border: "1px solid var(--border)", color: "var(--text-secondary)", cursor: "pointer" }}
-                >
-                  <X size={16} />
-                </button>
-              </div>
-            )}
-
-            {/* Error */}
-            {error && (
-              <div style={{ display: "flex", alignItems: "flex-start", gap: "10px", padding: "12px 16px", background: "var(--danger-light)", border: "1px solid rgba(214,69,69,0.20)", borderRadius: "10px" }}>
-                <AlertCircle size={20} style={{ color: "var(--danger)", flexShrink: 0, marginTop: "1px" }} />
-                <p style={{ fontSize: "13px", color: "var(--danger)", margin: 0 }}>{error}</p>
-              </div>
-            )}
-
-            {/* Convert Button */}
-            <button
-              onClick={convert}
-              disabled={converting || !file}
-              className="btn-cyan"
-              style={{
-                width: "100%",
-                padding: "16px 24px",
-                fontSize: "15px",
-                fontWeight: 700,
-                opacity: converting || !file ? 0.5 : 1,
-                cursor: converting || !file ? "not-allowed" : "pointer",
-              }}
-            >
-              <span className="shimmer" />
-              {converting ? (
-                <>
-                  <Loader2 size={20} style={{ animation: "spin 1s linear infinite" }} />
-                  Converting... {progress}%
-                </>
-              ) : (
-                <>
-                  <FileText size={20} />
-                  Convert to Word
-                </>
-              )}
-            </button>
-
-            {/* Result */}
-            {result && (
-              <div className="animate-scaleIn" style={{ display: "flex", flexDirection: "column", gap: "16px", paddingTop: "8px" }}>
-                <div className="divider" />
-                <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
-                  <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
-                    <div style={{ width: 40, height: 40, borderRadius: "10px", background: "var(--teal-light)", border: "1px solid rgba(7,140,145,0.24)", display: "flex", alignItems: "center", justifyContent: "center", color: "var(--primary-teal)" }}>
-                      <Check size={20} />
-                    </div>
-                    <div>
-                      <p style={{ fontSize: "14px", fontWeight: 600, color: "var(--text-primary)", margin: 0 }}>
-                        Conversion complete
-                      </p>
-                      <p style={{ fontSize: "12px", color: "var(--text-secondary)", margin: 0 }}>
-                        {result.filename} • {mode === "editable" ? "Editable" : "Visual Fidelity"} mode
-                      </p>
-                    </div>
-                  </div>
-                  <button
-                    onClick={downloadResult}
-                    className="btn-cyan"
-                    style={{ padding: "12px 20px" }}
-                  >
-                    <Download size={18} />
-                    Download DOCX
-                  </button>
-                </div>
-                <ShareProcessedFileButton
-                  file={new File([result.blob], result.filename, {
-                    type: result.blob.type || "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
-                  })}
-                />
-                <button
-                  onClick={reset}
-                  className="btn-ghost"
-                  style={{ width: "100%", justifyContent: "center" }}
-                >
-                  <ArrowLeft size={16} />
-                  Convert another file
-                </button>
-              </div>
-            )}
-
-            {/* Info */}
-            <div style={{ marginTop: "24px", padding: "16px", background: "var(--editor-workspace)", border: "1px solid var(--border)", borderRadius: "12px" }}>
-              <div style={{ display: "flex", alignItems: "flex-start", gap: "10px" }}>
-                <Info size={18} style={{ color: "var(--primary-teal)", flexShrink: 0, marginTop: "1px" }} />
-                <div style={{ flex: 1 }}>
-                  <p style={{ fontSize: "13px", fontWeight: 600, color: "var(--text-primary)", margin: "0 0 8px" }}>
-                    Tips for best results
-                  </p>
-                  <ul style={{ fontSize: "12.5px", color: "var(--text-secondary)", margin: 0, paddingLeft: "20px", lineHeight: 1.8 }}>
-                    <li>Text-based PDFs convert best in <strong>Editable</strong> mode</li>
-                    <li>Scanned/image PDFs work better with <strong>Visual Fidelity</strong> mode</li>
-                    <li>Complex layouts (multi-column, tables) may need Visual Fidelity</li>
-                    <li>Password-protected PDFs cannot be converted</li>
-                  </ul>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          {/* Footer */}
-          <p style={{ textAlign: "center", fontSize: "12px", color: "var(--text-muted)" }}>
-            Files are processed securely and deleted after conversion. No permanent storage.
-          </p>
-        </div>
-      </div>
+      <UnifiedToolPage
+        header={header}
+        upload={upload}
+        controls={controls}
+        action={action}
+        instructions={instructions}
+        privacy={privacy}
+        result={resultPanel}
+      />
     </>
   );
 }

@@ -1,9 +1,13 @@
 "use client";
 
 import { useState, useCallback, useRef } from "react";
-import Link from "next/link";
-import { ArrowLeft, Table, Download, Check, X, Loader2, AlertCircle, Info } from "lucide-react";
+import { ArrowLeft, Table, Download, Check, X, Loader2, AlertCircle } from "lucide-react";
 import Navbar from "../../../components/Navbar";
+import UnifiedToolPage from "@/components/tool/UnifiedToolPage";
+import UnifiedToolHeader from "@/components/tool/UnifiedToolHeader";
+import ToolInfoBlock from "@/components/tool/ToolInfoBlock";
+import ToolUploadArea from "@/components/tool/ToolUploadArea";
+import ToolActionButton from "@/components/tool/ToolActionButton";
 
 const API = process.env.NEXT_PUBLIC_API_URL || "https://api.getzipdrop.com";
 const MAX_FILE_SIZE = 50 * 1024 * 1024; // 50MB
@@ -138,172 +142,146 @@ export default function ExcelToCsvPage() {
     if (inputRef.current) inputRef.current.value = "";
   };
 
+  const header = (
+    <UnifiedToolHeader
+      breadcrumbs={[
+        { name: "OFFICE DOCUMENT CONVERSIONS", href: "/conversion" },
+        { name: "Excel to CSV", href: "/conversion/excel-to-csv" },
+      ]}
+      backHref="/conversion"
+      backLabel="Back to conversion tools"
+      icon={<Table size={26} strokeWidth={2} />}
+      title="Excel to CSV"
+    />
+  );
+
+  const upload = (
+    <>
+      <input
+        ref={inputRef}
+        type="file"
+        accept=".xlsx,.xls,.xlsm"
+        hidden
+        onChange={(e) => handleFileSelect((e.target as HTMLInputElement).files?.[0] ?? null)}
+        disabled={converting}
+      />
+      <div className="zd-tool-drop-wrap">
+        <ToolUploadArea
+          label="Drag & drop an Excel file"
+          subLabel="or click to browse (max 50 MB)"
+          icon={<Table size={54} strokeWidth={1.6} style={{ color: "var(--primary-teal)" }} />}
+          accept=".xlsx,.xls,.xlsm"
+          onFileSelect={(files) => handleFileSelect(files?.[0] ?? null)}
+          disabled={converting}
+          dragActive={dragActive}
+          setDragActive={setDragActive}
+        />
+      </div>
+
+      {file && (
+        <div className="animate-slideUp" style={{ display: "flex", alignItems: "center", gap: "12px", padding: "16px", background: "var(--teal-light)", border: "1px solid rgba(7,140,145,0.24)", borderRadius: "12px" }}>
+          <Table size={24} style={{ color: "var(--primary-teal)" }} />
+          <div style={{ flex: 1, minWidth: 0 }}>
+            <p style={{ fontSize: "14px", fontWeight: 500, color: "var(--text-primary)", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>
+              {file.name}
+            </p>
+            <p style={{ fontSize: "12px", color: "var(--text-secondary)", marginTop: "2px" }}>
+              {formatBytes(file.size)} • Excel spreadsheet
+            </p>
+          </div>
+          <button
+            onClick={(e) => { e.stopPropagation(); reset(); }}
+            style={{ padding: "8px", borderRadius: "8px", background: "transparent", border: "1px solid var(--border)", color: "var(--text-secondary)", cursor: "pointer" }}
+          >
+            <X size={16} />
+          </button>
+        </div>
+      )}
+
+      {error && (
+        <div style={{ display: "flex", alignItems: "flex-start", gap: "10px", padding: "12px 16px", background: "var(--danger-light)", border: "1px solid rgba(214,69,69,0.20)", borderRadius: "10px" }}>
+          <AlertCircle size={20} style={{ color: "var(--danger)", flexShrink: 0, marginTop: "1px" }} />
+          <p style={{ fontSize: "13px", color: "var(--danger)", margin: 0 }}>{error}</p>
+        </div>
+      )}
+    </>
+  );
+
+  const action = (
+    <ToolActionButton
+      onClick={convert}
+      disabled={converting || !file}
+      loading={converting}
+      loadingText={`Converting... ${progress}%`}
+      icon={<Table size={20} />}
+      loadingIcon={<Loader2 size={20} style={{ animation: "spin 1s linear infinite" }} />}
+    >
+      Convert to CSV
+    </ToolActionButton>
+  );
+
+  const instructions = (
+    <ToolInfoBlock
+      title="Limitations"
+      items={[
+        "CSV cannot preserve formulas — only cached values are exported",
+        "Formatting (colors, borders, fonts, conditional formatting) is lost",
+        "Charts, images, pivot tables, and macros are not included",
+        "Merged cells: only top-left value retained; others become empty",
+        "XLS (legacy) format support limited; XLSX recommended",
+        "Password-protected workbooks cannot be converted",
+      ]}
+      variant="notes"
+    />
+  );
+
+  const resultPanel = result && (
+    <div className="animate-scaleIn" style={{ display: "flex", flexDirection: "column", gap: "16px", paddingTop: "8px" }}>
+      <div className="divider" />
+      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+        <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
+          <div style={{ width: 40, height: 40, borderRadius: "10px", background: "var(--teal-light)", border: "1px solid rgba(7,140,145,0.24)", display: "flex", alignItems: "center", justifyContent: "center", color: "var(--primary-teal)" }}>
+            <Check size={20} />
+          </div>
+          <div>
+            <p style={{ fontSize: "14px", fontWeight: 600, color: "var(--text-primary)", margin: 0 }}>
+              Conversion complete
+            </p>
+            <p style={{ fontSize: "12px", color: "var(--text-secondary)", margin: 0 }}>
+              {result.filename} • {result.isZip ? "Multiple worksheets (ZIP)" : "Single worksheet (CSV)"}
+            </p>
+          </div>
+        </div>
+        <button
+          onClick={downloadResult}
+          className="btn-cyan"
+          style={{ padding: "12px 20px" }}
+        >
+          <Download size={18} />
+          {result.isZip ? "Download ZIP" : "Download CSV"}
+        </button>
+      </div>
+      <button
+        onClick={reset}
+        className="btn-ghost"
+        style={{ width: "100%", justifyContent: "center" }}
+      >
+        <ArrowLeft size={16} />
+        Convert another file
+      </button>
+    </div>
+  );
+
   return (
     <>
       <Navbar />
-      <div style={{ minHeight: "100vh", background: "var(--bg-main)", padding: "clamp(24px, 4vh, 48px) 24px" }}>
-        <div style={{ maxWidth: "720px", margin: "0 auto", display: "flex", flexDirection: "column", gap: "24px" }}>
-          {/* Header */}
-          <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
-            <Link href="/conversion" style={{ textDecoration: "none", color: "var(--text-secondary)", padding: "8px" }}>
-              <ArrowLeft size={20} />
-            </Link>
-            <div>
-              <span className="section-label">OFFICE DOCUMENT CONVERSIONS</span>
-              <h1 style={{ fontSize: "28px", fontWeight: 700, color: "var(--text-primary)", marginTop: "4px" }}>
-                Excel to CSV
-              </h1>
-            </div>
-          </div>
-
-          {/* Main Card */}
-          <div className="glass-card" style={{ padding: "clamp(24px, 3vh, 32px)" }}>
-            {/* Upload Zone */}
-            <div
-              className={`drag-zone ${dragActive ? "dragging" : ""}`}
-              onDragOver={handleDragOver}
-              onDragLeave={handleDragLeave}
-              onDrop={handleDrop}
-              onClick={() => !converting && inputRef.current?.click()}
-              style={{ cursor: converting ? "not-allowed" : "pointer", opacity: converting ? 0.6 : 1 }}
-            >
-              <input
-                ref={inputRef}
-                type="file"
-                accept=".xlsx,.xls,.xlsm"
-                style={{ display: "none" }}
-                onChange={(e) => handleFileSelect((e.target as HTMLInputElement).files?.[0] ?? null)}
-                disabled={converting}
-              />
-              <Table size={48} style={{ color: dragActive ? "var(--primary-teal)" : "var(--text-muted)", transition: "color 0.2s ease" }} />
-              <p style={{ fontSize: "16px", fontWeight: 500, color: dragActive ? "var(--primary-teal)" : "var(--text-secondary)", transition: "color 0.2s ease" }}>
-                {dragActive ? "Release to upload Excel file" : "Drag & drop an Excel file"}
-              </p>
-              <p style={{ fontSize: "13px", color: "var(--text-muted)" }}>or click to browse (max 50 MB)</p>
-            </div>
-
-            {/* Selected File */}
-            {file && (
-              <div className="animate-slideUp" style={{ display: "flex", alignItems: "center", gap: "12px", padding: "16px", background: "var(--teal-light)", border: "1px solid rgba(7,140,145,0.24)", borderRadius: "12px" }}>
-                <Table size={24} style={{ color: "var(--primary-teal)" }} />
-                <div style={{ flex: 1, minWidth: 0 }}>
-                  <p style={{ fontSize: "14px", fontWeight: 500, color: "var(--text-primary)", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>
-                    {file.name}
-                  </p>
-                  <p style={{ fontSize: "12px", color: "var(--text-secondary)", marginTop: "2px" }}>
-                    {formatBytes(file.size)} • Excel spreadsheet
-                  </p>
-                </div>
-                <button
-                  onClick={(e) => { e.stopPropagation(); reset(); }}
-                  style={{ padding: "8px", borderRadius: "8px", background: "transparent", border: "1px solid var(--border)", color: "var(--text-secondary)", cursor: "pointer" }}
-                >
-                  <X size={16} />
-                </button>
-              </div>
-            )}
-
-            {/* Error */}
-            {error && (
-              <div style={{ display: "flex", alignItems: "flex-start", gap: "10px", padding: "12px 16px", background: "var(--danger-light)", border: "1px solid rgba(214,69,69,0.20)", borderRadius: "10px" }}>
-                <AlertCircle size={20} style={{ color: "var(--danger)", flexShrink: 0, marginTop: "1px" }} />
-                <p style={{ fontSize: "13px", color: "var(--danger)", margin: 0 }}>{error}</p>
-              </div>
-            )}
-
-            {/* Convert Button */}
-            <button
-              onClick={convert}
-              disabled={converting || !file}
-              className="btn-cyan"
-              style={{
-                width: "100%",
-                padding: "16px 24px",
-                fontSize: "15px",
-                fontWeight: 700,
-                opacity: converting || !file ? 0.5 : 1,
-                cursor: converting || !file ? "not-allowed" : "pointer",
-              }}
-            >
-              <span className="shimmer" />
-              {converting ? (
-                <>
-                  <Loader2 size={20} style={{ animation: "spin 1s linear infinite" }} />
-                  Converting... {progress}%
-                </>
-              ) : (
-                <>
-                  <Table size={20} />
-                  Convert to CSV
-                </>
-              )}
-            </button>
-
-            {/* Result */}
-            {result && (
-              <div className="animate-scaleIn" style={{ display: "flex", flexDirection: "column", gap: "16px", paddingTop: "8px" }}>
-                <div className="divider" />
-                <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
-                  <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
-                    <div style={{ width: 40, height: 40, borderRadius: "10px", background: "var(--teal-light)", border: "1px solid rgba(7,140,145,0.24)", display: "flex", alignItems: "center", justifyContent: "center", color: "var(--primary-teal)" }}>
-                      <Check size={20} />
-                    </div>
-                    <div>
-                      <p style={{ fontSize: "14px", fontWeight: 600, color: "var(--text-primary)", margin: 0 }}>
-                        Conversion complete
-                      </p>
-                      <p style={{ fontSize: "12px", color: "var(--text-secondary)", margin: 0 }}>
-                        {result.filename} • {result.isZip ? "Multiple worksheets (ZIP)" : "Single worksheet (CSV)"}
-                      </p>
-                    </div>
-                  </div>
-                  <button
-                    onClick={downloadResult}
-                    className="btn-cyan"
-                    style={{ padding: "12px 20px" }}
-                  >
-                    <Download size={18} />
-                    {result.isZip ? "Download ZIP" : "Download CSV"}
-                  </button>
-                </div>
-                <button
-                  onClick={reset}
-                  className="btn-ghost"
-                  style={{ width: "100%", justifyContent: "center" }}
-                >
-                  <ArrowLeft size={16} />
-                  Convert another file
-                </button>
-              </div>
-            )}
-
-            {/* Limitations */}
-            <div style={{ marginTop: "16px", padding: "16px", background: "var(--warning-light)", border: "1px solid rgba(217,147,8,0.20)", borderRadius: "12px" }}>
-              <div style={{ display: "flex", alignItems: "flex-start", gap: "10px" }}>
-                <AlertCircle size={18} style={{ color: "var(--warning)", flexShrink: 0, marginTop: "1px" }} />
-                <div style={{ flex: 1 }}>
-                  <p style={{ fontSize: "13px", fontWeight: 600, color: "var(--text-primary)", margin: "0 0 8px" }}>
-                    Limitations
-                  </p>
-                  <ul style={{ fontSize: "12.5px", color: "var(--text-secondary)", margin: 0, paddingLeft: "20px", lineHeight: 1.8 }}>
-                    <li>CSV cannot preserve formulas — only cached values are exported</li>
-                    <li>Formatting (colors, borders, fonts, conditional formatting) is lost</li>
-                    <li>Charts, images, pivot tables, and macros are not included</li>
-                    <li>Merged cells: only top-left value retained; others become empty</li>
-                    <li>XLS (legacy) format support limited; XLSX recommended</li>
-                    <li>Password-protected workbooks cannot be converted</li>
-                  </ul>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          {/* Footer */}
-          <p style={{ textAlign: "center", fontSize: "12px", color: "var(--text-muted)" }}>
-            Files are processed securely and deleted after conversion. No permanent storage.
-          </p>
-        </div>
-      </div>
+      <UnifiedToolPage
+        header={header}
+        upload={upload}
+        action={action}
+        instructions={instructions}
+        result={resultPanel}
+      />
     </>
   );
 }

@@ -1,9 +1,14 @@
 "use client";
 
 import { useState, useCallback, useRef } from "react";
-import Link from "next/link";
-import { ArrowLeft, Image, Download, Check, X, Loader2, AlertCircle, Info, Settings } from "lucide-react";
+import { Image, Download, Check, Loader2, AlertCircle, ArrowLeft, Settings } from "lucide-react";
 import Navbar from "../../../components/Navbar";
+import UnifiedToolPage from "@/components/tool/UnifiedToolPage";
+import UnifiedToolHeader from "@/components/tool/UnifiedToolHeader";
+import ToolInfoBlock from "@/components/tool/ToolInfoBlock";
+import ToolUploadArea from "@/components/tool/ToolUploadArea";
+import ToolFilePreview from "@/components/tool/ToolFilePreview";
+import ToolActionButton from "@/components/tool/ToolActionButton";
 
 const API = process.env.NEXT_PUBLIC_API_URL || "https://api.getzipdrop.com";
 const MAX_FILE_SIZE = 50 * 1024 * 1024;
@@ -149,221 +154,191 @@ export default function PdfToPngPage() {
     if (inputRef.current) inputRef.current.value = "";
   };
 
+  const header = (
+    <UnifiedToolHeader
+      backHref="/conversion"
+      backLabel="Back to conversion tools"
+      icon={<Image size={26} strokeWidth={2} />}
+      title={TOOL_NAME}
+      description={`${TOOL_DESCRIPTION}.`}
+    />
+  );
+
+  const upload = (
+    <>
+      <input
+        ref={inputRef}
+        type="file"
+        accept={ACCEPT}
+        hidden
+        onChange={(e) => handleFileSelect((e.target as HTMLInputElement).files?.[0] ?? null)}
+        disabled={converting}
+      />
+      <div className="zd-tool-drop-wrap">
+        <ToolUploadArea
+          label="Drag & drop a PDF file"
+          subLabel="or click to browse (max 50 MB)"
+          icon={<Image size={54} strokeWidth={1.6} style={{ color: "var(--primary-teal)" }} />}
+          accept={ACCEPT}
+          onFileSelect={(files) => handleFileSelect(files?.[0] ?? null)}
+          disabled={converting}
+          dragActive={dragActive}
+          setDragActive={setDragActive}
+        />
+      </div>
+
+      {file && (
+        <ToolFilePreview
+          file={file}
+          onRemove={reset}
+          onReplace={() => inputRef.current?.click()}
+          compressing={converting}
+          formatBytes={formatBytes}
+          icon={<Image size={24} style={{ color: "var(--primary-teal)" }} />}
+        />
+      )}
+
+      {error && (
+        <div style={{ display: "flex", alignItems: "flex-start", gap: "10px", padding: "12px 16px", background: "var(--danger-light)", border: "1px solid rgba(214,69,69,0.20)", borderRadius: "10px" }}>
+          <AlertCircle size={20} style={{ color: "var(--danger)", flexShrink: 0, marginTop: "1px" }} />
+          <p style={{ fontSize: "13px", color: "var(--danger)", margin: 0 }}>{error}</p>
+        </div>
+      )}
+    </>
+  );
+
+  const controls = (
+    <div>
+      <div className="zd-tool-options-title">
+        <Settings size={17} />
+        <h2>Conversion Options</h2>
+      </div>
+      <div className="zd-tool-options-grid">
+        <div>
+          <label className="zd-tool-option-label" htmlFor="pdf-to-png-dpi">DPI (Quality)</label>
+          <select
+            id="pdf-to-png-dpi"
+            value={dpi}
+            onChange={(e) => setDpi(parseInt(e.target.value))}
+            disabled={converting}
+            className="neon-input"
+            style={{ padding: "10px 12px", fontSize: "13px" }}
+          >
+            <option value={72}>72 DPI (Screen)</option>
+            <option value={150}>150 DPI (Draft)</option>
+            <option value={200}>200 DPI (Standard)</option>
+            <option value={300}>300 DPI (Print)</option>
+            <option value={600}>600 DPI (High Quality)</option>
+          </select>
+        </div>
+        <div>
+          <label className="zd-tool-option-label" htmlFor="pdf-to-png-pages">Pages</label>
+          <input
+            id="pdf-to-png-pages"
+            type="text"
+            value={pages}
+            onChange={(e) => setPages(e.target.value)}
+            placeholder="all, 1, 1-3, 1,3,5"
+            disabled={converting}
+            className="neon-input"
+            style={{ padding: "10px 12px", fontSize: "13px", fontFamily: "var(--font-mono)" }}
+          />
+        </div>
+        <div className="zd-tool-option-full zd-tool-check-row">
+          <label htmlFor="pdf-to-png-grayscale">
+            <input
+              id="pdf-to-png-grayscale"
+              type="checkbox"
+              checked={grayscale}
+              onChange={(e) => setGrayscale(e.target.checked)}
+              disabled={converting}
+            />
+            Grayscale
+          </label>
+        </div>
+      </div>
+      <p style={{ fontSize: "11px", color: "var(--text-muted)", marginTop: "12px" }}>
+        PNG uses lossless compression. Quality is always maximum.
+      </p>
+    </div>
+  );
+
+  const action = (
+    <ToolActionButton
+      onClick={convert}
+      disabled={converting || !file}
+      loading={converting}
+      loadingText={`Converting... ${progress}%`}
+      icon={<Image size={20} />}
+      loadingIcon={<Loader2 size={20} style={{ animation: "spin 1s linear infinite" }} />}
+    >
+      Convert to PNG
+    </ToolActionButton>
+  );
+
+  const instructions = (
+    <ToolInfoBlock
+      title="Notes"
+      items={[
+        "Each PDF page becomes a separate PNG image",
+        "Multiple pages are delivered as a ZIP file",
+        "PNG preserves transparency (unlike JPG)",
+        "Lossless compression — no quality loss",
+      ]}
+      variant="notes"
+    />
+  );
+
+  const resultPanel = result && (
+    <div className="animate-scaleIn" style={{ display: "flex", flexDirection: "column", gap: "16px", paddingTop: "8px" }}>
+      <div className="divider" />
+      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+        <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
+          <div style={{ width: 40, height: 40, borderRadius: "10px", background: "var(--teal-light)", border: "1px solid rgba(7,140,145,0.24)", display: "flex", alignItems: "center", justifyContent: "center", color: "var(--primary-teal)" }}>
+            <Check size={20} />
+          </div>
+          <div>
+            <p style={{ fontSize: "14px", fontWeight: 600, color: "var(--text-primary)", margin: 0 }}>
+              {result.isZip ? "Conversion complete" : "Your image is ready to download"}
+            </p>
+            <p style={{ fontSize: "12px", color: "var(--text-secondary)", margin: 0 }}>
+              {result.isZip 
+                ? `Your PDF pages have been converted. Download all ${result.pageCount} images in a ZIP file.`
+                : `${result.filename} • ${dpi} DPI • Lossless PNG`}
+            </p>
+          </div>
+        </div>
+        <button
+          onClick={downloadResult}
+          className="btn-cyan"
+          style={{ padding: "12px 20px" }}
+        >
+          <Download size={18} />
+          {result.isZip ? "Download ZIP" : "Download PNG"}
+        </button>
+      </div>
+      <button
+        onClick={reset}
+        className="btn-ghost"
+        style={{ width: "100%", justifyContent: "center" }}
+      >
+        <ArrowLeft size={16} />
+        Convert another file
+      </button>
+    </div>
+  );
+
   return (
     <>
       <Navbar />
-      <div style={{ minHeight: "100vh", background: "var(--bg-main)", padding: "clamp(24px, 4vh, 48px) 24px" }}>
-        <div style={{ maxWidth: "720px", margin: "0 auto", display: "flex", flexDirection: "column", gap: "24px" }}>
-          <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
-            <Link href="/conversion" style={{ textDecoration: "none", color: "var(--text-secondary)", padding: "8px" }}>
-              <ArrowLeft size={20} />
-            </Link>
-            <div>
-              <span className="section-label">{CATEGORY}</span>
-              <h1 style={{ fontSize: "28px", fontWeight: 700, color: "var(--text-primary)", marginTop: "4px" }}>
-                {TOOL_NAME}
-              </h1>
-            </div>
-          </div>
-
-          <div className="glass-card" style={{ padding: "clamp(24px, 3vh, 32px)" }}>
-            <div style={{ marginBottom: "24px", padding: "20px", background: "var(--editor-workspace)", border: "1px solid var(--border)", borderRadius: "12px" }}>
-              <div style={{ display: "flex", alignItems: "center", gap: "10px", marginBottom: "16px" }}>
-                <Settings size={18} style={{ color: "var(--primary-teal)" }} />
-                <span style={{ fontSize: "13px", fontWeight: 600, color: "var(--text-primary)", textTransform: "uppercase", letterSpacing: "0.05em" }}>
-                  Conversion Options
-                </span>
-              </div>
-              <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(140px, 1fr))", gap: "16px" }}>
-                <div>
-                  <label style={{ display: "block", fontSize: "11px", fontWeight: 600, color: "var(--text-secondary)", marginBottom: "6px", textTransform: "uppercase", letterSpacing: "0.05em" }}>
-                    DPI (Quality)
-                  </label>
-                  <select
-                    value={dpi}
-                    onChange={(e) => setDpi(parseInt(e.target.value))}
-                    disabled={converting}
-                    className="neon-input"
-                    style={{ padding: "10px 12px", fontSize: "13px" }}
-                  >
-                    <option value={72}>72 DPI (Screen)</option>
-                    <option value={150}>150 DPI (Draft)</option>
-                    <option value={200}>200 DPI (Standard)</option>
-                    <option value={300}>300 DPI (Print)</option>
-                    <option value={600}>600 DPI (High Quality)</option>
-                  </select>
-                </div>
-                <div>
-                  <label style={{ display: "block", fontSize: "11px", fontWeight: 600, color: "var(--text-secondary)", marginBottom: "6px", textTransform: "uppercase", letterSpacing: "0.05em" }}>
-                    Pages
-                  </label>
-                  <input
-                    type="text"
-                    value={pages}
-                    onChange={(e) => setPages(e.target.value)}
-                    placeholder="all, 1, 1-3, 1,3,5"
-                    disabled={converting}
-                    className="neon-input"
-                    style={{ padding: "10px 12px", fontSize: "13px", fontFamily: "var(--font-mono)" }}
-                  />
-                </div>
-                <div style={{ display: "flex", alignItems: "flex-end" }}>
-                  <label style={{ display: "flex", alignItems: "center", gap: "8px", cursor: "pointer", fontSize: "13px", color: "var(--text-secondary)" }}>
-                    <input
-                      type="checkbox"
-                      checked={grayscale}
-                      onChange={(e) => setGrayscale(e.target.checked)}
-                      disabled={converting}
-                      style={{ width: "18px", height: "18px", accentColor: "var(--primary-teal)" }}
-                    />
-                    Grayscale
-                  </label>
-                </div>
-              </div>
-              <p style={{ fontSize: "11px", color: "var(--text-muted)", marginTop: "12px" }}>
-                PNG uses lossless compression. Quality is always maximum.
-              </p>
-            </div>
-
-            <div
-              className={`drag-zone ${dragActive ? "dragging" : ""}`}
-              onDragOver={handleDragOver}
-              onDragLeave={handleDragLeave}
-              onDrop={handleDrop}
-              onClick={() => !converting && inputRef.current?.click()}
-              style={{ cursor: converting ? "not-allowed" : "pointer", opacity: converting ? 0.6 : 1 }}
-            >
-              <input
-                ref={inputRef}
-                type="file"
-                accept={ACCEPT}
-                style={{ display: "none" }}
-                onChange={(e) => handleFileSelect((e.target as HTMLInputElement).files?.[0] ?? null)}
-                disabled={converting}
-              />
-              <Image size={48} style={{ color: dragActive ? "var(--primary-teal)" : "var(--text-muted)", transition: "color 0.2s ease" }} />
-              <p style={{ fontSize: "16px", fontWeight: 500, color: dragActive ? "var(--primary-teal)" : "var(--text-secondary)", transition: "color 0.2s ease" }}>
-                {dragActive ? "Release to upload PDF" : "Drag & drop a PDF file"}
-              </p>
-              <p style={{ fontSize: "13px", color: "var(--text-muted)" }}>or click to browse (max 50 MB)</p>
-            </div>
-
-            {file && (
-              <div className="animate-slideUp" style={{ display: "flex", alignItems: "center", gap: "12px", padding: "16px", background: "var(--teal-light)", border: "1px solid rgba(7,140,145,0.24)", borderRadius: "12px" }}>
-                <Image size={24} style={{ color: "var(--primary-teal)" }} />
-                <div style={{ flex: 1, minWidth: 0 }}>
-                  <p style={{ fontSize: "14px", fontWeight: 500, color: "var(--text-primary)", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>
-                    {file.name}
-                  </p>
-                  <p style={{ fontSize: "12px", color: "var(--text-secondary)", marginTop: "2px" }}>
-                    {formatBytes(file.size)} • {FILE_TYPE_LABEL}
-                  </p>
-                </div>
-                <button
-                  onClick={(e) => { e.stopPropagation(); reset(); }}
-                  style={{ padding: "8px", borderRadius: "8px", background: "transparent", border: "1px solid var(--border)", color: "var(--text-secondary)", cursor: "pointer" }}
-                >
-                  <X size={16} />
-                </button>
-              </div>
-            )}
-
-            {error && (
-              <div style={{ display: "flex", alignItems: "flex-start", gap: "10px", padding: "12px 16px", background: "var(--danger-light)", border: "1px solid rgba(214,69,69,0.20)", borderRadius: "10px" }}>
-                <AlertCircle size={20} style={{ color: "var(--danger)", flexShrink: 0, marginTop: "1px" }} />
-                <p style={{ fontSize: "13px", color: "var(--danger)", margin: 0 }}>{error}</p>
-              </div>
-            )}
-
-            <button
-              onClick={convert}
-              disabled={converting || !file}
-              className="btn-cyan"
-              style={{
-                width: "100%",
-                padding: "16px 24px",
-                fontSize: "15px",
-                fontWeight: 700,
-                opacity: converting || !file ? 0.5 : 1,
-                cursor: converting || !file ? "not-allowed" : "pointer",
-              }}
-            >
-              <span className="shimmer" />
-              {converting ? (
-                <>
-                  <Loader2 size={20} style={{ animation: "spin 1s linear infinite" }} />
-                  Converting... {progress}%
-                </>
-              ) : (
-                <>
-                  <Image size={20} />
-                  Convert to PNG
-                </>
-              )}
-            </button>
-
-            {result && (
-              <div className="animate-scaleIn" style={{ display: "flex", flexDirection: "column", gap: "16px", paddingTop: "8px" }}>
-                <div className="divider" />
-                <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
-                  <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
-                    <div style={{ width: 40, height: 40, borderRadius: "10px", background: "var(--teal-light)", border: "1px solid rgba(7,140,145,0.24)", display: "flex", alignItems: "center", justifyContent: "center", color: "var(--primary-teal)" }}>
-                      <Check size={20} />
-                    </div>
-                    <div>
-                      <p style={{ fontSize: "14px", fontWeight: 600, color: "var(--text-primary)", margin: 0 }}>
-                        {result.isZip ? "Conversion complete" : "Your image is ready to download"}
-                      </p>
-                      <p style={{ fontSize: "12px", color: "var(--text-secondary)", margin: 0 }}>
-                        {result.isZip 
-                          ? `Your PDF pages have been converted. Download all ${result.pageCount} images in a ZIP file.`
-                          : `${result.filename} • ${dpi} DPI • Lossless PNG`}
-                      </p>
-                    </div>
-                  </div>
-                  <button
-                    onClick={downloadResult}
-                    className="btn-cyan"
-                    style={{ padding: "12px 20px" }}
-                  >
-                    <Download size={18} />
-                    {result.isZip ? "Download ZIP" : "Download PNG"}
-                  </button>
-                </div>
-                <button
-                  onClick={reset}
-                  className="btn-ghost"
-                  style={{ width: "100%", justifyContent: "center" }}
-                >
-                  <ArrowLeft size={16} />
-                  Convert another file
-                </button>
-              </div>
-            )}
-
-            <div style={{ marginTop: "24px", padding: "16px", background: "var(--editor-workspace)", border: "1px solid var(--border)", borderRadius: "12px" }}>
-              <div style={{ display: "flex", alignItems: "flex-start", gap: "10px" }}>
-                <Info size={18} style={{ color: "var(--primary-teal)", flexShrink: 0, marginTop: "1px" }} />
-                <div style={{ flex: 1 }}>
-                  <p style={{ fontSize: "13px", fontWeight: 600, color: "var(--text-primary)", margin: "0 0 8px" }}>
-                    Notes
-                  </p>
-                  <ul style={{ fontSize: "12.5px", color: "var(--text-secondary)", margin: 0, paddingLeft: "20px", lineHeight: 1.8 }}>
-                    <li>Each PDF page becomes a separate PNG image</li>
-                    <li>Multiple pages are delivered as a ZIP file</li>
-                    <li>PNG preserves transparency (unlike JPG)</li>
-                    <li>Lossless compression — no quality loss</li>
-                  </ul>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          <p style={{ textAlign: "center", fontSize: "12px", color: "var(--text-muted)" }}>
-            Files are processed securely and deleted after conversion. No permanent storage.
-          </p>
-        </div>
-      </div>
+      <UnifiedToolPage
+        header={header}
+        upload={upload}
+        controls={controls}
+        action={action}
+        instructions={instructions}
+        result={resultPanel}
+      />
     </>
   );
 }

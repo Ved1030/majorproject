@@ -196,6 +196,7 @@ export function useCompressionUpload({
   return {
     files,
     dragActive,
+    setDragActive,
     error,
     setError,
     inputRef,

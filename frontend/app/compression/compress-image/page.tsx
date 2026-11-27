@@ -1,22 +1,19 @@
 "use client";
 
 import { useState } from "react";
-import Link from "next/link";
-import { ArrowLeft, Image as ImageIcon } from "lucide-react";
+import { Image as ImageIcon, Settings } from "lucide-react";
 import Navbar from "@/components/Navbar";
-import Breadcrumbs from "@/components/Breadcrumbs";
+import UnifiedToolPage from "@/components/tool/UnifiedToolPage";
+import UnifiedToolHeader from "@/components/tool/UnifiedToolHeader";
+import ToolInfoBlock from "@/components/tool/ToolInfoBlock";
+import ToolUploadArea from "@/components/tool/ToolUploadArea";
+import ToolActionButton from "@/components/tool/ToolActionButton";
 import {
   useCompressionUpload,
   FilePreview,
-  CompressionUploadZone,
   ErrorDisplay,
   SuccessDisplay,
 } from "@/components/compression/CompressionUpload";
-import {
-  CompressionSettingsPanel,
-  CompressionRadioGroup,
-} from "@/components/compression/CompressionSettings";
-import TargetSizePresets from "@/components/compression/TargetSizePresets";
 import { ShareProcessedFileButton } from "@/components/seo/ProcessedFileShareCta";
 import {
   compressImageToTarget,
@@ -78,6 +75,8 @@ export default function CompressImagePage() {
   const {
     files,
     dragActive,
+    setDragActive,
+    addFiles,
     error,
     setError,
     inputRef,
@@ -135,96 +134,258 @@ export default function CompressImagePage() {
     if (inputRef.current) inputRef.current.value = "";
   };
 
+  const header = (
+    <UnifiedToolHeader
+      breadcrumbs={breadcrumbItems}
+      backHref="/compression"
+      icon={<ImageIcon size={28} strokeWidth={2} />}
+      title="Compress Image"
+      description="Pick a target size or quality level, upload your image and download the result. No login, no watermark."
+    />
+  );
+
+  const upload = (
+    <>
+      <input
+        ref={inputRef}
+        type="file"
+        accept={ACCEPT}
+        hidden
+        onChange={dropZoneProps.onChange}
+        disabled={compressing}
+      />
+      <div className="zd-tool-drop-wrap">
+        <ToolUploadArea
+          label="Drag & drop a JPG, PNG or WEBP image"
+          subLabel="or click to browse (max 50 MB)"
+          icon={<ImageIcon size={48} style={{ color: "var(--primary-teal)" }} />}
+          accept={ACCEPT}
+          onFileSelect={(files) => addFiles(files ?? [])}
+          disabled={compressing}
+          dragActive={dragActive}
+          setDragActive={setDragActive}
+        />
+      </div>
+      {file && (
+        <FilePreview file={file} index={0} onRemove={reset} compressing={compressing} />
+      )}
+      <ErrorDisplay error={error} />
+    </>
+  );
+
+  const controls = (
+    <div>
+      <div className="zd-tool-options-title">
+        <Settings size={17} />
+        <h2>Compression Settings</h2>
+      </div>
+      <div className="zd-tool-options-grid">
+        <div className="zd-tool-option-full">
+          <span className="zd-tool-option-label">Target size presets</span>
+          <div style={{ display: "flex", gap: "8px", flexWrap: "wrap" }}>
+            {[100, 200, 500].map((preset) => {
+              const selected = targetKb === preset;
+              return (
+                <button
+                  key={preset}
+                  type="button"
+                  onClick={() => setTargetKb(selected ? null : preset)}
+                  disabled={compressing}
+                  aria-pressed={selected}
+                  style={{
+                    padding: "10px 16px",
+                    borderRadius: "10px",
+                    border: `2px solid ${selected ? "var(--primary-teal)" : "var(--border)"}`,
+                    background: selected ? "var(--teal-light)" : "var(--bg-card)",
+                    color: selected ? "var(--primary-teal)" : "var(--text-secondary)",
+                    fontSize: "13px",
+                    fontWeight: 700,
+                    cursor: compressing ? "not-allowed" : "pointer",
+                    opacity: compressing ? 0.5 : 1,
+                  }}
+                >
+                  {preset} KB
+                </button>
+              );
+            })}
+            <label
+              style={{
+                display: "inline-flex",
+                alignItems: "center",
+                gap: "6px",
+                padding: "6px 10px",
+                borderRadius: "10px",
+                border: "1px solid var(--border)",
+                fontSize: "13px",
+                color: "var(--text-secondary)",
+              }}
+            >
+              Custom
+              <input
+                type="number"
+                min={1}
+                max={10240}
+                placeholder="KB"
+                value={targetKb && ![100, 200, 500].includes(targetKb) ? targetKb : ""}
+                onChange={(event) => {
+                  const parsed = Number(event.target.value);
+                  setTargetKb(Number.isFinite(parsed) && parsed > 0 ? parsed : null);
+                }}
+                disabled={compressing}
+                style={{
+                  width: "72px",
+                  padding: "6px 8px",
+                  borderRadius: "6px",
+                  border: "1px solid var(--border)",
+                  background: "var(--editor-workspace)",
+                  color: "var(--text-primary)",
+                  fontSize: "13px",
+                }}
+              />
+            </label>
+          </div>
+          {targetKb && (
+            <p style={{ fontSize: "11px", color: "var(--text-muted)", marginTop: "8px" }}>
+              ZipDrop will try several settings and return the smallest usable file at or near {targetKb} KB.
+            </p>
+          )}
+        </div>
+        {!targetKb && (
+          <div className="zd-tool-option-full">
+            <span className="zd-tool-option-label">Compression quality</span>
+            <div style={{ display: "flex", flexDirection: "column", gap: "8px" }}>
+              {QUALITY_OPTIONS.map((opt) => (
+                <label
+                  key={opt.value}
+                  style={{
+                    display: "flex",
+                    alignItems: "flex-start",
+                    gap: "12px",
+                    padding: "12px 16px",
+                    background: quality === opt.value ? "var(--teal-light)" : "var(--bg-card)",
+                    border: quality === opt.value ? "1px solid rgba(7,140,145,0.24)" : "1px solid var(--border)",
+                    borderRadius: "10px",
+                    cursor: compressing ? "not-allowed" : "pointer",
+                    opacity: compressing ? 0.5 : 1,
+                  }}
+                >
+                  <input
+                    type="radio"
+                    name="compression-Compression-quality"
+                    value={opt.value}
+                    checked={quality === opt.value}
+                    onChange={() => setQuality(opt.value)}
+                    disabled={compressing}
+                    style={{ width: "18px", height: "18px", accentColor: "var(--primary-teal)", marginTop: "2px", flexShrink: 0 }}
+                  />
+                  <span style={{ flex: 1 }}>
+                    <span style={{ display: "block", fontSize: "13px", fontWeight: 500, color: "var(--text-primary)" }}>{opt.label}</span>
+                    <span style={{ display: "block", fontSize: "11px", color: "var(--text-muted)", marginTop: "2px" }}>{opt.description}</span>
+                  </span>
+                </label>
+              ))}
+            </div>
+          </div>
+        )}
+      </div>
+    </div>
+  );
+
+  const action = (
+    <ToolActionButton
+      onClick={compress}
+      disabled={compressing || !file}
+      loading={compressing}
+      loadingText="Compressing…"
+      icon={<ImageIcon size={20} />}
+    >
+      Compress Image
+    </ToolActionButton>
+  );
+
+  const instructions = (
+    <>
+      <ToolInfoBlock
+        title="Compression Options"
+        items={[
+          "Target Size: Set exact KB limit (100, 200, 500 KB, or custom)",
+          "Quality Level: Low (smallest), Recommended (balanced), High (best quality)",
+          "Supports JPG, PNG, and WEBP formats",
+          "Maximum file size: 50 MB",
+        ]}
+        variant="notes"
+      />
+      <ToolInfoBlock
+        title="How it works"
+        items={[
+          "Target size mode tries multiple quality levels to hit your KB limit",
+          "Quality mode uses fixed quality settings per format",
+          "PNG uses optimized compression with oxipng when available",
+          "JPG uses progressive encoding for web display",
+          "WEBP uses lossy compression with adjustable quality",
+        ]}
+        variant="notes"
+      />
+    </>
+  );
+
+  const privacy = (
+    <ToolInfoBlock
+      title="Privacy & Security"
+      items={[
+        "Images are processed securely and returned to your browser",
+        "No permanent storage",
+        "Files are not shared with third parties",
+      ]}
+      variant="privacy"
+    />
+  );
+
+  const resultPanel = result && (
+    <>
+      <SuccessDisplay
+        originalSize={result.stats.originalSize}
+        compressedSize={result.stats.compressedSize}
+        bytesSaved={result.stats.bytesSaved}
+        reductionPercent={result.stats.reductionPercent}
+        format={file ? imageFormat(file.file.name).toUpperCase() : "IMAGE"}
+        fileName={result.filename}
+        onDownload={downloadResult}
+        onReset={reset}
+        downloadLabel="Download Image"
+        formatBytes={formatBytes}
+        compressionMethod={result.stats.method}
+        warning={result.stats.warning}
+        fallbackUsed={result.stats.fallbackUsed}
+        targetAchieved={result.stats.targetAchieved}
+        level={targetKb ? `Target ${targetKb} KB` : quality}
+      />
+      <ShareProcessedFileButton
+        file={new File([result.blob], result.filename, { type: result.blob.type || "image/png" })}
+      />
+    </>
+  );
+
+  const footer = (
+    <p style={{ textAlign: "center", fontSize: "12px", color: "var(--text-muted)" }}>
+      Images are processed securely and returned to your browser. No permanent storage.
+    </p>
+  );
+
   return (
     <>
       <Navbar />
-      <div style={{ minHeight: "100vh", background: "var(--bg-main)", padding: "clamp(24px, 4vh, 48px) 24px" }}>
-        <div style={{ maxWidth: "720px", margin: "0 auto", display: "flex", flexDirection: "column", gap: "24px" }}>
-          <Breadcrumbs items={breadcrumbItems} />
-          <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
-            <Link href="/compression" style={{ textDecoration: "none", color: "var(--text-secondary)", padding: "8px" }}>
-              <ArrowLeft size={20} />
-            </Link>
-            <div>
-              <span className="section-label">COMPRESSION TOOLS</span>
-              <h1 style={{ fontSize: "28px", fontWeight: 700, color: "var(--text-primary)", marginTop: "4px" }}>
-                Compress JPG, PNG &amp; WEBP Images to Exact KB Size Free
-              </h1>
-              <p style={{ fontSize: "14px", lineHeight: 1.6, color: "var(--text-secondary)", margin: "8px 0 0" }}>
-                Pick a target size or quality level, upload your image and download the result. No login, no watermark.
-              </p>
-            </div>
-          </div>
-
-          <div className="glass-card" style={{ padding: "clamp(24px, 3vh, 32px)" }}>
-            <CompressionSettingsPanel title="Compression Settings">
-              <TargetSizePresets value={targetKb} onChange={setTargetKb} disabled={compressing} />
-              {!targetKb && (
-                <CompressionRadioGroup
-                  label="Compression quality"
-                  value={quality}
-                  onChange={setQuality}
-                  options={QUALITY_OPTIONS}
-                  disabled={compressing}
-                />
-              )}
-            </CompressionSettingsPanel>
-
-            <CompressionUploadZone
-              {...dropZoneProps}
-              dragActive={dragActive}
-              compressing={compressing}
-              label="Drag & drop a JPG, PNG or WEBP image"
-              subLabel="or click to browse (max 50 MB)"
-              icon={<ImageIcon size={48} />}
-            />
-
-            {file && (
-              <FilePreview file={file} index={0} onRemove={reset} compressing={compressing} />
-            )}
-
-            <ErrorDisplay error={error} />
-
-            <button
-              onClick={compress}
-              disabled={compressing || !file}
-              className="btn-cyan"
-              style={{ width: "100%", padding: "16px 24px", fontSize: "15px", fontWeight: 700 }}
-            >
-              {compressing ? "Compressing…" : "Compress Image"}
-            </button>
-
-            {result && (
-              <>
-                <SuccessDisplay
-                  originalSize={result.stats.originalSize}
-                  compressedSize={result.stats.compressedSize}
-                  bytesSaved={result.stats.bytesSaved}
-                  reductionPercent={result.stats.reductionPercent}
-                  format={file ? imageFormat(file.file.name).toUpperCase() : "IMAGE"}
-                  fileName={result.filename}
-                  onDownload={downloadResult}
-                  onReset={reset}
-                  downloadLabel="Download Image"
-                  formatBytes={formatBytes}
-                  compressionMethod={result.stats.method}
-                  warning={result.stats.warning}
-                  fallbackUsed={result.stats.fallbackUsed}
-                  targetAchieved={result.stats.targetAchieved}
-                  level={targetKb ? `Target ${targetKb} KB` : quality}
-                />
-                <ShareProcessedFileButton
-                  file={new File([result.blob], result.filename, { type: result.blob.type || "image/png" })}
-                />
-              </>
-            )}
-          </div>
-
-          <p style={{ textAlign: "center", fontSize: "12px", color: "var(--text-muted)" }}>
-            Images are processed securely and returned to your browser. No permanent storage.
-          </p>
-        </div>
-      </div>
+      <UnifiedToolPage
+        header={header}
+        upload={upload}
+        controls={controls}
+        action={action}
+        instructions={instructions}
+        privacy={privacy}
+        result={resultPanel}
+        footer={footer}
+        showFooterMessage={false}
+      />
     </>
   );
 }
