@@ -14,7 +14,6 @@ import {
   Archive,
 } from "lucide-react";
 import Navbar from "../../components/Navbar";
-import ToolSeoSection from "../../components/ToolSeoSection";
 
 const COMPRESSION_CATEGORIES = [
   {
@@ -499,33 +498,6 @@ export default function CompressionToolsPage() {
         </div>
       </div>
     </div>
-      <ToolSeoSection
-        title="ZipDrop file compression tools"
-        intro="ZipDrop's official file compression hub at www.getzipdrop.com/compression helps reduce PDF, JPG, PNG and WEBP file sizes without an account. Pick a tool below to choose a quality level and download the result."
-        faqs={[
-          {
-            question: "Where is the official ZipDrop file compression hub?",
-            answer:
-              "The official hub is at https://www.getzipdrop.com/compression. It links to the PDF, JPG, PNG and WEBP compressors.",
-          },
-          {
-            question: "Is ZipDrop file compression free?",
-            answer:
-              "Yes. The available compression tools can be used without payment or an account.",
-          },
-          {
-            question: "Which files can I compress with ZipDrop?",
-            answer:
-              "You can compress PDF documents and JPG, PNG and WEBP images. PDF compression accepts files up to 100 MB; the image compressors accept files up to 50 MB.",
-          },
-        ]}
-        links={[
-          { label: "Compress PDF", href: "/compression/pdf" },
-          { label: "Compress JPG", href: "/compression/jpg" },
-          { label: "PNG to JPG converter", href: "/conversion/png-to-jpg" },
-          { label: "All conversion tools", href: "/conversion" },
-        ]}
-      />
     </>
   );
 }

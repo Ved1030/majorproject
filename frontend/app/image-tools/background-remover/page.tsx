@@ -302,94 +302,15 @@ export default function BackgroundRemoverPage() {
 
               <ErrorDisplay error={error} />
 
-              <div style={{ marginTop: "32px", paddingTop: "24px", borderTop: "1px solid var(--border)" }}>
-                <h3 style={{ fontSize: "14px", fontWeight: 600, color: "var(--text-secondary)", marginBottom: "16px", textTransform: "uppercase", letterSpacing: "0.05em" }}>
-                  How it works
-                </h3>
-                <div style={{ display: "flex", gap: "24px", flexWrap: "wrap" }}>
-                  <div style={{ flex: 1, minWidth: "180px", display: "flex", alignItems: "flex-start", gap: "12px" }}>
-                    <div style={{ width: 32, height: 32, borderRadius: "8px", background: "var(--teal-light)", color: "var(--primary-teal)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
-                      <span style={{ fontWeight: 700, fontSize: "14px" }}>1</span>
-                    </div>
-                    <div>
-                      <p style={{ fontSize: "14px", fontWeight: 600, color: "var(--text-primary)", margin: "0 0 4px" }}>Upload your image</p>
-                      <p style={{ fontSize: "13px", color: "var(--text-secondary)", margin: 0 }}>Drag and drop or click to select a JPG, PNG, or WEBP file</p>
-                    </div>
-                  </div>
-                  <div style={{ flex: 1, minWidth: "180px", display: "flex", alignItems: "flex-start", gap: "12px" }}>
-                    <div style={{ width: 32, height: 32, borderRadius: "8px", background: "var(--teal-light)", color: "var(--primary-teal)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
-                      <span style={{ fontWeight: 700, fontSize: "14px" }}>2</span>
-                    </div>
-                    <div>
-                      <p style={{ fontSize: "14px", fontWeight: 600, color: "var(--text-primary)", margin: "0 0 4px" }}>AI removes background</p>
-                      <p style={{ fontSize: "13px", color: "var(--text-secondary)", margin: 0 }}>Our AI automatically detects the subject and removes the background</p>
-                    </div>
-                  </div>
-                  <div style={{ flex: 1, minWidth: "180px", display: "flex", alignItems: "flex-start", gap: "12px" }}>
-                    <div style={{ width: 32, height: 32, borderRadius: "8px", background: "var(--teal-light)", color: "var(--primary-teal)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
-                      <span style={{ fontWeight: 700, fontSize: "14px" }}>3</span>
-                    </div>
-                    <div>
-                      <p style={{ fontSize: "14px", fontWeight: 600, color: "var(--text-primary)", margin: "0 0 4px" }}>Download transparent PNG</p>
-                      <p style={{ fontSize: "13px", color: "var(--text-secondary)", margin: 0 }}>Get your result with preserved dimensions and full transparency</p>
-                    </div>
-                  </div>
-                </div>
-              </div>
-
-              <div style={{ marginTop: "32px", paddingTop: "24px", borderTop: "1px solid var(--border)" }}>
-                <h3 style={{ fontSize: "14px", fontWeight: 600, color: "var(--text-secondary)", marginBottom: "16px", textTransform: "uppercase", letterSpacing: "0.05em" }}>
-                  FAQ
-                </h3>
-                <dl style={{ display: "flex", flexDirection: "column", gap: "16px" }}>
-                  <div>
-                    <dt style={{ fontSize: "14px", fontWeight: 600, color: "var(--text-primary)", marginBottom: "4px" }}>How does the background remover work?</dt>
-                    <dd style={{ fontSize: "13px", color: "var(--text-secondary)", margin: 0, lineHeight: 1.6 }}>
-                      The tool automatically detects whether your image is a photograph or a graphic/logo, then applies the optimal removal method. For photographs, it uses a deep learning model (isnet-general-use) trained on diverse datasets. For logos and graphics, it uses edge-based color detection to remove uniform backgrounds while preserving details like holes in letters.
-                    </dd>
-                  </div>
-                  <div>
-                    <dt style={{ fontSize: "14px", fontWeight: 600, color: "var(--text-primary)", marginBottom: "4px" }}>Which image formats are supported?</dt>
-                    <dd style={{ fontSize: "13px", color: "var(--text-secondary)", margin: 0, lineHeight: 1.6 }}>
-                      JPG, PNG, and WEBP images up to 20 MB. The output is always a transparent PNG to preserve the alpha channel.
-                    </dd>
-                  </div>
-                  <div>
-                    <dt style={{ fontSize: "14px", fontWeight: 600, color: "var(--text-primary)", marginBottom: "4px" }}>Does the output support transparency?</dt>
-                    <dd style={{ fontSize: "13px", color: "var(--text-secondary)", margin: 0, lineHeight: 1.6 }}>
-                      Yes. The result is a PNG file with a full alpha channel. Transparent areas remain transparent when downloaded.
-                    </dd>
-                  </div>
-                  <div>
-                    <dt style={{ fontSize: "14px", fontWeight: 600, color: "var(--text-primary)", marginBottom: "4px" }}>Will the original image dimensions be preserved?</dt>
-                    <dd style={{ fontSize: "13px", color: "var(--text-secondary)", margin: 0, lineHeight: 1.6 }}>
-                      Yes. The output maintains the exact same pixel dimensions as the input image.
-                    </dd>
-                  </div>
-                  <div>
-                    <dt style={{ fontSize: "14px", fontWeight: 600, color: "var(--text-primary)", marginBottom: "4px" }}>Are uploaded images permanently stored?</dt>
-                    <dd style={{ fontSize: "13px", color: "var(--text-secondary)", margin: 0, lineHeight: 1.6 }}>
-                      No. Images are processed in memory and temporary files are deleted immediately after processing. We do not store your images.
-                    </dd>
-                  </div>
-                  <div>
-                    <dt style={{ fontSize: "14px", fontWeight: 600, color: "var(--text-primary)", marginBottom: "4px" }}>Is the background remover free to use?</dt>
-                    <dd style={{ fontSize: "13px", color: "var(--text-secondary)", margin: 0, lineHeight: 1.6 }}>
-                      Yes, the tool is free to use with no registration required.
-                    </dd>
-                  </div>
-                </dl>
-              </div>
-
               <p style={{ textAlign: "center", fontSize: "12px", color: "var(--text-muted)" }}>
                 Files are processed securely and deleted after processing. No permanent storage.
-              </p>
+</p>
             </div>
           </div>
         </div>
-      </>
-    );
-  }
+    </>
+  );
+}
 
   // Result view
   return (

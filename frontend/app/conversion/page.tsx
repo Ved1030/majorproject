@@ -17,7 +17,6 @@ import {
   X,
 } from "lucide-react";
 import Navbar from "../../components/Navbar";
-import ToolSeoSection from "../../components/ToolSeoSection";
 
 const CONVERSION_CATEGORIES = [
   {
@@ -487,33 +486,6 @@ export default function ConversionToolsPage() {
         </div>
       </div>
     </div>
-      <ToolSeoSection
-        title="About ZipDrop's online file converter"
-        intro="ZipDrop's official file converter at www.getzipdrop.com/conversion includes 27 tools for PDF, Word, Excel, PowerPoint, images and text. Start with PDF to Word, PNG to JPG or Word to PDF — no account or software install required."
-        faqs={[
-          {
-            question: "Is www.getzipdrop.com/conversion the official ZipDrop file converter?",
-            answer:
-              "Yes. The official ZipDrop file converter is at https://www.getzipdrop.com/conversion and links to all 27 conversion tools.",
-          },
-          {
-            question: "Which conversion tools are most popular?",
-            answer:
-              "PDF to Word, Word to PDF, PNG to JPG, JPG to PDF and Compress PDF are commonly used ZipDrop tools.",
-          },
-          {
-            question: "Do ZipDrop conversions require an account?",
-            answer:
-              "No. The available conversion tools run in your browser without sign-up, login or software installation.",
-          },
-        ]}
-        links={[
-          { label: "PDF to Word", href: "/conversion/pdf-to-word" },
-          { label: "PNG to JPG", href: "/conversion/png-to-jpg" },
-          { label: "Word to PDF", href: "/conversion/word-to-pdf" },
-          { label: "Compress PDF", href: "/compression/pdf" },
-        ]}
-      />
     </>
   );
 }

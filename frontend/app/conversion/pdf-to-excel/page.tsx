@@ -264,25 +264,6 @@ export default function PdfToExcelPage() {
               </div>
             )}
 
-            {/* Info */}
-            <div style={{ marginTop: "24px", padding: "16px", background: "var(--editor-workspace)", border: "1px solid var(--border)", borderRadius: "12px" }}>
-              <div style={{ display: "flex", alignItems: "flex-start", gap: "10px" }}>
-                <Info size={18} style={{ color: "var(--primary-teal)", flexShrink: 0, marginTop: "1px" }} />
-                <div style={{ flex: 1 }}>
-                  <p style={{ fontSize: "13px", fontWeight: 600, color: "var(--text-primary)", margin: "0 0 8px" }}>
-                    How it works
-                  </p>
-                  <ul style={{ fontSize: "12.5px", color: "var(--text-secondary)", margin: 0, paddingLeft: "20px", lineHeight: 1.8 }}>
-                    <li>Tables are detected across all PDF pages using pdfplumber</li>
-                    <li>Each logical table becomes a separate worksheet</li>
-                    <li>Tables spanning multiple pages are merged where possible</li>
-                    <li>Cell formatting (borders, headers) is preserved</li>
-                    <li>Scanned/image-only PDFs require OCR (not yet supported)</li>
-                  </ul>
-                </div>
-              </div>
-            </div>
-
             {/* Limitations */}
             <div style={{ marginTop: "16px", padding: "16px", background: "var(--warning-light)", border: "1px solid rgba(217,147,8,0.20)", borderRadius: "12px" }}>
               <div style={{ display: "flex", alignItems: "flex-start", gap: "10px" }}>

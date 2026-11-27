@@ -1,8 +1,6 @@
 import type { Metadata } from "next";
 import Navbar from "@/components/Navbar";
 import SiteFooter from "@/components/SiteFooter";
-import RelatedTools from "@/components/seo/RelatedTools";
-import AdSlot from "@/components/seo/AdSlot";
 import { SITE_URL } from "@/lib/site";
 
 export const metadata: Metadata = {
@@ -64,10 +62,6 @@ export default function BlogLayout({
       <Navbar />
       <main style={{ minHeight: "calc(100vh - 200px)" }}>
         {children}
-        <div style={{ maxWidth: "800px", margin: "0 auto", padding: "0 24px 40px" }}>
-          <RelatedTools />
-          <AdSlot slotId="auto" format="auto" />
-        </div>
       </main>
       <SiteFooter />
     </>

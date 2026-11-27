@@ -277,26 +277,6 @@ export default function ExcelToCsvPage() {
               </div>
             )}
 
-            {/* Info */}
-            <div style={{ marginTop: "24px", padding: "16px", background: "var(--editor-workspace)", border: "1px solid var(--border)", borderRadius: "12px" }}>
-              <div style={{ display: "flex", alignItems: "flex-start", gap: "10px" }}>
-                <Info size={18} style={{ color: "var(--primary-teal)", flexShrink: 0, marginTop: "1px" }} />
-                <div style={{ flex: 1 }}>
-                  <p style={{ fontSize: "13px", fontWeight: 600, color: "var(--text-primary)", margin: "0 0 8px" }}>
-                    How it works
-                  </p>
-                  <ul style={{ fontSize: "12.5px", color: "var(--text-secondary)", margin: 0, paddingLeft: "20px", lineHeight: 1.8 }}>
-                    <li>Single worksheet → downloads as .csv file</li>
-                    <li>Multiple worksheets → downloads as .zip with one CSV per sheet</li>
-                    <li>Sheet names used as filenames (sanitized for safety)</li>
-                    <li>UTF-8 encoding with BOM for Excel compatibility</li>
-                    <li>Empty cells preserved to maintain column alignment</li>
-                    <li>Formulas: cached results used where available</li>
-                  </ul>
-                </div>
-              </div>
-            </div>
-
             {/* Limitations */}
             <div style={{ marginTop: "16px", padding: "16px", background: "var(--warning-light)", border: "1px solid rgba(217,147,8,0.20)", borderRadius: "12px" }}>
               <div style={{ display: "flex", alignItems: "flex-start", gap: "10px" }}>

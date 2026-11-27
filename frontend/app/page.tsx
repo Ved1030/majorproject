@@ -11,7 +11,6 @@ import PopularTools from "../components/PopularTools";
 import WhatCanYouDo from "../components/WhatCanYouDo";
 import SupportedFileFormats from "../components/SupportedFileFormats";
 import HowToGuides from "../components/HowToGuides";
-import FAQ, { FAQ_ITEMS } from "../components/FAQ";
 import { BRAND_DESCRIPTION, OG_IMAGE, SITE_DESCRIPTION, SITE_NAME, SITE_TITLE, SITE_URL } from "@/lib/site";
 
 /* ─── Background Waves ───────────────────── */
@@ -476,19 +475,6 @@ export default function Home() {
     inLanguage: "en",
   };
 
-  const faqPageData = {
-    "@context": "https://schema.org",
-    "@type": "FAQPage",
-    mainEntity: FAQ_ITEMS.map((item) => ({
-      "@type": "Question",
-      name: item.question,
-      acceptedAnswer: {
-        "@type": "Answer",
-        text: item.answer,
-      },
-    })),
-  };
-
   return (
     <>
       {/* Background layers */}
@@ -496,7 +482,7 @@ export default function Home() {
 
       <Navbar />
 
-      {/* Structured Data - WebPage, SoftwareApplication, FAQPage (homepage only) */}
+      {/* Structured Data - WebPage, SoftwareApplication */}
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(webPageData) }}
@@ -504,11 +490,6 @@ export default function Home() {
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(softwareApplicationData) }}
-      />
-
-      <script
-        type="application/ld+json"
-        dangerouslySetInnerHTML={{ __html: JSON.stringify(faqPageData) }}
       />
 
       <main
@@ -552,9 +533,6 @@ export default function Home() {
 
         {/* ── HOW-TO GUIDES ── */}
         <HowToGuides />
-
-        {/* ── FAQ ── */}
-        <FAQ />
       </main>
     </>
   );
