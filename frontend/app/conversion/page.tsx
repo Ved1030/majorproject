@@ -247,11 +247,13 @@ export default function ConversionToolsPage() {
   return (
     <>
       <Navbar />
-      <div style={{ 
-        minHeight: "100vh", 
-        background: "var(--bg-main)",
-        padding: "clamp(24px, 4vh, 48px) 24px",
-      }}>
+      <div
+        className="zd-page-shell"
+        style={{
+          minHeight: "100vh",
+          background: "var(--bg-main)",
+        }}
+      >
       <div style={{ maxWidth: "1100px", margin: "0 auto", display: "flex", flexDirection: "column", gap: "32px" }}>
         {/* Hero Section */}
         <section style={{ textAlign: "center", maxWidth: "720px", margin: "0 auto" }}>
@@ -404,7 +406,7 @@ export default function ConversionToolsPage() {
                     <div 
                       style={{ 
                         display: "grid",
-                        gridTemplateColumns: "repeat(auto-fill, minmax(320px, 1fr))",
+                         gridTemplateColumns: "repeat(auto-fit, minmax(min(100%, 300px), 1fr))",
                         gap: "16px",
                         marginTop: "16px",
                         animation: "fadeInUp 0.3s ease forwards",

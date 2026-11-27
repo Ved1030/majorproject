@@ -10,6 +10,8 @@ interface EditorHeaderProps {
   onDownload: (format?: string) => void;
   onOpenFile: () => void;
   onShareEdited: () => void;
+  onTogglePages: () => void;
+  onToggleInfo: () => void;
 }
 
 export default function EditorHeader({
@@ -19,6 +21,8 @@ export default function EditorHeader({
   onDownload,
   onOpenFile,
   onShareEdited,
+  onTogglePages,
+  onToggleInfo,
 }: EditorHeaderProps) {
   const [showDownloadMenu, setShowDownloadMenu] = useState(false);
 
@@ -43,6 +47,7 @@ export default function EditorHeader({
     >
       {/* Logo */}
       <div
+        className="ed-header-logo"
         style={{
           display: "flex",
           alignItems: "center",
@@ -87,11 +92,12 @@ export default function EditorHeader({
         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
           <polyline points="15 18 9 12 15 6" />
         </svg>
-        Back to files
+        <span className="ed-back-label">Back to files</span>
       </button>
 
       {/* Center */}
       <div
+        className="ed-file-block"
         style={{
           flex: 1,
           display: "flex",
@@ -119,6 +125,7 @@ export default function EditorHeader({
         </div>
         <div style={{ display: "flex", flexDirection: "column", alignItems: "flex-start" }}>
           <span
+            className="ed-file-name"
             style={{
               fontSize: 14,
               fontWeight: 600,
@@ -147,7 +154,56 @@ export default function EditorHeader({
 
       {/* Right */}
       <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+        <button
+          type="button"
+          className="ed-mobile-panel-btn"
+          aria-label="Show pages"
+          title="Pages"
+          onClick={onTogglePages}
+          style={{
+            width: 32,
+            height: 32,
+            display: "none",
+            alignItems: "center",
+            justifyContent: "center",
+            border: "1px solid var(--border)",
+            borderRadius: 6,
+            background: "var(--editor-workspace)",
+            color: "var(--text-primary)",
+            cursor: "pointer",
+          }}
+        >
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            <rect x="3" y="3" width="18" height="18" rx="2" />
+            <line x1="9" y1="3" x2="9" y2="21" />
+          </svg>
+        </button>
+        <button
+          type="button"
+          className="ed-mobile-panel-btn"
+          aria-label="Show document information"
+          title="Document information"
+          onClick={onToggleInfo}
+          style={{
+            width: 32,
+            height: 32,
+            display: "none",
+            alignItems: "center",
+            justifyContent: "center",
+            border: "1px solid var(--border)",
+            borderRadius: 6,
+            background: "var(--editor-workspace)",
+            color: "var(--text-primary)",
+            cursor: "pointer",
+          }}
+        >
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            <rect x="3" y="3" width="18" height="18" rx="2" />
+            <line x1="15" y1="3" x2="15" y2="21" />
+          </svg>
+        </button>
         <div
+          className="ed-auto-saved"
           style={{
             fontSize: 12,
             color: "var(--text-secondary)",
@@ -164,6 +220,8 @@ export default function EditorHeader({
 
         <button
           onClick={onOpenFile}
+          aria-label="Open file"
+          title="Open file"
           style={{
             display: "flex",
             alignItems: "center",
@@ -178,7 +236,7 @@ export default function EditorHeader({
             background: "var(--editor-workspace)",
             color: "var(--primary-teal)",
           }}
-          className="top-btn"
+          className="top-btn ed-open-btn"
         >
           <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
             <path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z" />
@@ -189,6 +247,8 @@ export default function EditorHeader({
         <div style={{ position: "relative" }}>
           <button
             onClick={() => setShowDownloadMenu(!showDownloadMenu)}
+            aria-label="Download"
+            title="Download"
             style={{
               display: "flex",
               alignItems: "center",
@@ -210,7 +270,7 @@ export default function EditorHeader({
               <polyline points="7 10 12 15 17 10" />
               <line x1="12" y1="15" x2="12" y2="3" />
             </svg>
-            Download
+            <span className="ed-top-label">Download</span>
             <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
               <polyline points="6 9 12 15 18 9" />
             </svg>
@@ -218,6 +278,7 @@ export default function EditorHeader({
 
           {showDownloadMenu && (
             <div
+              className="ed-download-menu"
               style={{
                 position: "absolute",
                 top: "100%",
@@ -293,6 +354,8 @@ export default function EditorHeader({
 
         <button
           onClick={onShareEdited}
+          aria-label="Share edited copy"
+          title="Share edited copy"
           style={{
             display: "flex",
             alignItems: "center",
@@ -315,13 +378,14 @@ export default function EditorHeader({
             <circle cx="18" cy="19" r="3" />
             <line x1="8.59" y1="13.51" x2="15.42" y2="17.49" />
             <line x1="15.41" y1="6.51" x2="8.59" y2="10.49" />
-          </svg>
-          Share Edited
-        </button>
+            </svg>
+            <span className="ed-top-label">Share Edited</span>
+          </button>
 
-        <div
-          style={{
-            width: 34,
+          <div
+            className="ed-kebab"
+            style={{
+              width: 34,
             height: 34,
             display: "flex",
             alignItems: "center",

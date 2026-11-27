@@ -31,16 +31,19 @@ function Hero() {
   return (
     <section
       id="home"
+      className="zd-hero"
       style={{
         position: "relative",
         zIndex: 1,
+        width: "100%",
+        minWidth: 0,
+        maxWidth: "720px",
         display: "flex",
         flexDirection: "column",
         alignItems: "center",
         gap: "clamp(12px, 1.8vh, 16px)",
         textAlign: "center",
-        maxWidth: "720px",
-        padding: "clamp(24px, 4vh, 48px) 24px",
+        padding: "clamp(24px, 4vh, 48px) var(--zd-page-gutter, 24px)",
         background: "transparent",
         animation: "fadeInDown 0.7s cubic-bezier(0.22, 1, 0.36, 1) forwards",
       }}
@@ -350,7 +353,7 @@ function ToolCategories() {
       style={{
         width: "100%",
         maxWidth: "1280px",
-        padding: "clamp(32px, 5vh, 48px) 24px 0",
+        padding: "clamp(32px, 5vh, 48px) var(--zd-page-gutter, 24px) 0",
         animation: "fadeInUp 0.8s 0.4s cubic-bezier(0.22, 1, 0.36, 1) both",
       }}
     >
@@ -503,8 +506,8 @@ export default function Home() {
           alignItems: "center",
           paddingTop: "clamp(16px, 2vh, 24px)",
           paddingBottom: "clamp(40px, 6vh, 64px)",
-          paddingLeft: "24px",
-          paddingRight: "24px",
+          paddingLeft: "var(--zd-page-gutter, 24px)",
+          paddingRight: "var(--zd-page-gutter, 24px)",
           gap: "clamp(24px, 3.5vh, 48px)",
         }}
       >

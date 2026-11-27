@@ -57,7 +57,7 @@ export default function ToolCompressionSettings({
         disabled={disabled}
         style={{
           flex: 1,
-          minWidth: "120px",
+          minWidth: "min(120px, 100%)",
           padding: "14px 18px",
           borderRadius: "12px",
           border: "2px solid " + borderColor,

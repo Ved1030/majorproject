@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import type { Editor } from "@tiptap/react";
 import {
   AlignLeft,
@@ -25,6 +25,7 @@ import {
   RemoveFormatting,
   Indent,
   Outdent,
+  MoreHorizontal,
 } from "lucide-react";
 import { FONT_FAMILIES, FONT_SIZES } from "@/lib/editor/extensions";
 
@@ -58,6 +59,7 @@ function Btn({
       onClick={onClick}
       onMouseDown={(e) => e.preventDefault()}
       title={title}
+      aria-label={title}
       disabled={disabled}
       className="tb"
       style={{
@@ -83,7 +85,7 @@ function Btn({
 }
 
 function Sep() {
-  return <div style={{ width: 1, height: 22, background: "var(--border)", margin: "0 4px" }} />;
+  return <div className="ed-toolbar-sep" style={{ width: 1, height: 22, background: "var(--border)", margin: "0 4px" }} />;
 }
 
 function Sel({
@@ -91,17 +93,21 @@ function Sel({
   onChange,
   options,
   width,
+  title,
 }: {
   value: string;
   onChange: (v: string) => void;
   options: { value: string; label: string }[];
   width?: string;
+  title: string;
 }) {
   return (
     <select
       value={value}
       onChange={(e) => onChange(e.target.value)}
       className="tb-sel"
+      title={title}
+      aria-label={title}
       style={{
         height: 30,
         border: "1px solid var(--border)",
@@ -125,6 +131,20 @@ function Sel({
 }
 
 export default function Toolbar({ editor, showRulers }: ToolbarProps) {
+  const [moreOpen, setMoreOpen] = useState(false);
+  const moreRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (!moreOpen) return;
+    const onDocClick = (e: MouseEvent) => {
+      if (moreRef.current && !moreRef.current.contains(e.target as Node)) {
+        setMoreOpen(false);
+      }
+    };
+    document.addEventListener("mousedown", onDocClick);
+    return () => document.removeEventListener("mousedown", onDocClick);
+  }, [moreOpen]);
+
   const handleInsertLink = useCallback(() => {
     if (!editor) return;
     const url = window.prompt("Enter URL:", "https://");
@@ -171,9 +191,146 @@ export default function Toolbar({ editor, showRulers }: ToolbarProps) {
 
   const fontOptions = FONT_FAMILIES.map((f) => ({ value: f, label: f }));
   const sizeOptions = FONT_SIZES.map((s) => ({ value: s, label: s }));
+  const currentFontSize = editor.getAttributes("textStyle").fontSize || "11";
 
-  const currentFontSize =
-    editor.getAttributes("textStyle").fontSize || "11";
+  const primaryActions = (
+    <>
+      <Btn
+        onClick={() => editor.chain().focus().undo().run()}
+        disabled={!editor.can().undo()}
+        title="Undo"
+      >
+        <Undo2 size={16} />
+      </Btn>
+      <Btn
+        onClick={() => editor.chain().focus().redo().run()}
+        disabled={!editor.can().redo()}
+        title="Redo"
+      >
+        <Redo2 size={16} />
+      </Btn>
+      <Sep />
+      <Sel
+        value={currentFontSize}
+        onChange={(v) => editor.chain().focus().setFontSize(v).run()}
+        options={sizeOptions}
+        width="56px"
+        title="Font size"
+      />
+      <Sep />
+      <Btn active={editor.isActive("bold")} onClick={() => editor.chain().focus().toggleBold().run()} title="Bold (Ctrl+B)">
+        <Bold size={16} />
+      </Btn>
+      <Btn active={editor.isActive("italic")} onClick={() => editor.chain().focus().toggleItalic().run()} title="Italic (Ctrl+I)">
+        <Italic size={16} />
+      </Btn>
+      <Btn active={editor.isActive("underline")} onClick={() => editor.chain().focus().toggleUnderline().run()} title="Underline (Ctrl+U)">
+        <Underline size={16} />
+      </Btn>
+      <Sep />
+      <Btn active={editor.isActive("bulletList")} onClick={() => editor.chain().focus().toggleBulletList().run()} title="Bullet list">
+        <List size={16} />
+      </Btn>
+      <Btn active={editor.isActive("orderedList")} onClick={() => editor.chain().focus().toggleOrderedList().run()} title="Numbered list">
+        <ListOrdered size={16} />
+      </Btn>
+    </>
+  );
+
+  const secondaryActions = (
+    <>
+      <Sel
+        value={editor.getAttributes("textStyle").fontFamily || "Arial"}
+        onChange={(v) => {
+          if (v === "Arial") {
+            editor.chain().focus().unsetFontFamily().run();
+          } else {
+            editor.chain().focus().setFontFamily(v).run();
+          }
+        }}
+        options={fontOptions}
+        width="120px"
+        title="Font family"
+      />
+      <label
+        title="Text color"
+        style={{
+          display: "flex",
+          alignItems: "center",
+          gap: 2,
+          padding: "0 4px",
+          cursor: "pointer",
+          fontSize: 13,
+          color: "var(--text-primary)",
+        }}
+      >
+        A
+        <input
+          type="color"
+          value={editor.getAttributes("textStyle").color || "#000000"}
+          onChange={(e) => editor.chain().focus().setColor(e.target.value).run()}
+          aria-label="Text color"
+          style={{ width: 20, height: 20, border: "none", borderRadius: 3, cursor: "pointer", padding: 0, background: "none" }}
+        />
+      </label>
+      <Btn active={editor.isActive("highlight")} onClick={() => editor.chain().focus().toggleHighlight().run()} title="Highlight">
+        <Highlighter size={16} />
+      </Btn>
+      <Sep />
+      <Btn active={editor.isActive("strike")} onClick={() => editor.chain().focus().toggleStrike().run()} title="Strikethrough">
+        <Strikethrough size={16} />
+      </Btn>
+      <Btn active={editor.isActive("superscript")} onClick={() => editor.chain().focus().toggleSuperscript().run()} title="Superscript" style={{ fontSize: 11 }}>
+        X&#178;
+      </Btn>
+      <Btn active={editor.isActive("subscript")} onClick={() => editor.chain().focus().toggleSubscript().run()} title="Subscript" style={{ fontSize: 11 }}>
+        X&#8322;
+      </Btn>
+      <Btn onClick={() => editor.chain().focus().clearNodes().unsetAllMarks().run()} title="Clear formatting">
+        <RemoveFormatting size={16} />
+      </Btn>
+      <Sep />
+      <Btn active={editor.isActive("textAlign", { align: "left" })} onClick={() => editor.chain().focus().setTextAlign("left").run()} title="Align left">
+        <AlignLeft size={16} />
+      </Btn>
+      <Btn active={editor.isActive("textAlign", { align: "center" })} onClick={() => editor.chain().focus().setTextAlign("center").run()} title="Center">
+        <AlignCenter size={16} />
+      </Btn>
+      <Btn active={editor.isActive("textAlign", { align: "right" })} onClick={() => editor.chain().focus().setTextAlign("right").run()} title="Align right">
+        <AlignRight size={16} />
+      </Btn>
+      <Btn active={editor.isActive("textAlign", { align: "justify" })} onClick={() => editor.chain().focus().setTextAlign("justify").run()} title="Justify">
+        <AlignJustify size={16} />
+      </Btn>
+      <Sep />
+      <Btn active={editor.isActive("taskList")} onClick={() => editor.chain().focus().toggleTaskList().run()} title="Checklist">
+        <CheckSquare size={16} />
+      </Btn>
+      <Btn onClick={() => (editor.chain().focus() as ChainWithIndent).indent().run()} title="Increase indent">
+        <Indent size={16} />
+      </Btn>
+      <Btn onClick={() => (editor.chain().focus() as ChainWithIndent).outdent().run()} title="Decrease indent">
+        <Outdent size={16} />
+      </Btn>
+      <Sep />
+      <Btn active={editor.isActive("code")} onClick={handleInsertCodeBlock} title="Inline code">
+        <Code size={16} />
+      </Btn>
+      <Btn onClick={() => editor.chain().focus().setHorizontalRule().run()} title="Horizontal rule">
+        <Minus size={16} />
+      </Btn>
+      <Sep />
+      <Btn onClick={handleInsertTable} title="Insert table">
+        <TableIcon size={16} />
+      </Btn>
+      <Btn onClick={handleInsertImage} title="Insert image">
+        <ImageIcon size={16} />
+      </Btn>
+      <Btn onClick={handleInsertLink} title="Insert link">
+        <Link size={16} />
+      </Btn>
+    </>
+  );
 
   return (
     <>
@@ -190,243 +347,62 @@ export default function Toolbar({ editor, showRulers }: ToolbarProps) {
           flexShrink: 0,
         }}
       >
-        {/* Undo / Redo */}
-        <Btn
-          onClick={() => editor.chain().focus().undo().run()}
-          disabled={!editor.can().undo()}
-          title="Undo"
-        >
-          <Undo2 size={16} />
-        </Btn>
-        <Btn
-          onClick={() => editor.chain().focus().redo().run()}
-          disabled={!editor.can().redo()}
-          title="Redo"
-        >
-          <Redo2 size={16} />
-        </Btn>
-
-        <Sep />
-
-        {/* Font family */}
-        <Sel
-          value={editor.getAttributes("textStyle").fontFamily || "Arial"}
-          onChange={(v) => {
-            if (v === "Arial") {
-              editor.chain().focus().unsetFontFamily().run();
-            } else {
-              editor.chain().focus().setFontFamily(v).run();
-            }
-          }}
-          options={fontOptions}
-          width="120px"
-        />
-
-        {/* Font size */}
-        <Sel
-          value={currentFontSize}
-          onChange={(v) => {
-            editor.chain().focus().setFontSize(v).run();
-          }}
-          options={sizeOptions}
-          width="56px"
-        />
-
-        <Sep />
-
-        {/* Text color */}
-        <label
-          title="Text color"
-          style={{
-            display: "flex",
-            alignItems: "center",
-            gap: 2,
-            padding: "0 4px",
-            cursor: "pointer",
-            fontSize: 13,
-            color: "var(--text-primary)",
-          }}
-        >
-          A
-          <input
-            type="color"
-            value={editor.getAttributes("textStyle").color || "#000000"}
-            onChange={(e) => editor.chain().focus().setColor(e.target.value).run()}
-            style={{ width: 20, height: 20, border: "none", borderRadius: 3, cursor: "pointer", padding: 0, background: "none" }}
-          />
-        </label>
-
-        {/* Highlight */}
-        <Btn
-          active={editor.isActive("highlight")}
-          onClick={() => editor.chain().focus().toggleHighlight().run()}
-          title="Highlight"
-        >
-          <Highlighter size={16} />
-        </Btn>
-
-        <Sep />
-
-        {/* Bold / Italic / Underline / Strike */}
-        <Btn
-          active={editor.isActive("bold")}
-          onClick={() => editor.chain().focus().toggleBold().run()}
-          title="Bold (Ctrl+B)"
-        >
-          <Bold size={16} />
-        </Btn>
-        <Btn
-          active={editor.isActive("italic")}
-          onClick={() => editor.chain().focus().toggleItalic().run()}
-          title="Italic (Ctrl+I)"
-        >
-          <Italic size={16} />
-        </Btn>
-        <Btn
-          active={editor.isActive("underline")}
-          onClick={() => editor.chain().focus().toggleUnderline().run()}
-          title="Underline (Ctrl+U)"
-        >
-          <Underline size={16} />
-        </Btn>
-        <Btn
-          active={editor.isActive("strike")}
-          onClick={() => editor.chain().focus().toggleStrike().run()}
-          title="Strikethrough"
-        >
-          <Strikethrough size={16} />
-        </Btn>
-        <Btn
-          active={editor.isActive("superscript")}
-          onClick={() => editor.chain().focus().toggleSuperscript().run()}
-          title="Superscript"
-          style={{ fontSize: 11 }}
-        >
-          X&#178;
-        </Btn>
-        <Btn
-          active={editor.isActive("subscript")}
-          onClick={() => editor.chain().focus().toggleSubscript().run()}
-          title="Subscript"
-          style={{ fontSize: 11 }}
-        >
-          X&#8322;
-        </Btn>
-
-        <Sep />
-
-        {/* Clear formatting */}
-        <Btn
-          onClick={() => editor.chain().focus().clearNodes().unsetAllMarks().run()}
-          title="Clear formatting"
-        >
-          <RemoveFormatting size={16} />
-        </Btn>
-
-        <Sep />
-
-        {/* Alignment */}
-        <Btn
-          active={editor.isActive("textAlign", { align: "left" })}
-          onClick={() => editor.chain().focus().setTextAlign("left").run()}
-          title="Align left"
-        >
-          <AlignLeft size={16} />
-        </Btn>
-        <Btn
-          active={editor.isActive("textAlign", { align: "center" })}
-          onClick={() => editor.chain().focus().setTextAlign("center").run()}
-          title="Center"
-        >
-          <AlignCenter size={16} />
-        </Btn>
-        <Btn
-          active={editor.isActive("textAlign", { align: "right" })}
-          onClick={() => editor.chain().focus().setTextAlign("right").run()}
-          title="Align right"
-        >
-          <AlignRight size={16} />
-        </Btn>
-        <Btn
-          active={editor.isActive("textAlign", { align: "justify" })}
-          onClick={() => editor.chain().focus().setTextAlign("justify").run()}
-          title="Justify"
-        >
-          <AlignJustify size={16} />
-        </Btn>
-
-        <Sep />
-
-        {/* Lists */}
-        <Btn
-          active={editor.isActive("bulletList")}
-          onClick={() => editor.chain().focus().toggleBulletList().run()}
-          title="Bullet list"
-        >
-          <List size={16} />
-        </Btn>
-        <Btn
-          active={editor.isActive("orderedList")}
-          onClick={() => editor.chain().focus().toggleOrderedList().run()}
-          title="Numbered list"
-        >
-          <ListOrdered size={16} />
-        </Btn>
-        <Btn
-          active={editor.isActive("taskList")}
-          onClick={() => editor.chain().focus().toggleTaskList().run()}
-          title="Checklist"
-        >
-          <CheckSquare size={16} />
-        </Btn>
-
-        <Sep />
-
-        {/* Indent / Outdent */}
-        <Btn
-          onClick={() => (editor.chain().focus() as ChainWithIndent).indent().run()}
-          title="Increase indent"
-        >
-          <Indent size={16} />
-        </Btn>
-        <Btn
-          onClick={() => (editor.chain().focus() as ChainWithIndent).outdent().run()}
-          title="Decrease indent"
-        >
-          <Outdent size={16} />
-        </Btn>
-
-        <Sep />
-
-        {/* Inline code */}
-        <Btn
-          active={editor.isActive("code")}
-          onClick={handleInsertCodeBlock}
-          title="Inline code"
-        >
-          <Code size={16} />
-        </Btn>
-
-        {/* Horizontal rule */}
-        <Btn
-          onClick={() => editor.chain().focus().setHorizontalRule().run()}
-          title="Horizontal rule"
-        >
-          <Minus size={16} />
-        </Btn>
-
-        <Sep />
-
-        {/* Insert */}
-        <Btn onClick={handleInsertTable} title="Insert table">
-          <TableIcon size={16} />
-        </Btn>
-        <Btn onClick={handleInsertImage} title="Insert image">
-          <ImageIcon size={16} />
-        </Btn>
-        <Btn onClick={handleInsertLink} title="Insert link">
-          <Link size={16} />
-        </Btn>
+        <div className="ed-toolbar-primary" style={{ display: "flex", alignItems: "center", gap: 2 }}>
+          {primaryActions}
+        </div>
+        <div className="ed-toolbar-secondary" style={{ display: "flex", alignItems: "center", gap: 2 }}>
+          {secondaryActions}
+        </div>
+        <div className="ed-toolbar-more" ref={moreRef} style={{ display: "none", position: "relative", marginLeft: "auto" }}>
+          <button
+            type="button"
+            id="ed-toolbar-more-btn"
+            onMouseDown={(e) => e.preventDefault()}
+            onClick={() => setMoreOpen((open) => !open)}
+            aria-label="More formatting options"
+            aria-expanded={moreOpen}
+            style={{
+              display: "flex",
+              alignItems: "center",
+              gap: 4,
+              padding: "6px 8px",
+              border: "1px solid var(--border)",
+              borderRadius: 4,
+              background: moreOpen ? "var(--teal-light)" : "var(--bg-card)",
+              color: "var(--text-primary)",
+              fontSize: 12,
+              cursor: "pointer",
+            }}
+          >
+            <MoreHorizontal size={16} />
+            More
+          </button>
+          {moreOpen && (
+            <div
+              id="ed-toolbar-more-panel"
+              style={{
+                position: "absolute",
+                top: "calc(100% + 4px)",
+                right: 0,
+                width: "min(280px, calc(100vw - 16px))",
+                maxHeight: "60dvh",
+                overflowY: "auto",
+                display: "flex",
+                flexWrap: "wrap",
+                alignItems: "center",
+                gap: 2,
+                padding: 8,
+                background: "var(--bg-card)",
+                border: "1px solid var(--border)",
+                borderRadius: 6,
+                boxShadow: "0 2px 8px rgba(32,43,54,0.10), 0 8px 24px rgba(32,43,54,0.06)",
+                zIndex: 400,
+              }}
+            >
+              {secondaryActions}
+            </div>
+          )}
+        </div>
       </div>
 
       {showRulers && (

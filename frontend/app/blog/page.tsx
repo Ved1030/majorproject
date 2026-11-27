@@ -79,7 +79,7 @@ const blogPosts = [
 
 export default function BlogPage() {
   return (
-    <main style={{ maxWidth: "800px", margin: "0 auto", padding: "48px 20px 64px" }}>
+    <main className="zd-page-shell zd-blog-index" style={{ maxWidth: "800px", margin: "0 auto" }}>
       <header style={{ marginBottom: "48px", textAlign: "center" }}>
         <h1 style={{ 
           fontSize: "clamp(30px, 4vw, 42px)", 
@@ -104,7 +104,7 @@ export default function BlogPage() {
 
       <div style={{ 
         display: "grid", 
-        gridTemplateColumns: "repeat(auto-fill, minmax(320px, 1fr))", 
+        gridTemplateColumns: "repeat(auto-fit, minmax(min(100%, 300px), 1fr))", 
         gap: "24px" 
       }}>
         {blogPosts.map((post) => (

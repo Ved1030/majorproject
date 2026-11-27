@@ -19,12 +19,15 @@ interface Props {
   onToggleRulers: () => void;
   onTogglePageBreaks: () => void;
   onToggleSpellCheck: () => void;
+  mobileOpen?: boolean;
+  onClose?: () => void;
 }
 
 function Toggle({ on, onToggle }: { on: boolean; onToggle: () => void }) {
   return (
     <button
       onClick={onToggle}
+      aria-pressed={on}
       style={{
         width: 36, height: 20, borderRadius: 10, border: 'none',
         background: on ? 'var(--primary-teal)' : 'var(--border)',
@@ -46,12 +49,12 @@ function Toggle({ on, onToggle }: { on: boolean; onToggle: () => void }) {
 
 function InfoRow({ label, value, badge }: { label: string; value: string | number; badge?: boolean }) {
   return (
-    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8, fontSize: 12 }}>
-      <span style={{ color: 'var(--text-secondary)' }}>{label}</span>
+    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8, fontSize: 12, gap: 8 }}>
+      <span style={{ color: 'var(--text-secondary)', flexShrink: 0 }}>{label}</span>
       {badge ? (
         <span style={{ background: 'var(--primary-teal)', color: 'white', fontSize: 10, fontWeight: 700, padding: '2px 6px', borderRadius: 3 }}>{value}</span>
       ) : (
-        <span style={{ color: 'var(--text-primary)', fontWeight: 500 }}>{value}</span>
+        <span style={{ color: 'var(--text-primary)', fontWeight: 500, minWidth: 0, overflowWrap: 'anywhere', textAlign: 'right' }}>{value}</span>
       )}
     </div>
   );
@@ -59,39 +62,56 @@ function InfoRow({ label, value, badge }: { label: string; value: string | numbe
 
 function OptionRow({ label, on, onToggle }: { label: string; on: boolean; onToggle: () => void }) {
   return (
-    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 10, fontSize: 13 }}>
-      <span style={{ color: 'var(--text-secondary)' }}>{label}</span>
+    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 10, fontSize: 13, gap: 12 }}>
+      <span style={{ color: 'var(--text-secondary)', minWidth: 0 }}>{label}</span>
       <Toggle on={on} onToggle={onToggle} />
     </div>
   );
 }
 
-export default function RightSidebar({ info, showRulers, showPageBreaks, spellCheck, onToggleRulers, onTogglePageBreaks, onToggleSpellCheck }: Props) {
+export default function RightSidebar({ info, showRulers, showPageBreaks, spellCheck, onToggleRulers, onTogglePageBreaks, onToggleSpellCheck, mobileOpen = false, onClose }: Props) {
   return (
-    <div style={{
-      width: 220, minWidth: 220, flexShrink: 0,
-      background: 'var(--bg-card)', borderLeft: '1px solid var(--border)',
-      overflowY: 'auto', padding: 16,
-      fontFamily: "'Segoe UI', Arial, sans-serif",
-    }}>
-      <div style={{ fontSize: 14, fontWeight: 600, color: 'var(--text-primary)', marginBottom: 16, display: 'flex', justifyContent: 'space-between' }}>
-        Document <span style={{ fontSize: 13, color: 'var(--text-secondary)', fontWeight: 400 }}>ⓘ</span>
+    <>
+      {mobileOpen && <div className="ed-sidebar-backdrop" onClick={onClose} />}
+      <div
+        className={`ed-sidebar ed-sidebar-right${mobileOpen ? " ed-sidebar-open" : ""}`}
+        style={{
+          width: 220, minWidth: 220, flexShrink: 0,
+          background: 'var(--bg-card)', borderLeft: '1px solid var(--border)',
+          overflowY: 'auto', padding: 16,
+          fontFamily: "'Segoe UI', Arial, sans-serif",
+        }}
+      >
+        <div className="ed-sidebar-mobile-header">
+          <span>Document</span>
+          <button
+            type="button"
+            className="ed-sidebar-close"
+            aria-label="Close document information"
+            onClick={onClose}
+          >
+            ×
+          </button>
+        </div>
+        <div style={{ fontSize: 14, fontWeight: 600, color: 'var(--text-primary)', marginBottom: 16, display: 'flex', justifyContent: 'space-between' }}>
+          Document <span style={{ fontSize: 13, color: 'var(--text-secondary)', fontWeight: 400 }}>ⓘ</span>
+        </div>
+        <InfoRow label="File name" value={info?.fileName || '—'} />
+        <InfoRow label="File type" value={info?.fileType || 'DOCX'} badge />
+        <InfoRow label="File size" value={info?.fileSize || '—'} />
+        <InfoRow label="Pages" value={info?.pageCount ?? 1} />
+        <InfoRow label="Words" value={(info?.wordCount ?? 0).toLocaleString()} />
+        <InfoRow label="Characters" value={(info?.charCount ?? 0).toLocaleString()} />
+        <InfoRow label="Last modified" value={info?.modifiedAt || '—'} />
+        <InfoRow label="Created" value={info?.createdAt || '—'} />
+        <div style={{ borderTop: '1px solid var(--border)', margin: '14px 0' }} />
+        <div style={{ fontSize: 12, fontWeight: 600, color: 'var(--text-secondary)', marginBottom: 12, display: 'flex', justifyContent: 'space-between' }}>
+          Document options <span>∧</span>
+        </div>
+        <OptionRow label="Show rulers" on={showRulers} onToggle={onToggleRulers} />
+        <OptionRow label="Show page breaks" on={showPageBreaks} onToggle={onTogglePageBreaks} />
+        <OptionRow label="Spell check" on={spellCheck} onToggle={onToggleSpellCheck} />
       </div>
-      <InfoRow label="File name" value={info?.fileName || '—'} />
-      <InfoRow label="File type" value={info?.fileType || 'DOCX'} badge />
-      <InfoRow label="File size" value={info?.fileSize || '—'} />
-      <InfoRow label="Pages" value={info?.pageCount ?? 1} />
-      <InfoRow label="Words" value={(info?.wordCount ?? 0).toLocaleString()} />
-      <InfoRow label="Characters" value={(info?.charCount ?? 0).toLocaleString()} />
-      <InfoRow label="Last modified" value={info?.modifiedAt || '—'} />
-      <InfoRow label="Created" value={info?.createdAt || '—'} />
-      <div style={{ borderTop: '1px solid var(--border)', margin: '14px 0' }} />
-      <div style={{ fontSize: 12, fontWeight: 600, color: 'var(--text-secondary)', marginBottom: 12, display: 'flex', justifyContent: 'space-between' }}>
-        Document options <span>∧</span>
-      </div>
-      <OptionRow label="Show rulers" on={showRulers} onToggle={onToggleRulers} />
-      <OptionRow label="Show page breaks" on={showPageBreaks} onToggle={onTogglePageBreaks} />
-      <OptionRow label="Spell check" on={spellCheck} onToggle={onToggleSpellCheck} />
-    </div>
+    </>
   );
 }

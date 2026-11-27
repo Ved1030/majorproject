@@ -45,7 +45,7 @@ export default function ToolModeSelection({
             disabled={disabled}
             style={{
               flex: 1,
-              minWidth: "220px",
+              minWidth: "min(220px, 100%)",
               maxWidth: "100%",
               padding: "18px 20px",
               borderRadius: "14px",

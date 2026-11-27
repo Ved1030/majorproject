@@ -64,6 +64,7 @@ export default function SiteFooter() {
 
   return (
     <footer
+      className="zd-site-footer"
       style={{
         borderTop: "1px solid var(--border)",
         background: "var(--bg-main)",
@@ -71,6 +72,7 @@ export default function SiteFooter() {
       }}
     >
       <div
+        className="zd-footer-inner"
         style={{
           maxWidth: "1280px",
           margin: "0 auto",
@@ -85,7 +87,6 @@ export default function SiteFooter() {
           className="footer-grid"
           style={{
             display: "grid",
-            gridTemplateColumns: "2fr repeat(3, 1fr)",
             gap: "40px",
           }}
         >

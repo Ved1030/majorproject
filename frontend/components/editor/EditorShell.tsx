@@ -85,6 +85,8 @@ export default function EditorShell({
   const [shareCode, setShareCode] = useState("");
   const [shareLoading, setShareLoading] = useState(false);
   const [shareResult, setShareResult] = useState<{ code: string; expiry?: string; link?: string } | null>(null);
+  const [pagesDrawerOpen, setPagesDrawerOpen] = useState(false);
+  const [infoDrawerOpen, setInfoDrawerOpen] = useState(false);
 
   const canvasHandleRef = useRef<PaginatedEditorHandle>(null);
   const saveTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -338,10 +340,11 @@ const handleDownload = useCallback(async (format?: string) => {
 
   return (
     <div
+      className="zd-editor-shell"
       style={{
         display: "flex",
         flexDirection: "column",
-        height: "100vh",
+        height: "100dvh",
         background: "var(--editor-workspace)",
         color: "var(--text-primary)",
         fontFamily: "'Segoe UI',Arial,sans-serif",
@@ -358,6 +361,14 @@ const handleDownload = useCallback(async (format?: string) => {
           setShareCode(recipientCode || String(Math.floor(1000 + Math.random() * 9000)));
           setShareResult(null);
           setShareModalOpen(true);
+        }}
+        onTogglePages={() => {
+          setInfoDrawerOpen(false);
+          setPagesDrawerOpen((open) => !open);
+        }}
+        onToggleInfo={() => {
+          setPagesDrawerOpen(false);
+          setInfoDrawerOpen((open) => !open);
         }}
       />
 
@@ -376,6 +387,8 @@ const handleDownload = useCallback(async (format?: string) => {
           activePage={activePage}
           onPageSelect={(index) => canvasHandleRef.current?.scrollToPage(index)}
           onScrollToEnd={handleScrollToEnd}
+          mobileOpen={pagesDrawerOpen}
+          onClose={() => setPagesDrawerOpen(false)}
         />
         <DocumentCanvas
           ref={canvasHandleRef}
@@ -413,6 +426,8 @@ const handleDownload = useCallback(async (format?: string) => {
               editorProps: { attributes: { spellcheck: String(!spellCheck) } },
             });
           }}
+          mobileOpen={infoDrawerOpen}
+          onClose={() => setInfoDrawerOpen(false)}
         />
       </div>
 
@@ -439,6 +454,7 @@ const handleDownload = useCallback(async (format?: string) => {
       {/* Share Edited Copy Modal */}
       {shareModalOpen && (
         <div
+          className="zd-share-overlay"
           style={{
             position: "fixed",
             inset: 0,
@@ -451,6 +467,7 @@ const handleDownload = useCallback(async (format?: string) => {
           onClick={() => !shareLoading && setShareModalOpen(false)}
         >
           <div
+            className="zd-share-card"
             style={{
               background: "var(--bg-card)",
               border: "1px solid var(--border)",
@@ -492,7 +509,7 @@ const handleDownload = useCallback(async (format?: string) => {
                     marginBottom: 16,
                   }}
                 />
-                <div style={{ display: "flex", gap: 10, justifyContent: "flex-end" }}>
+                <div className="zd-share-actions" style={{ display: "flex", gap: 10, justifyContent: "flex-end" }}>
                   <button
                     onClick={() => setShareModalOpen(false)}
                     disabled={shareLoading}
@@ -532,18 +549,18 @@ const handleDownload = useCallback(async (format?: string) => {
                   Shared Successfully
                 </h3>
                 <div style={{ background: "var(--editor-workspace)", borderRadius: 8, padding: 16, marginBottom: 16 }}>
-                  <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 8 }}>
+                  <div className="zd-share-info-row" style={{ display: "flex", justifyContent: "space-between", marginBottom: 8 }}>
                     <span style={{ fontSize: 12, color: "var(--text-secondary)" }}>Share Code</span>
                     <span style={{ fontSize: 16, fontWeight: 700, color: "#078C91", fontFamily: "monospace", letterSpacing: 2 }}>
                       {shareResult.code}
                     </span>
                   </div>
-                  <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 8 }}>
+                  <div className="zd-share-info-row" style={{ display: "flex", justifyContent: "space-between", marginBottom: 8 }}>
                     <span style={{ fontSize: 12, color: "var(--text-secondary)" }}>Expires</span>
                     <span style={{ fontSize: 12, color: "var(--text-primary)" }}>{shareResult.expiry}</span>
                   </div>
                   {shareResult.link && (
-                    <div style={{ display: "flex", justifyContent: "space-between" }}>
+                    <div className="zd-share-info-row" style={{ display: "flex", justifyContent: "space-between" }}>
                       <span style={{ fontSize: 12, color: "var(--text-secondary)" }}>Download Link</span>
                       <a href={shareResult.link} target="_blank" rel="noopener" style={{ fontSize: 12, color: "#078C91" }}>
                         Open

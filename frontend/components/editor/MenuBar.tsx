@@ -100,6 +100,35 @@ export default function MenuBar({
   const menuBg = "#ffffff";
   const hoverBg = "var(--editor-workspace)";
 
+  const renderMenuItems = (items: { label: string; action: () => void }[]) =>
+    items.map((m) => (
+      <button
+        key={m.label}
+        onMouseDown={(e) => e.preventDefault()}
+        onClick={() => {
+          setOpenMenu(null);
+          m.action();
+        }}
+        style={{
+          display: "block",
+          width: "100%",
+          textAlign: "left",
+          padding: "7px 12px",
+          fontSize: 13,
+          color: textColor,
+          borderRadius: 3,
+          border: "none",
+          background: "none",
+          cursor: "pointer",
+          transition: "background 0.1s",
+        }}
+        onMouseEnter={(e) => (e.currentTarget.style.background = hoverBg)}
+        onMouseLeave={(e) => (e.currentTarget.style.background = "none")}
+      >
+        {m.label}
+      </button>
+    ));
+
   return (
     <div
       ref={barRef}
@@ -113,10 +142,75 @@ export default function MenuBar({
         flexShrink: 0,
       }}
     >
+      <div className="ed-mobile-menu-root" style={{ position: "relative", display: "none", flex: 1, minWidth: 0 }}>
+        <button
+          type="button"
+          id="ed-mobile-menu-trigger"
+          onMouseDown={(e) => e.preventDefault()}
+          onClick={() => setOpenMenu(openMenu === "__mobile__" ? null : "__mobile__")}
+          style={{
+            display: "none",
+            alignItems: "center",
+            gap: 6,
+            padding: "6px 10px",
+            fontSize: 13,
+            color: textColor,
+            borderRadius: 4,
+            border: "none",
+            background: openMenu === "__mobile__" ? activeBg : "none",
+            cursor: "pointer",
+          }}
+        >
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            <line x1="3" y1="6" x2="21" y2="6" />
+            <line x1="3" y1="12" x2="21" y2="12" />
+            <line x1="3" y1="18" x2="21" y2="18" />
+          </svg>
+          Menu
+        </button>
+        {openMenu === "__mobile__" && (
+          <div
+            className="ed-mobile-menu-panel"
+            style={{
+              position: "absolute",
+              top: "100%",
+              left: 0,
+              right: 0,
+              maxHeight: "calc(100dvh - 140px)",
+              overflowY: "auto",
+              background: menuBg,
+              border: `1px solid ${shellBorder}`,
+              borderRadius: 4,
+              boxShadow: "0 2px 8px rgba(32,43,54,0.10), 0 8px 24px rgba(32,43,54,0.06)",
+              padding: 6,
+              zIndex: 400,
+            }}
+          >
+            {ITEMS.filter((item) => menus[item]).map((item) => (
+              <div key={item} style={{ marginBottom: 8 }}>
+                <div
+                  style={{
+                    fontSize: 11,
+                    fontWeight: 700,
+                    textTransform: "uppercase",
+                    letterSpacing: 0.5,
+                    color: "var(--text-muted)",
+                    padding: "6px 10px 2px",
+                  }}
+                >
+                  {item}
+                </div>
+                {renderMenuItems(menus[item])}
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
       {ITEMS.map((item) => (
         <div key={item} style={{ position: "relative" }}>
           <button
             className="menu-item"
+            onMouseDown={(e) => e.preventDefault()}
             onClick={() => setOpenMenu(openMenu === item ? null : item)}
             style={{
               padding: "5px 12px",
@@ -133,6 +227,7 @@ export default function MenuBar({
           </button>
           {openMenu === item && menus[item] && (
             <div
+              className={`ed-menu-dropdown${item === "View" || item === "Help" ? " ed-menu-dropdown-right" : ""}`}
               style={{
                 position: "absolute",
                 top: "100%",
@@ -146,32 +241,7 @@ export default function MenuBar({
                 zIndex: 400,
               }}
             >
-              {menus[item].map((m) => (
-                <button
-                  key={m.label}
-                  onClick={() => {
-                    setOpenMenu(null);
-                    m.action();
-                  }}
-                  style={{
-                    display: "block",
-                    width: "100%",
-                    textAlign: "left",
-                    padding: "7px 12px",
-                    fontSize: 13,
-                    color: textColor,
-                    borderRadius: 3,
-                    border: "none",
-                    background: "none",
-                    cursor: "pointer",
-                    transition: "background 0.1s",
-                  }}
-                  onMouseEnter={(e) => (e.currentTarget.style.background = hoverBg)}
-                  onMouseLeave={(e) => (e.currentTarget.style.background = "none")}
-                >
-                  {m.label}
-                </button>
-              ))}
+              {renderMenuItems(menus[item])}
             </div>
           )}
         </div>

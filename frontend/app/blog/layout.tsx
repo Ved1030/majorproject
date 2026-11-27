@@ -1,6 +1,5 @@
 import type { Metadata } from "next";
 import Navbar from "@/components/Navbar";
-import SiteFooter from "@/components/SiteFooter";
 import { SITE_URL } from "@/lib/site";
 
 export const metadata: Metadata = {
@@ -60,10 +59,9 @@ export default function BlogLayout({
         dangerouslySetInnerHTML={{ __html: JSON.stringify(structuredData) }}
       />
       <Navbar />
-      <main style={{ minHeight: "calc(100vh - 200px)" }}>
+      <main style={{ minHeight: "calc(100vh - 200px)", minWidth: 0 }}>
         {children}
       </main>
-      <SiteFooter />
     </>
   );
 }

@@ -1,17 +1,11 @@
 "use client";
 
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, useCallback } from "react";
 import Link from "next/link";
-import { Menu, X, HelpCircle, ChevronRight } from "lucide-react";
+import { Menu, ChevronRight } from "lucide-react";
 import ZipDropLogo from "./brand/ZipDropLogo";
 import { MegaMenu, ToolsDropdownButton } from "./navbar/MegaMenu";
-
-const NAV_LINKS = [
-  { href: "/", label: "Home", sectionId: "home" },
-  { href: "/#share-receive", label: "Share", sectionId: "share-receive" },
-  { href: "/editor", label: "Editor", sectionId: null },
-  { href: "/about", label: "About", sectionId: null },
-];
+import MobileNavDrawer from "./navbar/MobileNavDrawer";
 
 function HelpIcon() {
   return (
@@ -57,6 +51,8 @@ export default function Navbar() {
     setIsMobileMenuOpen(false);
   };
 
+  const closeMobileMenu = useCallback(() => setIsMobileMenuOpen(false), []);
+
   return (
     <header
       style={{
@@ -71,6 +67,7 @@ export default function Navbar() {
       }}
     >
       <nav
+        className="zd-main-nav"
         style={{
           maxWidth: "1280px",
           margin: "0 auto",
@@ -84,6 +81,7 @@ export default function Navbar() {
         {/* Logo */}
         <Link
           href="/"
+          className="zd-nav-logo"
           onClick={(e) => {
             e.preventDefault();
             const element = document.getElementById("home");
@@ -260,6 +258,7 @@ export default function Navbar() {
         {/* Right side: Help + Mobile Menu Button */}
         <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
           <button
+            className="zd-nav-help"
             onClick={() => window.open("mailto:mehtaved12@gmail.com?subject=ZipDrop%20Help", "_blank")}
             style={{
               display: "flex",
@@ -292,7 +291,7 @@ export default function Navbar() {
           {/* Mobile Menu Button */}
           <button
             className="mobile-menu-btn"
-            onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+            onClick={() => setIsMobileMenuOpen((value) => !value)}
             style={{
               display: "none",
               alignItems: "center",
@@ -316,8 +315,9 @@ export default function Navbar() {
             }}
             aria-label={isMobileMenuOpen ? "Close menu" : "Open menu"}
             aria-expanded={isMobileMenuOpen}
+            aria-controls="zd-mobile-nav-drawer"
           >
-            {isMobileMenuOpen ? <X size={22} strokeWidth={2.5} /> : <Menu size={22} strokeWidth={2.5} />}
+            <Menu size={22} strokeWidth={2.5} />
           </button>
         </div>
       </nav>
@@ -327,254 +327,7 @@ export default function Navbar() {
         <MegaMenu isOpen={toolsDropdownOpen} onClose={() => setToolsDropdownOpen(false)} triggerRef={toolsButtonRef} />
       )}
 
-      {/* Mobile Menu */}
-      {isMobileMenuOpen && (
-        <div
-          style={{
-            position: "fixed",
-            top: 0,
-            right: 0,
-            bottom: 0,
-            width: "280px",
-            maxWidth: "85vw",
-            background: "var(--bg-main)",
-            borderLeft: "1px solid var(--border)",
-            boxShadow: "-4px 0 24px rgba(0, 0, 0, 0.1)",
-            zIndex: 99,
-            padding: "24px",
-            display: "flex",
-            flexDirection: "column",
-            gap: "8px",
-            animation: "slideInRight 0.3s ease forwards",
-          }}
-        >
-          <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", paddingBottom: "16px", borderBottom: "1px solid var(--border)", marginBottom: "8px" }}>
-            <span style={{ fontSize: "13px", fontWeight: 600, color: "var(--text-muted)", textTransform: "uppercase", letterSpacing: "0.1em" }}>
-              Navigation
-            </span>
-            <button
-              onClick={() => setIsMobileMenuOpen(false)}
-              style={{
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "center",
-                width: 36,
-                height: 36,
-                borderRadius: "8px",
-                background: "transparent",
-                border: "1px solid var(--border)",
-                color: "var(--text-secondary)",
-                cursor: "pointer",
-                transition: "all 0.2s ease",
-              }}
-              onMouseEnter={(e) => {
-                e.currentTarget.style.backgroundColor = "var(--editor-workspace)";
-                e.currentTarget.style.borderColor = "var(--primary-teal)";
-                e.currentTarget.style.color = "var(--primary-teal)";
-              }}
-              onMouseLeave={(e) => {
-                e.currentTarget.style.backgroundColor = "transparent";
-                e.currentTarget.style.borderColor = "var(--border)";
-                e.currentTarget.style.color = "var(--text-secondary)";
-              }}
-              aria-label="Close menu"
-            >
-              <X size={18} strokeWidth={2.5} />
-            </button>
-          </div>
-
-          <nav style={{ display: "flex", flexDirection: "column", gap: "4px", flex: 1 }}>
-            <Link
-              href="/"
-              onClick={(e) => handleNavClick(e, "home")}
-              style={{
-                textDecoration: "none",
-                color: "var(--text-primary)",
-                fontSize: "16px",
-                fontWeight: 500,
-                padding: "16px 0",
-                borderRadius: "10px",
-                borderBottom: "1px solid var(--border)",
-                transition: "all 0.2s ease",
-                display: "flex",
-                alignItems: "center",
-                gap: "12px",
-              }}
-              onMouseEnter={(e) => {
-                e.currentTarget.style.backgroundColor = "var(--teal-light)";
-                e.currentTarget.style.color = "var(--primary-teal)";
-              }}
-              onMouseLeave={(e) => {
-                e.currentTarget.style.backgroundColor = "transparent";
-                e.currentTarget.style.color = "var(--text-primary)";
-              }}
-            >
-              Home
-            </Link>
-            <div style={{ padding: "16px 0", borderBottom: "1px solid var(--border)" }}>
-              <span style={{ fontSize: "13px", fontWeight: 600, color: "var(--text-muted)", textTransform: "uppercase", letterSpacing: "0.1em", display: "block", marginBottom: "12px" }}>
-                Tools
-              </span>
-              <div style={{ display: "flex", flexDirection: "column", gap: "4px" }}>
-                {[
-                  { label: "Conversion Tools", href: "/conversion" },
-                  { label: "Merge & Split PDF", href: "/pdf/merge" },
-                  { label: "Organize PDF", href: "/pdf/organize" },
-                  { label: "Compress PDF", href: "/compression" },
-                  { label: "Background Remover", href: "/image-tools/background-remover" },
-                  { label: "Text Sharing", href: "/#share-receive" },
-                  { label: "Blog & Guides", href: "/blog" },
-                  { label: "Online Editor", href: "/editor" },
-                ].map((item) => (
-                  <Link
-                    key={item.label}
-                    href={item.href}
-                    onClick={() => setIsMobileMenuOpen(false)}
-                    style={{
-                      textDecoration: "none",
-                      color: "var(--text-primary)",
-                      fontSize: "15px",
-                      fontWeight: 500,
-                      padding: "12px 0",
-                      borderRadius: "8px",
-                      transition: "all 0.2s ease",
-                      display: "flex",
-                      alignItems: "center",
-                      gap: "12px",
-                    }}
-                    onMouseEnter={(e) => {
-                      e.currentTarget.style.backgroundColor = "var(--teal-light)";
-                      e.currentTarget.style.color = "var(--primary-teal)";
-                    }}
-                    onMouseLeave={(e) => {
-                      e.currentTarget.style.backgroundColor = "transparent";
-                      e.currentTarget.style.color = "var(--text-primary)";
-                    }}
-                  >
-                    {item.label}
-                  </Link>
-                ))}
-              </div>
-            </div>
-            <Link
-              href="/#share-receive"
-              onClick={(e) => handleNavClick(e, "share-receive")}
-              style={{
-                textDecoration: "none",
-                color: "var(--text-primary)",
-                fontSize: "16px",
-                fontWeight: 500,
-                padding: "16px 0",
-                borderRadius: "10px",
-                borderBottom: "1px solid var(--border)",
-                transition: "all 0.2s ease",
-                display: "flex",
-                alignItems: "center",
-                gap: "12px",
-              }}
-              onMouseEnter={(e) => {
-                e.currentTarget.style.backgroundColor = "var(--teal-light)";
-                e.currentTarget.style.color = "var(--primary-teal)";
-              }}
-              onMouseLeave={(e) => {
-                e.currentTarget.style.backgroundColor = "transparent";
-                e.currentTarget.style.color = "var(--text-primary)";
-              }}
-            >
-              Share
-            </Link>
-            <Link
-              href="/editor"
-              style={{
-                textDecoration: "none",
-                color: "var(--text-primary)",
-                fontSize: "16px",
-                fontWeight: 500,
-                padding: "16px 0",
-                borderRadius: "10px",
-                borderBottom: "1px solid var(--border)",
-                transition: "all 0.2s ease",
-                display: "flex",
-                alignItems: "center",
-                gap: "12px",
-              }}
-              onMouseEnter={(e) => {
-                e.currentTarget.style.backgroundColor = "var(--teal-light)";
-                e.currentTarget.style.color = "var(--primary-teal)";
-              }}
-              onMouseLeave={(e) => {
-                e.currentTarget.style.backgroundColor = "transparent";
-                e.currentTarget.style.color = "var(--text-primary)";
-              }}
-            >
-              Editor
-            </Link>
-            <Link
-              href="/about"
-              style={{
-                textDecoration: "none",
-                color: "var(--text-primary)",
-                fontSize: "16px",
-                fontWeight: 500,
-                padding: "16px 0",
-                borderRadius: "10px",
-                borderBottom: "1px solid var(--border)",
-                transition: "all 0.2s ease",
-                display: "flex",
-                alignItems: "center",
-                gap: "12px",
-              }}
-              onMouseEnter={(e) => {
-                e.currentTarget.style.backgroundColor = "var(--teal-light)";
-                e.currentTarget.style.color = "var(--primary-teal)";
-              }}
-              onMouseLeave={(e) => {
-                e.currentTarget.style.backgroundColor = "transparent";
-                e.currentTarget.style.color = "var(--text-primary)";
-              }}
-            >
-              About
-            </Link>
-          </nav>
-
-          <div style={{ paddingTop: "16px", borderTop: "1px solid var(--border)", marginTop: "auto" }}>
-            <Link
-              href="/#share-receive"
-              onClick={handleStartSharing}
-              style={{
-                width: "100%",
-                padding: "14px",
-                fontSize: "15px",
-                fontWeight: 600,
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "center",
-                gap: "8px",
-                background: "var(--primary-teal)",
-                color: "white",
-                border: "none",
-                borderRadius: "10px",
-                textDecoration: "none",
-                transition: "all 0.2s ease",
-                boxShadow: "0 4px 14px rgba(7,140,145,0.3)",
-              }}
-              onMouseEnter={(e) => {
-                e.currentTarget.style.backgroundColor = "#05787d";
-                e.currentTarget.style.transform = "translateY(-1px)";
-                e.currentTarget.style.boxShadow = "0 6px 20px rgba(7,140,145,0.4)";
-              }}
-              onMouseLeave={(e) => {
-                e.currentTarget.style.backgroundColor = "var(--primary-teal)";
-                e.currentTarget.style.transform = "translateY(0)";
-                e.currentTarget.style.boxShadow = "0 4px 14px rgba(7,140,145,0.3)";
-              }}
-            >
-              Get Started
-              <ChevronRight size={18} />
-            </Link>
-          </div>
-        </div>
-      )}
+      <MobileNavDrawer open={isMobileMenuOpen} onClose={closeMobileMenu} />
     </header>
   );
 }

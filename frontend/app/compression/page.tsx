@@ -236,7 +236,7 @@ export default function CompressionToolsPage() {
   return (
     <>
       <Navbar />
-      <div style={{ 
+      <div className="zd-page-shell" style={{ 
         minHeight: "100vh", 
         background: "var(--bg-main)",
         padding: "clamp(24px, 4vh, 48px) 24px",
@@ -391,7 +391,7 @@ export default function CompressionToolsPage() {
                     <div 
                       style={{ 
                         display: "grid",
-                        gridTemplateColumns: "repeat(auto-fill, minmax(320px, 1fr))",
+                        gridTemplateColumns: "repeat(auto-fit, minmax(min(100%, 280px), 1fr))",
                         gap: "16px",
                         marginTop: "16px",
                         animation: "fadeInUp 0.3s ease forwards",
