@@ -3,7 +3,6 @@
 import { useState, useEffect, useCallback, Suspense } from "react";
 import { useSearchParams } from "next/navigation";
 import dynamic from "next/dynamic";
-import Breadcrumbs from "@/components/Breadcrumbs";
 
 const EditorShell = dynamic(
   () => import("@/components/editor/EditorShell"),
@@ -19,10 +18,6 @@ const EditorShell = dynamic(
     ),
   }
 );
-
-const breadcrumbItems = [
-  { name: "Online Editor", href: "/editor" },
-];
 
 function getExtension(filename: string): string {
   return filename.split(".").pop()?.toLowerCase() || "";
@@ -214,7 +209,6 @@ function EditorPageInner() {
       display: "flex",
       flexDirection: "column",
     }}>
-      <Breadcrumbs items={breadcrumbItems} />
       <div style={{ display: "flex", alignItems: "center", justifyContent: "center", height: "100vh", background: "var(--editor-workspace)", flexDirection: "column", gap: 16 }}>
         <div style={{ width: 56, height: 56, borderRadius: 12, background: "var(--danger-light)", border: "1px solid rgba(214,69,69,0.20)", display: "flex", alignItems: "center", justifyContent: "center" }}>
           <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="var(--danger)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -239,7 +233,6 @@ function EditorPageInner() {
         display: "flex",
         flexDirection: "column",
       }}>
-        <Breadcrumbs items={breadcrumbItems} />
         <div style={{ display: "flex", alignItems: "center", justifyContent: "center", height: "100vh", background: "var(--editor-workspace)" }}>
           <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 20 }}>
             <div style={{ width: 40, height: 40, border: "2px solid var(--teal-light)", borderTop: "2px solid #078C91", borderRadius: "50%", animation: "spin 1s linear infinite" }} />
@@ -257,7 +250,6 @@ function EditorPageInner() {
       display: "flex",
       flexDirection: "column",
     }}>
-      <Breadcrumbs items={breadcrumbItems} />
       <EditorShell
         fileName={fileName}
         fileType={fileType}

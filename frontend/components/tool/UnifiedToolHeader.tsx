@@ -20,7 +20,6 @@ interface UnifiedToolHeaderProps {
 }
 
 export default function UnifiedToolHeader({
-  breadcrumbs = [],
   backHref,
   backLabel = "Back",
   icon,
@@ -34,21 +33,6 @@ export default function UnifiedToolHeader({
         <Link href={backHref} className="zd-tool-back" aria-label={backLabel}>
           <ArrowLeft size={17} />
         </Link>
-
-        {breadcrumbs.length > 0 && (
-          <nav className="zd-tool-breadcrumb" aria-label="Breadcrumb">
-            {breadcrumbs.map((item, index) => (
-              <span key={`${item.href}-${item.name}`} className="zd-tool-breadcrumb-item">
-                {index > 0 && <span aria-hidden="true">/</span>}
-                {index === breadcrumbs.length - 1 ? (
-                  <span aria-current="page">{item.name}</span>
-                ) : (
-                  <Link href={item.href}>{item.name}</Link>
-                )}
-              </span>
-            ))}
-          </nav>
-        )}
       </div>
 
       <div className="zd-tool-title-row">

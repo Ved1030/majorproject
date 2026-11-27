@@ -4,13 +4,7 @@ import Link from "next/link";
 import { ArrowLeft } from "lucide-react";
 import { ReactNode } from "react";
 
-interface BreadcrumbItem {
-  name: string;
-  href: string;
-}
-
 interface ToolPageHeaderProps {
-  breadcrumbs?: BreadcrumbItem[];
   backHref?: string;
   category: string;
   icon?: ReactNode;
@@ -20,7 +14,6 @@ interface ToolPageHeaderProps {
 }
 
 export default function ToolPageHeader({
-  breadcrumbs,
   backHref,
   category,
   icon,
@@ -30,28 +23,6 @@ export default function ToolPageHeader({
 }: ToolPageHeaderProps) {
   return (
     <div style={{ display: "flex", flexDirection: "column", gap: "16px" }}>
-      {breadcrumbs && breadcrumbs.length > 0 && (
-        <nav aria-label="Breadcrumb" style={{ fontSize: "13px", color: "var(--text-secondary)" }}>
-          <ol style={{ display: "flex", flexWrap: "wrap", gap: "8px", listStyle: "none", margin: 0, padding: 0 }}>
-            {breadcrumbs.map((item, index) => (
-              <li key={item.href} style={{ display: "flex", alignItems: "center", gap: "8px" }}>
-                {index > 0 && <span style={{ color: "var(--text-muted)" }}>/</span>}
-                <Link
-                  href={item.href}
-                  style={{
-                    color: index === breadcrumbs.length - 1 ? "var(--text-primary)" : "var(--text-secondary)",
-                    fontWeight: index === breadcrumbs.length - 1 ? 600 : 500,
-                    textDecoration: "none",
-                  }}
-                >
-                  {item.name}
-                </Link>
-              </li>
-            ))}
-          </ol>
-        </nav>
-      )}
-
       <div style={{ display: "flex", alignItems: "flex-start", gap: "16px", flexWrap: "wrap" }}>
         {backHref && (
           <Link

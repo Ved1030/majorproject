@@ -158,20 +158,6 @@ export default function BlogArticle({ meta, h1, intro, children, related }: Prop
         dangerouslySetInnerHTML={{ __html: JSON.stringify(faqPage) }}
       />
 
-      <nav className={styles.breadcrumb} aria-label="Breadcrumb">
-        <ol>
-          <li>
-            <Link href="/">Home</Link>
-          </li>
-          <li aria-hidden="true">/</li>
-          <li>
-            <Link href="/blog">Blog</Link>
-          </li>
-          <li aria-hidden="true">/</li>
-          <li aria-current="page">{h1}</li>
-        </ol>
-      </nav>
-
       <article className={styles.content}>
         <header>
           <h1>{h1}</h1>
