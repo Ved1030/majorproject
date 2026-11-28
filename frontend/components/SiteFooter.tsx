@@ -3,12 +3,7 @@
 import type { CSSProperties } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import {
-  AUTHORS,
-  BRAND_DESCRIPTION,
-  CONTACT_EMAIL,
-  GITHUB_URL,
-} from "@/lib/site";
+import { BRAND_DESCRIPTION, CONTACT_EMAIL } from "@/lib/site";
 import ZipDropLogo from "./brand/ZipDropLogo";
 
 const TOOL_LINKS = [
@@ -157,34 +152,9 @@ export default function SiteFooter() {
           }}
         >
           <p style={{ fontSize: "12px", color: "var(--text-muted)" }}>
-            © {new Date().getFullYear()} ZipDrop · Built by{" "}
-            <a
-              href={AUTHORS[0].linkedin}
-              target="_blank"
-              rel="noopener noreferrer"
-              style={{ ...linkStyle, fontSize: "12px", color: "var(--text-secondary)" }}
-            >
-              Ved Mehta
-            </a>{" "}
-            &{" "}
-            <a
-              href={AUTHORS[1].linkedin}
-              target="_blank"
-              rel="noopener noreferrer"
-              style={{ ...linkStyle, fontSize: "12px", color: "var(--text-secondary)" }}
-            >
-              Virti Panchamia
-            </a>
+            © {new Date().getFullYear()} ZipDrop. All rights reserved.
           </p>
           <p style={{ display: "flex", gap: "20px", flexWrap: "wrap" }}>
-            <a
-              href={GITHUB_URL}
-              target="_blank"
-              rel="noopener noreferrer"
-              style={{ ...linkStyle, fontSize: "12px" }}
-            >
-              GitHub
-            </a>
             <a
               href={`mailto:${CONTACT_EMAIL}?subject=ZipDrop%20feedback`}
               style={{ ...linkStyle, fontSize: "12px" }}
