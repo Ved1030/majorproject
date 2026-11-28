@@ -7,17 +7,15 @@ import { BRAND_DESCRIPTION, CONTACT_EMAIL } from "@/lib/site";
 import ZipDropLogo from "./brand/ZipDropLogo";
 
 const TOOL_LINKS = [
-  { href: "/pdf/merge", label: "Merge & Split PDF" },
-  { href: "/pdf/organize", label: "Organize PDF" },
-  { href: "/compression/pdf", label: "Compress PDF" },
-  { href: "/compress-pdf-under-100kb", label: "Compress PDF Under 100KB" },
-  { href: "/compression/compress-image", label: "Compress Image" },
-  { href: "/conversion/pdf-to-word", label: "PDF to Word" },
-  { href: "/conversion", label: "Convert Files" },
-  { href: "/image-tools/background-remover", label: "Background Remover" },
-  { href: "/#share-receive", label: "Text Sharing" },
-  { href: "/blog", label: "Blog & Guides" },
+  { href: "/conversion", label: "Conversion Tools" },
+  { href: "/conversion#pdf-conversions", label: "PDF Tools" },
+  { href: "/conversion#office-to-pdf", label: "Document Tools" },
+  { href: "/conversion#image-conversions", label: "Image Tools" },
+  { href: "/compression", label: "Compression Tools" },
+  { href: "/conversion", label: "Text Tools" },
+  { href: "/conversion", label: "Utility Tools" },
   { href: "/editor", label: "Online Editor" },
+  { href: "/image-tools/background-remover", label: "Background Remover" },
 ];
 
 const COMPANY_LINKS = [
