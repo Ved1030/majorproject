@@ -2219,51 +2219,50 @@ a, button, input, select, textarea {
   from { opacity: 0; }
   to { opacity: 1; }
 }
-@keyframes zdFadeOut {
-  from { opacity: 1; }
-  to { opacity: 0; }
-}
 @keyframes zdDrawerIn {
   from { transform: translateX(100%); }
   to { transform: translateX(0); }
 }
-@keyframes zdDrawerOut {
-  from { transform: translateX(0); }
-  to { transform: translateX(100%); }
-}
 .zd-mobile-nav-root {
   position: fixed;
   inset: 0;
-  z-index: 1000;
+  z-index: 10000;
+  width: 100%;
+  height: 100vh;
+  height: 100dvh;
+  max-width: 100%;
+  overflow: hidden;
+  isolation: isolate;
 }
 .zd-mobile-nav-overlay {
   position: absolute;
   inset: 0;
-  background: rgba(15, 23, 42, 0.52);
-  backdrop-filter: blur(2px);
-  animation: zdFadeIn 0.22s ease forwards;
+  background: rgba(15, 23, 42, 0.46);
+  animation: zdFadeIn 0.2s ease both;
+  touch-action: none;
 }
 .zd-mobile-nav-drawer {
   position: absolute;
   top: 0;
   right: 0;
-  bottom: 0;
   display: flex;
   flex-direction: column;
-  width: min(360px, 88vw);
+  width: min(420px, 100%);
   max-width: 100%;
+  height: 100vh;
+  height: 100dvh;
+  min-height: 0;
   background: #ffffff;
   border-left: 1px solid var(--border);
-  box-shadow: -12px 0 40px rgba(15, 23, 42, 0.16);
-  padding-top: env(safe-area-inset-top, 0px);
-  padding-bottom: env(safe-area-inset-bottom, 0px);
-  animation: zdDrawerIn 0.26s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+  box-shadow: -8px 0 32px rgba(15, 23, 42, 0.14);
+  overflow: hidden;
+  animation: zdDrawerIn 0.24s cubic-bezier(0.22, 1, 0.36, 1) both;
 }
-.zd-mobile-nav-root.closing .zd-mobile-nav-overlay {
-  animation: zdFadeOut 0.2s ease forwards;
-}
-.zd-mobile-nav-root.closing .zd-mobile-nav-drawer {
-  animation: zdDrawerOut 0.2s ease forwards;
+.zd-mobile-nav-root a,
+.zd-mobile-nav-root button {
+  margin: 0 !important;
+  max-width: 100%;
+  box-sizing: border-box;
 }
 .zd-mobile-nav-header {
   display: flex;
@@ -2271,8 +2270,10 @@ a, button, input, select, textarea {
   justify-content: space-between;
   gap: 12px;
   flex: 0 0 auto;
-  padding: 14px 16px 12px;
+  min-height: 68px;
+  padding: calc(12px + env(safe-area-inset-top, 0px)) 16px 12px;
   border-bottom: 1px solid var(--border);
+  background: #ffffff;
 }
 .zd-mobile-nav-logo {
   display: inline-flex;
@@ -2292,9 +2293,12 @@ a, button, input, select, textarea {
   flex: 0 0 44px;
   width: 44px;
   height: 44px;
+  min-width: 44px;
+  min-height: 44px;
+  padding: 0 !important;
   border-radius: 12px;
   border: 1px solid var(--border);
-  background: var(--bg-main);
+  background: #ffffff;
   color: var(--text-primary);
   cursor: pointer;
   transition: background 0.18s ease, color 0.18s ease;
@@ -2306,16 +2310,22 @@ a, button, input, select, textarea {
 }
 .zd-mobile-nav-scroll {
   flex: 1 1 auto;
+  width: 100%;
+  min-width: 0;
   min-height: 0;
+  max-width: 100%;
   overflow-y: auto;
+  overflow-x: hidden;
   overscroll-behavior: contain;
   -webkit-overflow-scrolling: touch;
-  padding: 12px 12px 16px;
+  touch-action: pan-y;
+  padding: 8px 12px 16px;
 }
 .zd-mobile-nav-links {
   display: flex;
   flex-direction: column;
   gap: 4px;
+  min-width: 0;
 }
 .zd-mobile-nav-link,
 .zd-mobile-nav-all-tools,
@@ -2325,7 +2335,7 @@ a, button, input, select, textarea {
   align-items: center;
   min-width: 0;
   width: 100%;
-  border-radius: 12px;
+  border-radius: 10px;
   text-decoration: none;
   font-family: inherit;
   cursor: pointer;
@@ -2375,14 +2385,20 @@ a, button, input, select, textarea {
   border-bottom: 1px solid var(--border);
 }
 .zd-mobile-nav-collapsible {
-  max-height: 0;
+  display: grid;
+  grid-template-rows: 0fr;
+  min-width: 0;
   opacity: 0;
-  overflow: hidden;
-  transition: max-height 0.3s ease, opacity 0.2s ease;
+  transition: grid-template-rows 0.24s ease, opacity 0.18s ease;
 }
 .zd-mobile-nav-collapsible.open {
-  max-height: 3000px;
+  grid-template-rows: 1fr;
   opacity: 1;
+}
+.zd-mobile-nav-collapsible-inner {
+  min-width: 0;
+  min-height: 0;
+  overflow: hidden;
 }
 .zd-mobile-nav-all-tools {
   gap: 6px;
@@ -2396,12 +2412,15 @@ a, button, input, select, textarea {
   flex: 0 0 auto;
 }
 .zd-mobile-nav-group {
-  margin-top: 4px;
+  min-width: 0;
+}
+.zd-mobile-nav-subgroup {
+  min-width: 0;
 }
 .zd-mobile-nav-group-toggle {
-  gap: 8px;
+  gap: 10px;
   min-height: 44px;
-  padding: 8px 14px;
+  padding: 8px 12px;
   border: none;
   background: transparent;
   color: var(--text-secondary);
@@ -2412,22 +2431,26 @@ a, button, input, select, textarea {
 .zd-mobile-nav-group-toggle > span:first-child {
   flex: 1 1 auto;
   min-width: 0;
+  overflow-wrap: anywhere;
 }
-.zd-mobile-nav-group-count {
+.zd-mobile-nav-category-toggle {
+  color: var(--text-primary);
+  font-size: 14px;
+}
+.zd-mobile-nav-category-toggle > svg:first-child {
   flex: 0 0 auto;
-  min-width: 22px;
-  padding: 2px 6px;
-  border-radius: 99px;
-  background: var(--editor-workspace);
+}
+.zd-mobile-nav-subgroup-toggle {
+  padding-left: 20px;
   color: var(--text-muted);
-  font-size: 10px;
-  text-align: center;
+  font-size: 12px;
 }
 .zd-mobile-nav-tool-list {
   display: flex;
   flex-direction: column;
   gap: 2px;
-  padding: 2px 0 4px 10px;
+  min-width: 0;
+  padding: 2px 0 4px 12px;
 }
 .zd-mobile-nav-tool {
   gap: 10px;
@@ -2441,15 +2464,29 @@ a, button, input, select, textarea {
 .zd-mobile-nav-tool > svg {
   flex: 0 0 auto;
 }
-.zd-mobile-nav-tool > span {
+.zd-mobile-nav-tool > span:not(.zd-mobile-nav-tool-status) {
   flex: 1 1 auto;
   min-width: 0;
   overflow-wrap: anywhere;
 }
+.zd-mobile-nav-tool-status {
+  flex: 0 0 auto;
+  color: var(--text-muted);
+  font-size: 10px;
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+.zd-mobile-nav-tool.disabled {
+  cursor: default;
+  opacity: 0.62;
+}
 .zd-mobile-nav-tool:hover,
 .zd-mobile-nav-tool:focus-visible,
 .zd-mobile-nav-all-tools:hover,
-.zd-mobile-nav-group-toggle:hover {
+.zd-mobile-nav-all-tools:focus-visible,
+.zd-mobile-nav-group-toggle:hover,
+.zd-mobile-nav-group-toggle:focus-visible {
   background: var(--teal-light);
   color: var(--primary-teal);
 }
@@ -2460,7 +2497,9 @@ a, button, input, select, textarea {
 }
 .zd-mobile-nav-footer {
   flex: 0 0 auto;
-  padding: 12px 16px calc(14px + env(safe-area-inset-bottom, 0px));
+  width: 100%;
+  min-width: 0;
+  padding: 12px 16px calc(12px + env(safe-area-inset-bottom, 0px));
   border-top: 1px solid var(--border);
   background: #ffffff;
 }
@@ -2490,21 +2529,54 @@ a, button, input, select, textarea {
   outline-offset: 2px;
 }
 
+@media (max-width: 480px) {
+  .zd-mobile-nav-drawer {
+    width: 100%;
+    border-left: none;
+  }
+}
+
 @media (max-width: 768px) {
+  .zd-site-header {
+    background: #ffffff !important;
+    backdrop-filter: none !important;
+    -webkit-backdrop-filter: none !important;
+    border-bottom: 1px solid var(--border) !important;
+    box-shadow: none !important;
+  }
   .zd-main-nav {
-    gap: 12px;
+    width: 100%;
+    max-width: 100%;
     min-width: 0;
-    padding: 10px 16px;
+    height: 64px;
+    min-height: 64px;
+    padding: 8px 16px !important;
+    gap: 12px;
   }
   .zd-nav-help {
     display: none !important;
   }
+  .zd-nav-logo {
+    min-width: 0;
+    padding: 4px 0 !important;
+  }
   .zd-nav-logo img {
     width: 112px;
     height: auto;
+    max-width: 100%;
+  }
+  .zd-main-nav > div:last-child {
+    min-width: 0;
+    margin: 0 !important;
   }
   .mobile-menu-btn {
     flex: 0 0 44px;
+    width: 44px;
+    height: 44px;
+    min-width: 44px;
+    min-height: 44px;
+    margin: 0 !important;
+    padding: 0 !important;
   }
 }
 @media (prefers-reduced-motion: reduce) {

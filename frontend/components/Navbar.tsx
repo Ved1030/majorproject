@@ -55,6 +55,7 @@ export default function Navbar() {
 
   return (
     <header
+      className="zd-site-header"
       style={{
         position: "sticky",
         top: 0,

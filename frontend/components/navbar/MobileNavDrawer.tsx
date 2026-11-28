@@ -1,6 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { createPortal } from "react-dom";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import {
@@ -12,8 +13,10 @@ import {
   PenTool,
   Share2,
   X,
+  type LucideIcon,
 } from "lucide-react";
 import ZipDropLogo from "@/components/brand/ZipDropLogo";
+import { TOOL_CATEGORIES, type Tool } from "@/data/toolCategories";
 import { TOOL_REGISTRY, type RegisteredTool, type ToolCategoryId } from "@/config/toolRegistry";
 
 interface MobileNavDrawerProps {
@@ -21,7 +24,32 @@ interface MobileNavDrawerProps {
   onClose: () => void;
 }
 
-const CATEGORY_LABELS: Record<ToolCategoryId, string> = {
+interface MobileTool {
+  id: string;
+  name: string;
+  href: string;
+  icon: LucideIcon;
+  iconColor: string;
+  available: boolean;
+  comingSoon?: boolean;
+}
+
+interface MobileToolGroup {
+  id: string;
+  title: string;
+  tools: MobileTool[];
+}
+
+interface MobileToolCategory {
+  id: string;
+  name: string;
+  icon: LucideIcon;
+  iconColor: string;
+  iconBg: string;
+  groups: MobileToolGroup[];
+}
+
+const REGISTRY_CATEGORY_LABELS: Record<ToolCategoryId, string> = {
   pdf: "PDF Tools",
   office: "Conversion Tools",
   image: "Image Tools",
@@ -31,15 +59,17 @@ const CATEGORY_LABELS: Record<ToolCategoryId, string> = {
   sharing: "Other Tools",
 };
 
-const CATEGORY_ORDER: ToolCategoryId[] = [
-  "pdf",
-  "office",
-  "document",
-  "compression",
-  "image",
-  "editing",
-  "sharing",
-];
+const REGISTRY_CATEGORY_IDS: Record<ToolCategoryId, string> = {
+  pdf: "pdf-tools",
+  office: "conversion-tools",
+  image: "image-tools",
+  document: "document-tools",
+  compression: "compression-tools",
+  editing: "online-editor",
+  sharing: "registry-sharing",
+};
+
+const IMAGE_INPUT_FORMATS = new Set(["jpg", "png", "webp", "svg", "image"]);
 
 const MAIN_LINKS = [
   { href: "/", label: "Home", icon: Home, sectionId: "home" },
@@ -49,65 +79,150 @@ const MAIN_LINKS = [
 ];
 
 function isActive(pathname: string | null, href: string) {
-  if (!pathname) return false;
+  if (!pathname || href.includes("#")) return false;
   const path = href.split("#")[0];
   if (path === "/") return pathname === "/";
   return pathname === path || pathname.startsWith(`${path}/`);
+}
+
+function toDomId(value: string) {
+  return value.replace(/[^a-zA-Z0-9_-]/g, "-");
+}
+
+function toMobileTool(tool: Tool, fallbackIcon: LucideIcon, fallbackColor: string): MobileTool {
+  return {
+    id: tool.id,
+    name: tool.name,
+    href: tool.href,
+    icon: (tool.icon ?? fallbackIcon) as LucideIcon,
+    iconColor: tool.iconColor ?? fallbackColor,
+    available: tool.available,
+    comingSoon: tool.comingSoon,
+  };
+}
+
+function registryGroupTitle(tool: RegisteredTool, categoryId: string) {
+  if (categoryId === "compression-tools") {
+    return tool.inputFormats.some((format) => IMAGE_INPUT_FORMATS.has(format))
+      ? "Image Compression"
+      : "PDF Compression";
+  }
+  return "All Tools";
+}
+
+function buildMobileCategories(): MobileToolCategory[] {
+  const categories: MobileToolCategory[] = TOOL_CATEGORIES.map((category) => ({
+    id: category.id,
+    name: category.name,
+    icon: category.icon as LucideIcon,
+    iconColor: category.iconColor,
+    iconBg: category.iconBg,
+    groups: category.groups.map((group) => ({
+      id: `${category.id}:${group.title}`,
+      title: group.title,
+      tools: group.tools.map((tool) =>
+        toMobileTool(tool, category.icon as LucideIcon, category.iconColor),
+      ),
+    })),
+  }));
+
+  const seenIds = new Set(
+    categories.flatMap((category) => category.groups.flatMap((group) => group.tools.map((tool) => tool.id))),
+  );
+  const seenHrefs = new Set(
+    categories.flatMap((category) => category.groups.flatMap((group) => group.tools.map((tool) => tool.href))),
+  );
+
+  for (const tool of TOOL_REGISTRY) {
+    if (seenIds.has(tool.id) || seenHrefs.has(tool.href)) continue;
+
+    const categoryId = REGISTRY_CATEGORY_IDS[tool.category];
+    let category = categories.find((item) => item.id === categoryId);
+    if (!category) {
+      category = {
+        id: categoryId,
+        name: REGISTRY_CATEGORY_LABELS[tool.category],
+        icon: tool.icon,
+        iconColor: tool.iconColor,
+        iconBg: "var(--teal-light)",
+        groups: [],
+      };
+      categories.push(category);
+    }
+
+    const title = registryGroupTitle(tool, category.id);
+    let group = category.groups.find((item) => item.title === title);
+    if (!group) {
+      group = { id: `${category.id}:${title}`, title, tools: [] };
+      category.groups.push(group);
+    }
+
+    group.tools.push({
+      id: tool.id,
+      name: tool.name,
+      href: tool.href,
+      icon: tool.icon,
+      iconColor: tool.iconColor,
+      available: true,
+    });
+    seenIds.add(tool.id);
+    seenHrefs.add(tool.href);
+  }
+
+  return categories.filter((category) => category.groups.length > 0);
 }
 
 export default function MobileNavDrawer({ open, onClose }: MobileNavDrawerProps) {
   const pathname = usePathname();
   const drawerRef = useRef<HTMLDivElement>(null);
   const closeRef = useRef<HTMLButtonElement>(null);
-  const triggerRef = useRef<HTMLElement | null>(null);
+  const previousPathnameRef = useRef(pathname);
   const [toolsOpen, setToolsOpen] = useState(() =>
-    TOOL_REGISTRY.some((tool) => isActive(pathname, tool.href))
+    TOOL_REGISTRY.some((tool) => isActive(pathname, tool.href)),
   );
-  const [expanded, setExpanded] = useState<string[]>([]);
-  const [closing, setClosing] = useState(false);
+  const [openCategories, setOpenCategories] = useState<string[]>([]);
+  const [openGroups, setOpenGroups] = useState<string[]>([]);
 
-  const requestClose = useCallback(() => {
-    if (closing) return;
-    setClosing(true);
-    window.setTimeout(() => {
-      setClosing(false);
-      onClose();
-    }, 200);
-  }, [closing, onClose]);
-  const requestCloseRef = useRef(requestClose);
+  const categories = useMemo(() => buildMobileCategories(), []);
+  const toolsActive = useMemo(
+    () =>
+      TOOL_REGISTRY.some((tool) => isActive(pathname, tool.href)) ||
+      ["/conversion", "/compression", "/pdf", "/image-tools", "/editor", "/compress-pdf-under-100kb"].some(
+        (prefix) => pathname === prefix,
+      ),
+    [pathname],
+  );
+
   useEffect(() => {
-    requestCloseRef.current = requestClose;
-  }, [requestClose]);
-
-  const groupedTools = useMemo(() => {
-    return CATEGORY_ORDER.map((id) => ({
-      id,
-      label: CATEGORY_LABELS[id],
-      tools: TOOL_REGISTRY.filter((tool) => tool.category === id),
-    })).filter((group) => group.tools.length > 0);
-  }, []);
+    if (previousPathnameRef.current === pathname) return;
+    previousPathnameRef.current = pathname;
+    onClose();
+  }, [pathname, onClose]);
 
   useEffect(() => {
     if (!open) return;
 
-    triggerRef.current = document.activeElement as HTMLElement | null;
-    const previousOverflow = document.body.style.overflow;
+    const trigger = document.activeElement as HTMLElement | null;
+    const previousBodyOverflow = document.body.style.overflow;
+    const previousHtmlOverflow = document.documentElement.style.overflow;
     document.body.style.overflow = "hidden";
-    const focusTimer = window.setTimeout(() => closeRef.current?.focus(), 30);
+    document.documentElement.style.overflow = "hidden";
+
+    const focusTimer = window.setTimeout(() => closeRef.current?.focus(), 0);
 
     const handleKeyDown = (event: KeyboardEvent) => {
       if (event.key === "Escape") {
         event.preventDefault();
-        requestCloseRef.current();
+        onClose();
         return;
       }
       if (event.key !== "Tab" || !drawerRef.current) return;
 
       const focusable = Array.from(
         drawerRef.current.querySelectorAll<HTMLElement>(
-          'a[href], button:not([disabled]), input:not([disabled]), [tabindex]:not([tabindex="-1"])',
+          'a[href]:not([tabindex="-1"]), button:not([disabled]):not([tabindex="-1"]), [tabindex]:not([tabindex="-1"])',
         ),
-      ).filter((element) => element.offsetParent !== null);
+      ).filter((element) => element.getClientRects().length > 0);
       if (focusable.length === 0) return;
 
       const first = focusable[0];
@@ -121,33 +236,54 @@ export default function MobileNavDrawer({ open, onClose }: MobileNavDrawerProps)
       }
     };
 
+    const desktopQuery = window.matchMedia("(min-width: 769px)");
+    const handleViewportChange = (event: MediaQueryListEvent) => {
+      if (event.matches) onClose();
+    };
+
     document.addEventListener("keydown", handleKeyDown);
+    desktopQuery.addEventListener?.("change", handleViewportChange);
+
     return () => {
       window.clearTimeout(focusTimer);
       document.removeEventListener("keydown", handleKeyDown);
-      document.body.style.overflow = previousOverflow;
-      triggerRef.current?.focus?.();
+      desktopQuery.removeEventListener?.("change", handleViewportChange);
+      document.body.style.overflow = previousBodyOverflow;
+      document.documentElement.style.overflow = previousHtmlOverflow;
+      if (trigger?.isConnected) trigger.focus();
     };
   }, [open, onClose]);
 
   const handleNavClick = useCallback(
     (event: React.MouseEvent<HTMLAnchorElement>, sectionId: string | null) => {
-      requestClose();
+      onClose();
       if (!sectionId || pathname !== "/") return;
       const element = document.getElementById(sectionId);
       if (element) {
         event.preventDefault();
-        window.setTimeout(() => element.scrollIntoView({ behavior: "smooth" }), 50);
+        window.setTimeout(() => element.scrollIntoView({ behavior: "smooth" }), 60);
       }
     },
-    [requestClose, pathname],
+    [onClose, pathname],
   );
 
-  if (!open) return null;
+  const toggleCategory = useCallback((id: string) => {
+    setOpenCategories((current) =>
+      current.includes(id) ? current.filter((item) => item !== id) : [...current, id],
+    );
+  }, []);
 
-  return (
-    <div className={`zd-mobile-nav-root${closing ? " closing" : ""}`}>
-      <div className="zd-mobile-nav-overlay" onClick={requestClose} aria-hidden="true" />
+  const toggleGroup = useCallback((id: string) => {
+    setOpenGroups((current) =>
+      current.includes(id) ? current.filter((item) => item !== id) : [...current, id],
+    );
+  }, []);
+
+  if (!open || typeof document === "undefined") return null;
+
+  return createPortal(
+    <div className="zd-mobile-nav-root">
+      <div className="zd-mobile-nav-overlay" onClick={onClose} aria-hidden="true" />
       <div
         ref={drawerRef}
         id="zd-mobile-nav-drawer"
@@ -157,83 +293,167 @@ export default function MobileNavDrawer({ open, onClose }: MobileNavDrawerProps)
         aria-label="Site navigation menu"
       >
         <div className="zd-mobile-nav-header">
-          <Link href="/" className="zd-mobile-nav-logo" onClick={(e) => handleNavClick(e, "home")} aria-label="ZipDrop home">
+          <Link
+            href="/"
+            className="zd-mobile-nav-logo"
+            onClick={(event) => handleNavClick(event, "home")}
+            aria-label="ZipDrop home"
+          >
             <ZipDropLogo size="small" />
           </Link>
-          <button ref={closeRef} type="button" className="zd-mobile-nav-close" onClick={requestClose} aria-label="Close menu">
+          <button
+            ref={closeRef}
+            type="button"
+            className="zd-mobile-nav-close"
+            onClick={onClose}
+            aria-label="Close menu"
+          >
             <X size={20} strokeWidth={2.4} aria-hidden="true" />
           </button>
         </div>
 
         <div className="zd-mobile-nav-scroll">
           <nav aria-label="Mobile main navigation" className="zd-mobile-nav-links">
-            {MAIN_LINKS.slice(0, 1).map((link) => (
-              <NavLink key={link.href} link={link} active={isActive(pathname, link.href)} onClick={handleNavClick} />
-            ))}
+            <NavLink
+              link={MAIN_LINKS[0]}
+              active={isActive(pathname, MAIN_LINKS[0].href)}
+              onClick={handleNavClick}
+            />
 
             <div className="zd-mobile-nav-tools">
               <button
                 type="button"
-                className={`zd-mobile-nav-link${isToolPage(pathname) ? " active" : ""}`}
+                className={`zd-mobile-nav-link${toolsActive ? " active" : ""}`}
                 onClick={() => setToolsOpen((value) => !value)}
                 aria-expanded={toolsOpen}
-                aria-controls="mobile-tools-groups"
+                aria-controls="zd-mobile-tools-panel"
               >
                 <Layers size={19} aria-hidden="true" />
                 <span>Tools</span>
-                <ChevronDown size={18} className={`zd-mobile-nav-chevron${toolsOpen ? " open" : ""}`} aria-hidden="true" />
+                <ChevronDown
+                  size={18}
+                  className={`zd-mobile-nav-chevron${toolsOpen ? " open" : ""}`}
+                  aria-hidden="true"
+                />
               </button>
 
               <div
-                id="mobile-tools-groups"
+                id="zd-mobile-tools-panel"
                 className={`zd-mobile-nav-collapsible${toolsOpen ? " open" : ""}`}
                 aria-hidden={!toolsOpen}
               >
-                <Link href="/conversion" className="zd-mobile-nav-all-tools" onClick={requestClose}>
-                  View all tools
-                  <ChevronRight size={15} aria-hidden="true" />
-                </Link>
-                {groupedTools.map((group) => {
-                  const key = `${group.id}-${group.label}`;
-                  const isOpen = expanded.includes(key);
-                  return (
-                    <div key={key} className="zd-mobile-nav-group">
-                      <button
-                        type="button"
-                        className="zd-mobile-nav-group-toggle"
-                        onClick={() =>
-                          setExpanded((current) =>
-                            current.includes(key) ? current.filter((item) => item !== key) : [...current, key],
-                          )
-                        }
-                        aria-expanded={isOpen}
-                        tabIndex={toolsOpen ? 0 : -1}
-                      >
-                        <span>{group.label}</span>
-                        <span className="zd-mobile-nav-group-count">{group.tools.length}</span>
-                        <ChevronDown size={16} className={`zd-mobile-nav-chevron${isOpen ? " open" : ""}`} aria-hidden="true" />
-                      </button>
-                      <div className={`zd-mobile-nav-collapsible${isOpen ? " open" : ""}`} aria-hidden={!isOpen}>
-                        <div className="zd-mobile-nav-tool-list">
-                          {group.tools.map((tool) => (
-                            <ToolLink key={tool.id} tool={tool} active={isActive(pathname, tool.href)} onClose={requestClose} tabIndex={toolsOpen && isOpen ? 0 : -1} />
-                          ))}
+                <div className="zd-mobile-nav-collapsible-inner">
+                  <Link
+                    href="/conversion"
+                    className="zd-mobile-nav-all-tools"
+                    onClick={onClose}
+                    tabIndex={toolsOpen ? 0 : -1}
+                  >
+                    View all tools
+                    <ChevronRight size={15} aria-hidden="true" />
+                  </Link>
+
+                  {categories.map((category) => {
+                    const categoryId = toDomId(category.id);
+                    const categoryOpen = openCategories.includes(category.id);
+                    const CategoryIcon = category.icon;
+
+                    return (
+                      <div key={category.id} className="zd-mobile-nav-group">
+                        <button
+                          type="button"
+                          className="zd-mobile-nav-group-toggle zd-mobile-nav-category-toggle"
+                          onClick={() => toggleCategory(category.id)}
+                          aria-expanded={categoryOpen}
+                          aria-controls={`zd-mobile-category-${categoryId}`}
+                          tabIndex={toolsOpen ? 0 : -1}
+                        >
+                          <CategoryIcon
+                            size={18}
+                            strokeWidth={2.1}
+                            aria-hidden="true"
+                            style={{ color: category.iconColor }}
+                          />
+                          <span>{category.name}</span>
+                          <ChevronDown
+                            size={16}
+                            className={`zd-mobile-nav-chevron${categoryOpen ? " open" : ""}`}
+                            aria-hidden="true"
+                          />
+                        </button>
+
+                        <div
+                          id={`zd-mobile-category-${categoryId}`}
+                          className={`zd-mobile-nav-collapsible${categoryOpen ? " open" : ""}`}
+                          aria-hidden={!categoryOpen}
+                        >
+                          <div className="zd-mobile-nav-collapsible-inner">
+                            {category.groups.map((group) => {
+                              const groupDomId = toDomId(group.id);
+                              const groupOpen = openGroups.includes(group.id);
+
+                              return (
+                                <div key={group.id} className="zd-mobile-nav-subgroup">
+                                  <button
+                                    type="button"
+                                    className="zd-mobile-nav-group-toggle zd-mobile-nav-subgroup-toggle"
+                                    onClick={() => toggleGroup(group.id)}
+                                    aria-expanded={groupOpen}
+                                    aria-controls={`zd-mobile-group-${groupDomId}`}
+                                    tabIndex={toolsOpen && categoryOpen ? 0 : -1}
+                                  >
+                                    <span>{group.title}</span>
+                                    <ChevronDown
+                                      size={15}
+                                      className={`zd-mobile-nav-chevron${groupOpen ? " open" : ""}`}
+                                      aria-hidden="true"
+                                    />
+                                  </button>
+
+                                  <div
+                                    id={`zd-mobile-group-${groupDomId}`}
+                                    className={`zd-mobile-nav-collapsible${groupOpen ? " open" : ""}`}
+                                    aria-hidden={!groupOpen}
+                                  >
+                                    <div className="zd-mobile-nav-collapsible-inner">
+                                      <div className="zd-mobile-nav-tool-list">
+                                        {group.tools.map((tool) => (
+                                          <ToolLink
+                                            key={`${group.id}-${tool.id}-${tool.href}`}
+                                            tool={tool}
+                                            active={isActive(pathname, tool.href)}
+                                            onClose={onClose}
+                                            tabIndex={toolsOpen && categoryOpen && groupOpen ? 0 : -1}
+                                          />
+                                        ))}
+                                      </div>
+                                    </div>
+                                  </div>
+                                </div>
+                              );
+                            })}
+                          </div>
                         </div>
                       </div>
-                    </div>
-                  );
-                })}
+                    );
+                  })}
+                </div>
               </div>
             </div>
 
             {MAIN_LINKS.slice(1).map((link) => (
-              <NavLink key={link.href} link={link} active={isActive(pathname, link.href)} onClick={handleNavClick} />
+              <NavLink
+                key={link.href}
+                link={link}
+                active={isActive(pathname, link.href)}
+                onClick={handleNavClick}
+              />
             ))}
 
             <Link
               href="/contact"
               className={`zd-mobile-nav-link${isActive(pathname, "/contact") ? " active" : ""}`}
-              onClick={requestClose}
+              onClick={onClose}
             >
               <HelpCircle size={19} aria-hidden="true" />
               <span>Help and Support</span>
@@ -242,13 +462,18 @@ export default function MobileNavDrawer({ open, onClose }: MobileNavDrawerProps)
         </div>
 
         <div className="zd-mobile-nav-footer">
-          <Link href="/#share-receive" className="zd-mobile-nav-cta" onClick={(e) => handleNavClick(e, "share-receive")}>
+          <Link
+            href="/#share-receive"
+            className="zd-mobile-nav-cta"
+            onClick={(event) => handleNavClick(event, "share-receive")}
+          >
             Get Started
             <ChevronRight size={18} aria-hidden="true" />
           </Link>
         </div>
       </div>
-    </div>
+    </div>,
+    document.body,
   );
 }
 
@@ -265,15 +490,50 @@ function NavLink({
 }) {
   const Icon = link.icon;
   return (
-    <Link href={link.href} className={`zd-mobile-nav-link${active ? " active" : ""}`} onClick={(e) => onClick(e, link.sectionId)}>
+    <Link
+      href={link.href}
+      className={`zd-mobile-nav-link${active ? " active" : ""}`}
+      onClick={(event) => onClick(event, link.sectionId)}
+    >
       {Icon ? <Icon size={19} aria-hidden="true" /> : <span className="zd-mobile-nav-link-dot" aria-hidden="true" />}
       <span>{link.label}</span>
     </Link>
   );
 }
 
-function ToolLink({ tool, active, onClose, tabIndex }: { tool: RegisteredTool; active: boolean; onClose: () => void; tabIndex: number }) {
+function ToolLink({
+  tool,
+  active,
+  onClose,
+  tabIndex,
+}: {
+  tool: MobileTool;
+  active: boolean;
+  onClose: () => void;
+  tabIndex: number;
+}) {
   const Icon = tool.icon;
+  const content = (
+    <>
+      <Icon size={16} strokeWidth={2} aria-hidden="true" style={{ color: tool.iconColor }} />
+      <span>{tool.name}</span>
+      {!tool.available && <span className="zd-mobile-nav-tool-status">Soon</span>}
+    </>
+  );
+
+  if (!tool.available) {
+    return (
+      <div
+        className={`zd-mobile-nav-tool disabled${active ? " active" : ""}`}
+        data-href={tool.href}
+        aria-disabled="true"
+        tabIndex={-1}
+      >
+        {content}
+      </div>
+    );
+  }
+
   return (
     <Link
       href={tool.href}
@@ -281,15 +541,7 @@ function ToolLink({ tool, active, onClose, tabIndex }: { tool: RegisteredTool; a
       onClick={onClose}
       tabIndex={tabIndex}
     >
-      <Icon size={16} aria-hidden="true" style={{ color: tool.iconColor }} />
-      <span>{tool.name}</span>
+      {content}
     </Link>
-  );
-}
-
-function isToolPage(pathname: string | null) {
-  if (!pathname || pathname === "/") return false;
-  return ["/conversion", "/compression", "/pdf", "/image-tools", "/editor", "/compress-pdf-under-100kb"].some((path) =>
-    pathname.startsWith(path),
   );
 }
