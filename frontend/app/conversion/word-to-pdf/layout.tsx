@@ -2,21 +2,21 @@ import type { Metadata } from "next";
 
 export const metadata: Metadata = {
   title: "Word to PDF Converter – Free Online DOCX to PDF",
-  description: "Convert Word documents (DOCX/DOC) to PDF online for free. Preserve formatting, fonts, and layout. No account required.",
+  description: "Convert Word documents to PDF online for free, with your layout intact. No watermark and no sign-up.",
   alternates: {
     canonical: "https://www.getzipdrop.com/conversion/word-to-pdf",
   },
   openGraph: {
     url: "https://www.getzipdrop.com/conversion/word-to-pdf",
     title: "Word to PDF Converter – Free Online DOCX to PDF",
-    description: "Convert Word documents to PDF online for free. Preserve formatting. No account required.",
+    description: "Convert Word documents to PDF online for free, with your layout intact. No watermark and no sign-up.",
     type: "website",
     images: ["/og-image.png"],
   },
   twitter: {
     card: "summary_large_image",
     title: "Word to PDF Converter – Free Online DOCX to PDF",
-    description: "Convert Word documents to PDF online for free. No account required.",
+    description: "Convert Word documents to PDF online for free, with your layout intact. No watermark and no sign-up.",
     images: ["/og-image.png"],
   },
 };

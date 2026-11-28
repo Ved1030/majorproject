@@ -12,9 +12,8 @@ import {
   CONTACT_EMAIL,
   GITHUB_URL,
   OG_IMAGE,
-  SITE_DESCRIPTION,
   SITE_NAME,
-  SITE_TITLE,
+  SITE_DESCRIPTION,
   SITE_URL,
 } from "@/lib/site";
 
@@ -22,7 +21,7 @@ export const metadata: Metadata = {
   metadataBase: new URL(SITE_URL),
 
   title: {
-    default: "Share Files Between Phone & PC with a 4-Digit Code (No Login) | ZipDrop",
+    default: "ZipDrop – Free Online PDF, Image & File Tools (No Sign-up)",
     template: "%s | ZipDrop",
   },
 
@@ -76,7 +75,7 @@ export const metadata: Metadata = {
   },
 
   openGraph: {
-    title: SITE_TITLE,
+    title: "ZipDrop – Free Online PDF, Image & File Tools (No Sign-up)",
     description: SITE_DESCRIPTION,
     url: `${SITE_URL}/`,
     siteName: SITE_NAME,
@@ -94,7 +93,7 @@ export const metadata: Metadata = {
 
   twitter: {
     card: "summary_large_image",
-    title: SITE_TITLE,
+    title: "ZipDrop – Free Online PDF, Image & File Tools (No Sign-up)",
     description: SITE_DESCRIPTION,
     images: [OG_IMAGE],
   },

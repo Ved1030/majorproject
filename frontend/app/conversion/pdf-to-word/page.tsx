@@ -167,7 +167,7 @@ export default function PdfToWordPage() {
       backLabel="Back to conversion tools"
       icon={<FileText size={26} strokeWidth={2} />}
       title="PDF to Word"
-      description="Use the official ZipDrop PDF to Word tool to convert PDFs into editable DOCX files. Choose Editable mode to revise text and tables, or Visual Fidelity mode to keep the original layout. Maximum file size: 50 MB."
+      description="Use the ZipDrop PDF to Word tool to convert PDFs into editable DOCX files. Choose Editable mode to revise text and tables, or Visual Fidelity mode to keep the original layout. Maximum file size: 50 MB."
       relatedLinks={relatedLinks}
     />
   );

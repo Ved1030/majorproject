@@ -264,7 +264,7 @@ export default function ConversionToolsPage() {
             display: "inline-flex",
           }}>
             <span className="badge-dot" />
-            Official ZipDrop · 27 Tools · No Sign-up
+            ZipDrop · 27 Tools · No Sign-up
           </div>
           <h1 style={{
             fontSize: "clamp(36px, 5vw, 52px)",
@@ -281,7 +281,7 @@ export default function ConversionToolsPage() {
             color: "var(--text-secondary)",
             lineHeight: 1.7,
           }}>
-            Use ZipDrop&apos;s official file converter at www.getzipdrop.com/conversion to convert PDFs, Word, Excel, PowerPoint, images and text. Choose from 27 tools, including PDF to Word and PNG to JPG. No account or software install required.
+            Use ZipDrop file converter at www.getzipdrop.com/conversion to convert PDFs, Word, Excel, PowerPoint, images and text. Choose from 27 tools, including PDF to Word and PNG to JPG. No account or software install required.
           </p>
           <nav aria-label="Popular conversion tools" style={{
             display: "flex",

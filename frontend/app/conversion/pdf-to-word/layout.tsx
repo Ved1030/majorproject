@@ -2,9 +2,9 @@ import type { Metadata } from "next";
 import { OG_IMAGE, SITE_NAME, SITE_URL } from "@/lib/site";
 
 const PAGE_PATH = "/conversion/pdf-to-word";
-const TITLE = "Convert PDF to Word (DOCX) Online Free – Editable & Layout Preserved";
+const TITLE = "PDF to Word Converter – Free Online, No Sign-up";
 const DESCRIPTION =
-  "Convert PDF to editable Word (DOCX) online free. Choose Editable or Visual Fidelity mode, preserve tables and layout, and download without login. Max 50 MB.";
+  "Convert PDF to editable Word (DOCX) online for free. Keep text and tables. No watermark, no login.";
 const URL = `${SITE_URL}${PAGE_PATH}`;
 
 export const metadata: Metadata = {

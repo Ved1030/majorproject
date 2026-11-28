@@ -1,9 +1,9 @@
 import type { Metadata } from "next";
 import { toolMetadata } from "@/lib/seo";
 
-const TITLE = "Compress PDF Under 100KB & 200KB Online Free (No Watermark)";
+const TITLE = "Compress PDF Online Free – Reduce to 100KB, 200KB";
 const DESCRIPTION =
-  "Compress a PDF to 100 KB, 200 KB or 500 KB online free. Choose a target size preset or Low, Recommended and High compression. No login, no watermark, works for exam and college uploads.";
+  "Compress PDF files online for free. Reduce PDF size to 100KB, 200KB or 500KB with no watermark. No sign-up needed.";
 
 export const metadata: Metadata = toolMetadata({
   title: TITLE,

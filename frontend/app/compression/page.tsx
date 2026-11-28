@@ -251,7 +251,7 @@ export default function CompressionToolsPage() {
             display: "inline-flex",
           }}>
             <span className="badge-dot" />
-            Official ZipDrop · No Sign-up
+            ZipDrop · No Sign-up
           </div>
           <h1 style={{
             fontSize: "clamp(36px, 5vw, 52px)",
@@ -268,7 +268,7 @@ export default function CompressionToolsPage() {
             color: "var(--text-secondary)",
             lineHeight: 1.7,
           }}>
-            Use ZipDrop&apos;s official file compression tools at www.getzipdrop.com/compression to reduce PDF, JPG, PNG and WEBP file sizes. Choose a quality level, compare the result, and download without an account.
+            Use ZipDrop file compression tools at www.getzipdrop.com/compression to reduce PDF, JPG, PNG and WEBP file sizes. Choose a quality level, compare the result, and download without an account.
           </p>
           <nav aria-label="Popular compression tools" style={{
             display: "flex",

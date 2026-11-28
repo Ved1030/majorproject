@@ -3,7 +3,7 @@ import { OG_IMAGE, SITE_NAME, SITE_URL } from "@/lib/site";
 
 const TITLE = "Free Online File Converter — PDF, Word, Excel & Image Conversion";
 const DESCRIPTION =
-  "Use the official ZipDrop file converter at www.getzipdrop.com/conversion to convert PDF, Word, Excel, PowerPoint, images and text online. 27 tools, no account or software install.";
+  "Use the ZipDrop file converter at www.getzipdrop.com/conversion to convert PDF, Word, Excel, PowerPoint, images and text online. 27 tools, no account or software install.";
 
 export const metadata: Metadata = {
   title: {

@@ -2,9 +2,9 @@ import type { Metadata } from "next";
 import { OG_IMAGE, SITE_NAME, SITE_URL } from "@/lib/site";
 
 const PAGE_PATH = "/image-tools/background-remover";
-const TITLE = "Free AI Image Background Remover Online – Transparent PNG";
+const TITLE = "Remove Image Background Free – One Click, No Sign-up";
 const DESCRIPTION =
-  "Remove image backgrounds online free with AI and download a transparent PNG. Supports JPG, PNG and WEBP up to 20 MB with original dimensions preserved. No login.";
+  "Remove the background from any photo in one click. Free, no watermark, with a transparent PNG download.";
 const URL = `${SITE_URL}${PAGE_PATH}`;
 
 export const metadata: Metadata = {

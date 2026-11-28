@@ -135,7 +135,7 @@ export default function PopularTools() {
             lineHeight: 1.7,
           }}
         >
-          Use the official ZipDrop tools at www.getzipdrop.com to convert files, compress PDFs and images, share files, and remove backgrounds — no account required.
+          Use ZipDrop tools at www.getzipdrop.com to convert files, compress PDFs and images, share files, and remove backgrounds — no account required.
         </p>
       </div>
 

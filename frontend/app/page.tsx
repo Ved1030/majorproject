@@ -51,7 +51,7 @@ function Hero() {
       {/* Top badge */}
       <div className="badge hero-badge" style={{ fontSize: "11px", padding: "5px 14px" }}>
         <span className="badge-dot" />
-        Official ZipDrop · Free · No Sign-up · 4-digit code
+        Free · No sign-up · No watermark
       </div>
 
       {/* Main brand logo */}
@@ -69,7 +69,7 @@ function Hero() {
           maxWidth: "640px",
         }}
       >
-        Share Files Between Phone &amp; PC with a 4-Digit Code (No Login)
+        Free file tools. Convert, compress, edit &amp; share.
       </h1>
 
       {/* Description */}
@@ -83,7 +83,7 @@ function Hero() {
           fontWeight: 400,
         }}
       >
-        ZipDrop is the official free browser-based tool at www.getzipdrop.com for sharing files and text between devices. Upload up to 10 files, get a 4-digit code, and open it on another device. Convert PDFs to Word, compress PDFs and images, remove backgrounds, and edit documents online — no account required.
+        PDF, image and document tools that work right in your browser. Fast on phone and PC, with nothing to install.
       </p>
 
       {/* Supporting text */}
