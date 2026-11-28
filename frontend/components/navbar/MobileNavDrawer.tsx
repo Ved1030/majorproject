@@ -4,20 +4,18 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import {
-  ChevronDown,
-  ChevronRight,
-  HelpCircle,
-  Home,
-  Layers,
-  PenTool,
-  Share2,
-  X,
-  type LucideIcon,
-} from "lucide-react";
+import { ChevronDown, ChevronRight, X, type LucideIcon } from "lucide-react";
 import ZipDropLogo from "@/components/brand/ZipDropLogo";
 import { TOOL_CATEGORIES, type Tool } from "@/data/toolCategories";
 import { TOOL_REGISTRY, type RegisteredTool, type ToolCategoryId } from "@/config/toolRegistry";
+import {
+  GET_STARTED_NAV_ITEM,
+  HELP_NAV_ITEM,
+  MAIN_NAV_ITEMS,
+  TOOLS_NAV_ITEM,
+  isNavItemActive,
+  type NavItem,
+} from "./navigation";
 
 interface MobileNavDrawerProps {
   open: boolean;
@@ -71,14 +69,7 @@ const REGISTRY_CATEGORY_IDS: Record<ToolCategoryId, string> = {
 
 const IMAGE_INPUT_FORMATS = new Set(["jpg", "png", "webp", "svg", "image"]);
 
-const MAIN_LINKS = [
-  { href: "/", label: "Home", icon: Home, sectionId: "home" },
-  { href: "/#share-receive", label: "Share", icon: Share2, sectionId: "share-receive" },
-  { href: "/editor", label: "Editor", icon: PenTool, sectionId: null },
-  { href: "/about", label: "About", icon: null, sectionId: null },
-];
-
-function isActive(pathname: string | null, href: string) {
+function isToolActive(pathname: string | null, href: string) {
   if (!pathname || href.includes("#")) return false;
   const path = href.split("#")[0];
   if (path === "/") return pathname === "/";
@@ -177,21 +168,20 @@ export default function MobileNavDrawer({ open, onClose }: MobileNavDrawerProps)
   const drawerRef = useRef<HTMLDivElement>(null);
   const closeRef = useRef<HTMLButtonElement>(null);
   const previousPathnameRef = useRef(pathname);
-  const [toolsOpen, setToolsOpen] = useState(() =>
-    TOOL_REGISTRY.some((tool) => isActive(pathname, tool.href)),
-  );
+  const [hash, setHash] = useState("");
+  const [toolsOpen, setToolsOpen] = useState(() => isNavItemActive(pathname, "", TOOLS_NAV_ITEM));
   const [openCategories, setOpenCategories] = useState<string[]>([]);
   const [openGroups, setOpenGroups] = useState<string[]>([]);
 
   const categories = useMemo(() => buildMobileCategories(), []);
-  const toolsActive = useMemo(
-    () =>
-      TOOL_REGISTRY.some((tool) => isActive(pathname, tool.href)) ||
-      ["/conversion", "/compression", "/pdf", "/image-tools", "/editor", "/compress-pdf-under-100kb"].some(
-        (prefix) => pathname === prefix,
-      ),
-    [pathname],
-  );
+  const toolsActive = isNavItemActive(pathname, hash, TOOLS_NAV_ITEM);
+
+  useEffect(() => {
+    const updateHash = () => setHash(window.location.hash);
+    updateHash();
+    window.addEventListener("hashchange", updateHash);
+    return () => window.removeEventListener("hashchange", updateHash);
+  }, []);
 
   useEffect(() => {
     if (previousPathnameRef.current === pathname) return;
@@ -236,7 +226,7 @@ export default function MobileNavDrawer({ open, onClose }: MobileNavDrawerProps)
       }
     };
 
-    const desktopQuery = window.matchMedia("(min-width: 769px)");
+    const desktopQuery = window.matchMedia("(min-width: 901px)");
     const handleViewportChange = (event: MediaQueryListEvent) => {
       if (event.matches) onClose();
     };
@@ -255,13 +245,18 @@ export default function MobileNavDrawer({ open, onClose }: MobileNavDrawerProps)
   }, [open, onClose]);
 
   const handleNavClick = useCallback(
-    (event: React.MouseEvent<HTMLAnchorElement>, sectionId: string | null) => {
+    (event: React.MouseEvent<HTMLAnchorElement>, item: NavItem) => {
       onClose();
-      if (!sectionId || pathname !== "/") return;
-      const element = document.getElementById(sectionId);
+      if (!item.sectionId || pathname !== "/") return;
+      const element = document.getElementById(item.sectionId);
       if (element) {
         event.preventDefault();
         window.setTimeout(() => element.scrollIntoView({ behavior: "smooth" }), 60);
+        const nextHash = item.href.includes("#") ? `#${item.href.split("#")[1]}` : "";
+        if (window.location.hash !== nextHash) {
+          window.history.replaceState(null, "", `${window.location.pathname}${nextHash}`);
+        }
+        setHash(nextHash);
       }
     },
     [onClose, pathname],
@@ -278,6 +273,10 @@ export default function MobileNavDrawer({ open, onClose }: MobileNavDrawerProps)
       current.includes(id) ? current.filter((item) => item !== id) : [...current, id],
     );
   }, []);
+
+  const ToolsIcon = TOOLS_NAV_ITEM.icon;
+  const HelpIcon = HELP_NAV_ITEM.icon;
+  const StartIcon = GET_STARTED_NAV_ITEM.icon;
 
   if (!open || typeof document === "undefined") return null;
 
@@ -296,7 +295,7 @@ export default function MobileNavDrawer({ open, onClose }: MobileNavDrawerProps)
           <Link
             href="/"
             className="zd-mobile-nav-logo"
-            onClick={(event) => handleNavClick(event, "home")}
+            onClick={(event) => handleNavClick(event, MAIN_NAV_ITEMS[0])}
             aria-label="ZipDrop home"
           >
             <ZipDropLogo size="small" />
@@ -315,8 +314,8 @@ export default function MobileNavDrawer({ open, onClose }: MobileNavDrawerProps)
         <div className="zd-mobile-nav-scroll">
           <nav aria-label="Mobile main navigation" className="zd-mobile-nav-links">
             <NavLink
-              link={MAIN_LINKS[0]}
-              active={isActive(pathname, MAIN_LINKS[0].href)}
+              link={MAIN_NAV_ITEMS[0]}
+              active={isNavItemActive(pathname, hash, MAIN_NAV_ITEMS[0])}
               onClick={handleNavClick}
             />
 
@@ -328,7 +327,7 @@ export default function MobileNavDrawer({ open, onClose }: MobileNavDrawerProps)
                 aria-expanded={toolsOpen}
                 aria-controls="zd-mobile-tools-panel"
               >
-                <Layers size={19} aria-hidden="true" />
+                <ToolsIcon size={19} aria-hidden="true" />
                 <span>Tools</span>
                 <ChevronDown
                   size={18}
@@ -421,7 +420,7 @@ export default function MobileNavDrawer({ open, onClose }: MobileNavDrawerProps)
                                           <ToolLink
                                             key={`${group.id}-${tool.id}-${tool.href}`}
                                             tool={tool}
-                                            active={isActive(pathname, tool.href)}
+                                            active={isToolActive(pathname, tool.href)}
                                             onClose={onClose}
                                             tabIndex={toolsOpen && categoryOpen && groupOpen ? 0 : -1}
                                           />
@@ -441,34 +440,36 @@ export default function MobileNavDrawer({ open, onClose }: MobileNavDrawerProps)
               </div>
             </div>
 
-            {MAIN_LINKS.slice(1).map((link) => (
+            {MAIN_NAV_ITEMS.slice(1).map((link) => (
               <NavLink
-                key={link.href}
+                key={link.id}
                 link={link}
-                active={isActive(pathname, link.href)}
+                active={isNavItemActive(pathname, hash, link)}
                 onClick={handleNavClick}
               />
             ))}
 
-            <Link
-              href="/contact"
-              className={`zd-mobile-nav-link${isActive(pathname, "/contact") ? " active" : ""}`}
+            <a
+              href={HELP_NAV_ITEM.href}
+              className="zd-mobile-nav-link"
+              target="_blank"
+              rel="noopener noreferrer"
               onClick={onClose}
             >
-              <HelpCircle size={19} aria-hidden="true" />
-              <span>Help and Support</span>
-            </Link>
+              <HelpIcon size={19} aria-hidden="true" />
+              <span>Help</span>
+            </a>
           </nav>
         </div>
 
         <div className="zd-mobile-nav-footer">
           <Link
-            href="/#share-receive"
+            href={GET_STARTED_NAV_ITEM.href}
             className="zd-mobile-nav-cta"
-            onClick={(event) => handleNavClick(event, "share-receive")}
+            onClick={(event) => handleNavClick(event, GET_STARTED_NAV_ITEM)}
           >
             Get Started
-            <ChevronRight size={18} aria-hidden="true" />
+            <StartIcon size={18} aria-hidden="true" />
           </Link>
         </div>
       </div>
@@ -477,25 +478,24 @@ export default function MobileNavDrawer({ open, onClose }: MobileNavDrawerProps)
   );
 }
 
-type MainLink = (typeof MAIN_LINKS)[number];
-
 function NavLink({
   link,
   active,
   onClick,
 }: {
-  link: MainLink;
+  link: NavItem;
   active: boolean;
-  onClick: (event: React.MouseEvent<HTMLAnchorElement>, sectionId: string | null) => void;
+  onClick: (event: React.MouseEvent<HTMLAnchorElement>, item: NavItem) => void;
 }) {
   const Icon = link.icon;
   return (
     <Link
       href={link.href}
       className={`zd-mobile-nav-link${active ? " active" : ""}`}
-      onClick={(event) => onClick(event, link.sectionId)}
+      aria-current={active ? "page" : undefined}
+      onClick={(event) => onClick(event, link)}
     >
-      {Icon ? <Icon size={19} aria-hidden="true" /> : <span className="zd-mobile-nav-link-dot" aria-hidden="true" />}
+      <Icon size={19} aria-hidden="true" />
       <span>{link.label}</span>
     </Link>
   );

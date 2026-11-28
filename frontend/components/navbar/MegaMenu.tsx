@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState, forwardRef } from "react";
+import { usePathname } from "next/navigation";
 import { TOOL_CATEGORIES, getCategoryById, DEFAULT_CATEGORY_ID } from "@/data/toolCategories";
 import { CategoryNavigation } from "./CategoryNavigation";
 import { ToolColumns } from "./ToolColumns";
@@ -13,16 +14,44 @@ interface MegaMenuProps {
 }
 
 export function MegaMenu({ isOpen, onClose, triggerRef }: MegaMenuProps) {
+  const pathname = usePathname();
   const [activeCategoryId, setActiveCategoryId] = useState(DEFAULT_CATEGORY_ID);
   const megaMenuRef = useRef<HTMLDivElement>(null);
+  const closeButtonRef = useRef<HTMLButtonElement>(null);
+  const previousPathnameRef = useRef(pathname);
   const activeCategory = getCategoryById(activeCategoryId) || TOOL_CATEGORIES[0];
 
   useEffect(() => {
     if (!isOpen) return;
 
+    const trigger = triggerRef.current;
+    closeButtonRef.current?.focus();
+
     const handleKeyDown = (e: KeyboardEvent) => {
       if (e.key === "Escape") {
+        e.preventDefault();
         onClose();
+        return;
+      }
+
+      if (e.key !== "Tab" || !megaMenuRef.current) return;
+
+      const focusable = Array.from(
+        megaMenuRef.current.querySelectorAll<HTMLElement>(
+          'a[href], button:not([disabled]), [tabindex]:not([tabindex="-1"])',
+        ),
+      ).filter((element) => element.getClientRects().length > 0);
+
+      if (focusable.length === 0) return;
+      const first = focusable[0];
+      const last = focusable[focusable.length - 1];
+
+      if (e.shiftKey && document.activeElement === first) {
+        e.preventDefault();
+        last.focus();
+      } else if (!e.shiftKey && document.activeElement === last) {
+        e.preventDefault();
+        first.focus();
       }
     };
 
@@ -30,8 +59,8 @@ export function MegaMenu({ isOpen, onClose, triggerRef }: MegaMenuProps) {
       if (
         megaMenuRef.current &&
         !megaMenuRef.current.contains(e.target as Node) &&
-        triggerRef.current &&
-        !triggerRef.current.contains(e.target as Node)
+        trigger &&
+        !trigger.contains(e.target as Node)
       ) {
         onClose();
       }
@@ -43,81 +72,72 @@ export function MegaMenu({ isOpen, onClose, triggerRef }: MegaMenuProps) {
     return () => {
       document.removeEventListener("keydown", handleKeyDown);
       document.removeEventListener("mousedown", handleClickOutside);
+      if (trigger?.isConnected) trigger.focus();
     };
   }, [isOpen, onClose, triggerRef]);
+
+  useEffect(() => {
+    if (previousPathnameRef.current === pathname) return;
+    previousPathnameRef.current = pathname;
+    onClose();
+  }, [pathname, onClose]);
+
+  useEffect(() => {
+    if (!isOpen) return;
+
+    const mobileQuery = window.matchMedia("(max-width: 900px)");
+    const handleViewportChange = () => {
+      if (mobileQuery.matches) onClose();
+    };
+
+    if (mobileQuery.matches) {
+      onClose();
+      return;
+    }
+
+    mobileQuery.addEventListener?.("change", handleViewportChange);
+    return () => mobileQuery.removeEventListener?.("change", handleViewportChange);
+  }, [isOpen, onClose]);
 
   if (!isOpen) return null;
 
   return (
     <div
       ref={megaMenuRef}
+      id="zd-mega-menu"
       className="mega-menu"
       role="dialog"
       aria-label="Tools menu"
       style={{
-        position: "fixed",
-        top: 0,
         left: 0,
         right: 0,
         zIndex: 200,
         background: "var(--bg-card)",
         borderBottom: "1px solid var(--border)",
-        boxShadow: "0 20px 60px rgba(32, 43, 54, 0.15)",
-        animation: "fadeInDown 0.2s ease forwards",
-        maxHeight: "calc(100vh - 72px)",
+        boxShadow: "0 10px 30px rgba(15, 23, 42, 0.1)",
         overflow: "hidden",
         display: "flex",
         flexDirection: "column",
       }}
     >
-      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "12px 24px", borderBottom: "1px solid var(--border)", flexShrink: 0 }}>
+      <div className="mega-menu-header">
         <h2 style={{ fontSize: "16px", fontWeight: 600, color: "var(--text-primary)", margin: 0 }}>
           All Tools
         </h2>
         <button
+          ref={closeButtonRef}
+          type="button"
           onClick={onClose}
           aria-label="Close mega menu"
-          style={{
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "center",
-            width: 36,
-            height: 36,
-            borderRadius: "8px",
-            background: "transparent",
-            border: "1px solid var(--border)",
-            color: "var(--text-secondary)",
-            cursor: "pointer",
-            transition: "all 0.18s ease",
-          }}
-          onMouseEnter={(e) => {
-            e.currentTarget.style.backgroundColor = "var(--editor-workspace)";
-            e.currentTarget.style.borderColor = "var(--primary-teal)";
-            e.currentTarget.style.color = "var(--primary-teal)";
-          }}
-          onMouseLeave={(e) => {
-            e.currentTarget.style.backgroundColor = "transparent";
-            e.currentTarget.style.borderColor = "var(--border)";
-            e.currentTarget.style.color = "var(--text-secondary)";
-          }}
+          className="mega-menu-close"
         >
-          <X size={20} strokeWidth={2.5} />
+          <X size={20} strokeWidth={2.2} aria-hidden="true" />
         </button>
       </div>
 
-      {/* Fixed category navigation at top */}
       <CategoryNavigation activeCategoryId={activeCategoryId} onCategoryChange={setActiveCategoryId} />
 
-      {/* Scrollable tool content area */}
-      <div
-        style={{
-          flex: 1,
-          overflowY: "auto",
-          overflowX: "hidden",
-          padding: "20px 24px",
-          maxHeight: "calc(100vh - 200px)",
-        }}
-      >
+      <div className="mega-menu-content">
         <ToolColumns category={activeCategory} />
       </div>
     </div>
@@ -127,41 +147,26 @@ export function MegaMenu({ isOpen, onClose, triggerRef }: MegaMenuProps) {
 interface ToolsDropdownButtonProps {
   onClick: () => void;
   isOpen: boolean;
-  onMouseEnter: (e: React.MouseEvent<HTMLButtonElement>) => void;
-  onMouseLeave: (e: React.MouseEvent<HTMLButtonElement>) => void;
+  active: boolean;
 }
 
 export const ToolsDropdownButton = forwardRef<HTMLButtonElement, ToolsDropdownButtonProps>(
-  ({ onClick, isOpen, onMouseEnter, onMouseLeave }, ref) => {
+  ({ onClick, isOpen, active }, ref) => {
     return (
       <button
         ref={ref}
+        type="button"
         onClick={onClick}
-        onMouseEnter={onMouseEnter}
-        onMouseLeave={onMouseLeave}
+        className={`zd-nav-link zd-nav-tools-button${isOpen || active ? " active" : ""}`}
         aria-expanded={isOpen}
         aria-haspopup="dialog"
-        style={{
-          textDecoration: "none",
-          color: isOpen ? "var(--primary-teal)" : "var(--text-secondary)",
-          fontSize: "14px",
-          fontWeight: 500,
-          padding: "8px 12px",
-          borderRadius: "8px",
-          transition: "all 0.2s ease",
-          background: isOpen ? "var(--teal-light)" : "transparent",
-          border: "none",
-          cursor: "pointer",
-          display: "flex",
-          alignItems: "center",
-          gap: "6px",
-        }}
+        aria-controls="zd-mega-menu"
       >
         Tools
-        <ChevronDown size={14} strokeWidth={2.5} style={{ transition: "transform 0.2s ease", transform: isOpen ? "rotate(180deg)" : "rotate(0deg)" }} />
+        <ChevronDown size={15} strokeWidth={2.4} className="zd-nav-chevron" aria-hidden="true" />
       </button>
     );
-  }
+  },
 );
 
 ToolsDropdownButton.displayName = "ToolsDropdownButton";
