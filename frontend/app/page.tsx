@@ -12,6 +12,7 @@ import WhatCanYouDo from "../components/WhatCanYouDo";
 import SupportedFileFormats from "../components/SupportedFileFormats";
 import HowToGuides from "../components/HowToGuides";
 import FAQ from "../components/FAQ";
+import AddToHomeScreenTip from "../components/AddToHomeScreenTip";
 import { BRAND_DESCRIPTION, OG_IMAGE, SITE_DESCRIPTION, SITE_NAME, SITE_TITLE, SITE_URL } from "@/lib/site";
 
 /* ─── Background Waves ───────────────────── */
@@ -55,7 +56,7 @@ function Hero() {
       </div>
 
       {/* Main brand logo */}
-      <ZipDropLogo size="large" />
+      <ZipDropLogo size="large" className="zd-hero-logo" />
 
       {/* H1 - Main headline for SEO */}
       <h1
@@ -88,6 +89,7 @@ function Hero() {
 
       {/* Supporting text */}
       <p
+        className="zd-hero-para-2"
         style={{
           fontSize: "clamp(14px, 1.5vw, 16px)",
           color: "var(--text-muted)",
@@ -101,6 +103,7 @@ function Hero() {
 
       {/* Quick internal links to the highest-value tools */}
       <nav
+        className="zd-hero-links"
         aria-label="Popular ZipDrop tools"
         style={{
           display: "flex",
@@ -541,6 +544,8 @@ export default function Home() {
         {/* ── FAQ ── */}
         <FAQ />
       </main>
+
+      <AddToHomeScreenTip />
     </>
   );
 }

@@ -2864,3 +2864,157 @@ a, button, input, select, textarea {
     gap: 14px !important;
   }
 }
+
+/* === MOBILE FOUNDATION (<= 767px) — desktop untouched === */
+@media (max-width: 767px) {
+  body {
+    font-size: 16px !important;
+    line-height: 1.6;
+  }
+  /* prevent iOS zoom on inputs/selects/textarea */
+  input, select, textarea {
+    font-size: 16px !important;
+  }
+  /* 16px container padding on phones */
+  .zd-page-shell { padding-left: 16px !important; padding-right: 16px !important; }
+  main, section, div[style*="max-width"] { max-width: 100% !important; }
+
+  /* tap targets >= 44px with >= 8px spacing */
+  button, a, [role="button"], input[type="button"], input[type="submit"], .btn-cyan, .btn-blue, .btn-ghost,
+  .zd-mobile-nav-link, .zd-mobile-nav-tool, .zd-mobile-nav-group-toggle, .zd-mobile-nav-cta,
+  .tool-category-card-new, .zd-rec-card, .zd-action-card, .zd-share-compact-button {
+    min-height: 44px !important;
+    min-width: 44px !important;
+  }
+  button, a, [role="button"] {
+    margin-bottom: 8px;
+    padding-bottom: 8px;
+  }
+  .btn-cyan, .btn-blue { min-height: 48px !important; padding: 12px 20px !important; font-size: 15px !important; }
+  .btn-ghost { min-height: 44px !important; font-size: 14px !important; }
+
+  /* inputs full height and readable */
+  .neon-input, .neon-textarea { min-height: 48px !important; padding: 12px 14px !important; font-size: 16px !important; }
+
+  /* stack everything into one column */
+  .tools-grid, .benefits-strip, .hiw-steps, .hiw-benefits, .footer-grid,
+  .zd-tool-workspace, .zd-tool-options-grid, .formats-grid {
+    grid-template-columns: minmax(0, 1fr) !important;
+    gap: 12px !important;
+  }
+  .benefit-item + .benefit-item, .hiw-benefit + .hiw-benefit { border-left: none !important; border-top: 1px solid var(--border) !important; padding-top: 12px !important; margin-top: 12px !important; }
+  .benefit-item:first-child, .hiw-benefit:first-child { border-top: none !important; padding-top: 0 !important; margin-top: 0 !important; }
+  .zd-tool-options-grid { grid-template-columns: minmax(0, 1fr) !important; gap: 10px !important; }
+
+  /* hero: badge -> h1 -> paragraph -> links, stacked full width */
+  .zd-hero { padding: 20px 16px !important; gap: 12px !important; align-items: stretch !important; text-align: center !important; }
+  .zd-hero > * { width: 100% !important; max-width: 100% !important; text-align: center !important; }
+  .zd-hero h1 { font-size: clamp(24px, 9vw, 32px) !important; line-height: 1.2 !important; margin: 0 !important; }
+  .zd-hero p { font-size: 16px !important; line-height: 1.5 !important; margin: 0 auto 0 !important; }
+  .zd-hero nav { flex-direction: column !important; align-items: center !important; gap: 8px !important; }
+  .zd-hero nav a { width: auto !important; min-height: 44px !important; padding: 10px 14px !important; font-size: 14px !important; border-radius: 10px !important; text-align: center !important; background: var(--editor-workspace) !important; border: 1px solid var(--border) !important; color: var(--primary-teal) !important; font-weight: 600 !important; }
+
+  /* 4-digit code boxes large & thumb-friendly */
+  .code-digit { width: 56px !important; height: 68px !important; font-size: 30px !important; }
+  .code-display { gap: 8px !important; padding: 18px !important; }
+
+  /* sticky action bar on mobile */
+  .zd-tool-action {
+    position: sticky !important;
+    top: auto !important;
+    bottom: 0 !important;
+    z-index: 10 !important;
+    background: var(--bg-card) !important;
+    padding: 10px 16px calc(14px + env(safe-area-inset-bottom, 0px)) !important;
+    border-top: 1px solid var(--border) !important;
+    margin-top: 12px !important;
+    box-shadow: 0 -4px 12px rgba(0,0,0,0.06) !important;
+  }
+
+  /* recently used chips row */
+  .zd-about-tool {
+    margin: 24px 16px 8px;
+  }
+  .zd-about-tool h2 {
+    font-size: 16px;
+    font-weight: 700;
+    color: var(--text-primary);
+    margin: 0 0 8px;
+    letter-spacing: 0.02em;
+  }
+  .zd-about-tool p {
+    font-size: 15px;
+    line-height: 1.6;
+    color: var(--text-secondary);
+    margin: 0;
+    max-width: 100%;
+  }
+
+  /* ensure no fixed-width overflow */
+  html, body { overflow-x: hidden !important; position: relative !important; }
+  img, video, canvas, table, iframe, object, embed { max-width: 100% !important; height: auto !important; }
+  /* force every layout grid to a single column on phones, overriding any inline grid */
+  [class*="grid"], .tools-grid, .what-grid, .formats-grid, .guides-grid,
+  .footer-grid, .zd-tool-workspace, .zd-tool-options-grid, .zd-rec-grid {
+    grid-template-columns: minmax(0, 1fr) !important;
+    gap: 10px !important;
+  }
+
+  /* hero mobile */
+  .zd-hero-logo { max-width: 140px !important; width: auto !important; height: auto !important; display: block !important; margin: 0 auto !important; }
+  .zd-hero-para-2 { display: none !important; }
+  .zd-hero-links {
+    display: grid !important;
+    grid-template-columns: repeat(2, 1fr) !important;
+    gap: 8px !important;
+  }
+  .zd-hero-links a {
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    min-height: 44px !important;
+    padding: 10px 12px !important;
+    font-size: 13px !important;
+    border: 1px solid var(--border) !important;
+    border-radius: 10px !important;
+    background: var(--editor-workspace) !important;
+    color: var(--primary-teal) !important;
+    text-decoration: none !important;
+    font-weight: 600 !important;
+    width: auto !important;
+  }
+
+  /* mobile section headings and card padding */
+  h2 { font-size: clamp(24px, 6vw, 28px) !important; line-height: 1.25 !important; }
+  .glass-card { padding: 16px !important; }
+}
+
+/* === TABLET PASS (768-1023px) === */
+@media (min-width: 768px) and (max-width: 1023px) {
+  .tools-grid, .benefits-strip, .formats-grid { grid-template-columns: repeat(2, minmax(0, 1fr)) !important; gap: 14px !important; }
+  .hiw-steps { grid-template-columns: repeat(2, minmax(0, 1fr)) !important; gap: 14px !important; }
+  .footer-grid { grid-template-columns: repeat(2, minmax(0, 1fr)) !important; gap: 20px !important; }
+  .zd-hero { padding: 32px 24px !important; }
+  .zd-tool-options-grid { grid-template-columns: repeat(2, minmax(0, 1fr)) !important; gap: 12px !important; }
+}
+
+/* === RECENTLY USED CHIPS ROW === */
+.zd-recent-chips {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  overflow-x: auto;
+  padding: 0 16px 12px;
+  margin-bottom: 14px;
+  scrollbar-width: none;
+  -webkit-overflow-scrolling: touch;
+}
+.zd-recent-chips::-webkit-scrollbar { display: none; }
+.zd-recent-chip-label {
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--text-secondary);
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  flex: 0 0 auto;
+}

@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { useCallback, useEffect, useState } from "react";
 import {
   FileText,
   FileType,
@@ -13,6 +14,32 @@ import {
   Zap,
   Eye,
 } from "lucide-react";
+
+const RECENT_KEY = "zd_recent_tools";
+const MAX_RECENT = 4;
+
+function getRecent(): string[] {
+  if (typeof window === "undefined") return [];
+  try {
+    const raw = localStorage.getItem(RECENT_KEY);
+    if (!raw) return [];
+    const arr = JSON.parse(raw);
+    return Array.isArray(arr) ? arr.filter((id) => typeof id === "string") : [];
+  } catch {
+    return [];
+  }
+}
+
+function saveRecent(id: string) {
+  if (typeof window === "undefined") return;
+  try {
+    let arr = getRecent();
+    arr = [id, ...arr.filter((existing) => existing !== id)].slice(0, MAX_RECENT);
+    localStorage.setItem(RECENT_KEY, JSON.stringify(arr));
+  } catch {
+    /* ignore storage errors */
+  }
+}
 
 const POPULAR_TOOLS = [
   {
@@ -99,6 +126,17 @@ const POPULAR_TOOLS = [
 ];
 
 export default function PopularTools() {
+  const [recent, setRecent] = useState<string[]>([]);
+
+  useEffect(() => {
+    setRecent(getRecent());
+  }, []);
+
+  const handleToolClick = useCallback((id: string) => {
+    saveRecent(id);
+    setRecent(getRecent());
+  }, []);
+
   return (
     <section
       id="popular-tools"
@@ -109,6 +147,63 @@ export default function PopularTools() {
         animation: "fadeInUp 0.8s 0.5s cubic-bezier(0.22, 1, 0.36, 1) both",
       }}
     >
+      {recent.length > 0 && (
+        <div
+          style={{
+            display: "flex",
+            alignItems: "center",
+            gap: "10px",
+            overflowX: "auto",
+            paddingBottom: "14px",
+            marginBottom: "18px",
+            WebkitOverflowScrolling: "touch",
+            scrollbarWidth: "none",
+            msOverflowStyle: "none",
+          }}
+        >
+          <span
+            style={{
+              fontSize: "12px",
+              fontWeight: 700,
+              color: "var(--text-secondary)",
+              letterSpacing: "0.1em",
+              textTransform: "uppercase",
+              flex: "0 0 auto",
+            }}
+          >
+            Recently used
+          </span>
+          {recent.map((id) => {
+            const tool = POPULAR_TOOLS.find((t) => t.id === id);
+            if (!tool) return null;
+            return (
+              <Link
+                key={id}
+                href={tool.href}
+                onClick={() => handleToolClick(id)}
+                style={{
+                  textDecoration: "none",
+                  display: "inline-flex",
+                  alignItems: "center",
+                  gap: "8px",
+                  flex: "0 0 auto",
+                  padding: "8px 14px",
+                  borderRadius: "999px",
+                  background: "var(--teal-light)",
+                  border: "1px solid rgba(7,140,145,0.35)",
+                  color: "var(--primary-teal)",
+                  fontSize: "13px",
+                  fontWeight: 700,
+                  whiteSpace: "nowrap",
+                }}
+              >
+                {tool.name}
+              </Link>
+            );
+          })}
+        </div>
+      )}
+
       <div
         style={{
           textAlign: "center",
@@ -144,6 +239,7 @@ export default function PopularTools() {
           <Link
             key={tool.id}
             href={tool.href}
+            onClick={() => handleToolClick(tool.id)}
             style={{
               textDecoration: "none",
               color: "inherit",

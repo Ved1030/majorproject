@@ -78,7 +78,6 @@ export default function WhatCanYouDo() {
         className="what-grid"
         style={{
           display: "grid",
-          gridTemplateColumns: "repeat(4, minmax(0, 1fr))",
           gap: "20px",
           width: "100%",
         }}
@@ -137,15 +136,14 @@ export default function WhatCanYouDo() {
       </div>
 
       <style jsx>{`
-        @media (max-width: 1024px) {
-          .what-grid {
-            grid-template-columns: repeat(2, minmax(0, 1fr));
-          }
+        .what-grid {
+          grid-template-columns: repeat(4, minmax(0, 1fr));
         }
-        @media (max-width: 560px) {
-          .what-grid {
-            grid-template-columns: minmax(0, 1fr);
-          }
+        @media (max-width: 767px) {
+          .what-grid { grid-template-columns: minmax(0, 1fr); }
+        }
+        @media (min-width: 768px) and (max-width: 1023px) {
+          .what-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
         }
       `}</style>
     </section>

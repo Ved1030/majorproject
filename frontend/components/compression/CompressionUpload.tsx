@@ -598,7 +598,7 @@ export function SuccessDisplay({
 
       <div style={{
         display: "grid",
-        gridTemplateColumns: "repeat(auto-fit, minmax(140px, 1fr))",
+        gridTemplateColumns: "repeat(auto-fit, minmax(min(100%, 260px), 1fr))",
         gap: "12px",
         padding: "16px",
         background: isNotSmaller ? "var(--warning-light)" : "var(--editor-workspace)",

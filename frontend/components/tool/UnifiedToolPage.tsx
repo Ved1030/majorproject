@@ -3,6 +3,7 @@
 import { ReactNode } from "react";
 import { Lock } from "lucide-react";
 import RecommendedTools from "@/components/recommendations/RecommendedTools";
+import AddToHomeScreenTip from "@/components/AddToHomeScreenTip";
 
 interface UnifiedToolPageProps {
   header: ReactNode;
@@ -61,6 +62,7 @@ export default function UnifiedToolPage({
         )}
         {footer}
         {toolId && <RecommendedTools toolId={toolId} />}
+        <AddToHomeScreenTip />
       </div>
     </main>
   );

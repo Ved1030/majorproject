@@ -197,6 +197,7 @@ export default function RootLayout({
         />
 
         {/* ✅ Google Analytics */}
+        <link rel="manifest" href="/manifest.json" />
         <Script
           src="https://www.googletagmanager.com/gtag/js?id=G-N4017QP0HN"
           strategy="afterInteractive"
